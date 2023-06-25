@@ -38,5 +38,6 @@ module.exports = {
     "@typescript-eslint/no-unused-vars": ["error"],
     "@typescript-eslint/consistent-type-imports": "warn",
     "prettier/prettier": "error",
+    "arrow-body-style": ["error", "as-needed"],
   },
 };

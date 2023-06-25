@@ -18,24 +18,20 @@ export const onGet: RequestHandler = async ({ cacheControl }) => {
   });
 };
 
-export const useServerTimeLoader = routeLoader$(() => {
-  return {
-    date: new Date().toISOString(),
-  };
-});
+export const useServerTimeLoader = routeLoader$(() => ({
+  date: new Date().toISOString(),
+}));
 
-export default component$(() => {
-  return (
-    <div class="flex h-full">
-      <Nav />
-      <main class="w-full">
-        <ConversationHeader />
-        {/*TODO: Move it to CSS */}
-        <div style={{ height: "calc(100% - 44px - 74px)" }}>
-          <Chat />
-        </div>
-        <Input attributes={{ placeholder: "Message...." }} />
-      </main>
-    </div>
-  );
-});
+export default component$(() => (
+  <div class="flex h-full">
+    <Nav />
+    <main class="w-full">
+      <ConversationHeader />
+      {/*TODO: Move it to CSS */}
+      <div style={{ height: "calc(100% - 44px - 74px)" }}>
+        <Chat />
+      </div>
+      <Input attributes={{ placeholder: "Message...." }} />
+    </main>
+  </div>
+));
