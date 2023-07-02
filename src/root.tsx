@@ -7,6 +7,7 @@ import {
 import { RouterHead } from "./components/router-head/router-head";
 
 import "./global.css";
+import WebWorkerRegister from "./components/WebWorkerRegister";
 
 export default component$(() => (
   /**
@@ -25,6 +26,7 @@ export default component$(() => (
     <body lang="en">
       <RouterOutlet />
       <ServiceWorkerRegister />
+      <WebWorkerRegister />
     </body>
   </QwikCityProvider>
 ));
