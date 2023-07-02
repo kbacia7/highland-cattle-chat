@@ -1,0 +1,32 @@
+{
+  "name": "qwik-chat-app-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node esbuild.config.mjs"
+  },
+  "dependencies": {
+    "@fastify/websocket": "^8.1.0",
+    "@prisma/client": "4.16.1",
+    "fastify": "^4.18.0",
+    "prisma": "^4.16.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.3.3",
+    "@types/ws": "^8.5.5",
+    "@typescript-eslint/eslint-plugin": "^5.60.1",
+    "@typescript-eslint/parser": "^5.60.1",
+    "esbuild": "0.18.8",
+    "eslint": "^8.44.0",
+    "eslint-config-airbnb-typescript": "^17.0.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-import": "^2.22.0",
+    "pino-pretty": "^10.0.0",
+    "prettier": "^2.8.8",
+    "tslib": "^2.5.3",
+    "typescript": "^5.1.6"
+  }
+}
