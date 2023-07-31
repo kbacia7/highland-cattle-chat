@@ -3,8 +3,12 @@ module.exports = {
     es2021: true,
     node: true,
   },
-  extends: ["airbnb-typescript/base", "plugin:import/recommended", "prettier"],
-  overrides: [],
+  extends: [
+    "airbnb-base",
+    "airbnb-typescript/base",
+    "plugin:import/recommended",
+    "prettier",
+  ],
   parserOptions: {
     ecmaVersion: "latest",
     sourceType: "module",

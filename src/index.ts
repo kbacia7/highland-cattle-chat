@@ -17,10 +17,7 @@ const LOGGER_OPTIONS = {
 };
 
 const fastify: FastifyInstance = Fastify({
-  logger:
-    LOGGER_OPTIONS[
-      process.env.NODE_ENV
-    ],
+  logger: LOGGER_OPTIONS[process.env.NODE_ENV],
 });
 
 fastify.register(fastifyWebsocket);
@@ -29,7 +26,7 @@ fastify.register(realTimeRoute);
 const start = async (): Promise<void> => {
   try {
     await fastify.listen({
-      port: parseInt(process.env.PORT ?? "3000"),
+      port: parseInt(process.env.PORT ?? "3000", 10),
       host: "0.0.0.0",
     });
     const address = fastify.server.address();
