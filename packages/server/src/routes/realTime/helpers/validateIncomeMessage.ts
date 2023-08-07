@@ -1,6 +1,6 @@
 import Ajv, { type JSONSchemaType } from "ajv";
 import fastUri from "fast-uri";
-import type { IncomeMessage } from "@/types/messages";
+import type { IncomeMessage } from "@highland-cattle-chat/shared";
 
 const ajv = new Ajv({
   coerceTypes: "array",

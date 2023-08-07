@@ -1,4 +1,4 @@
-import type { IncomeMessage } from "@/types/messages";
+import type { IncomeMessage } from "@highland-cattle-chat/shared";
 
 const convertRawMessage = (message: string) => {
   try {

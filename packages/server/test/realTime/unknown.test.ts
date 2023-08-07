@@ -3,10 +3,11 @@ import Fastify, { type FastifyInstance } from "fastify";
 import fastifyWebsocket from "@fastify/websocket";
 import WebSocket from "ws";
 
-import { SERVER_PUBLIC_KEY } from "@routes/realTime/consts";
+import { SERVER_PUBLIC_KEY } from "@highland-cattle-chat/shared";
+import type { IncomeMessage, OutcomeMessage } from "@highland-cattle-chat/shared";
+
 import realTimeRoute from "@routes/realTime";
 
-import type { IncomeMessage, OutcomeMessage } from "@/types/messages";
 import {
   FASTIFY_SERVER_PORT_BASE,
   SECOND_PUBLIC_KEY,

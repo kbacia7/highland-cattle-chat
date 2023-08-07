@@ -2,10 +2,12 @@ import { afterAll, beforeAll, describe, expect, test } from "@jest/globals";
 import Fastify, { type FastifyInstance } from "fastify";
 import fastifyWebsocket from "@fastify/websocket";
 import WebSocket from "ws";
-import { SERVER_PUBLIC_KEY } from "@routes/realTime/consts";
+
+import { SERVER_PUBLIC_KEY } from "@highland-cattle-chat/shared";
+import type { OutcomeMessage } from "@highland-cattle-chat/shared";
+
 import realTimeRoute from "../../src/routes/realTime";
 
-import type { OutcomeMessage } from "@/types/messages";
 import {
   FASTIFY_SERVER_PORT_BASE,
   SECOND_PUBLIC_KEY,

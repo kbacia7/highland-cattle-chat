@@ -3,11 +3,11 @@ import Fastify, { type FastifyInstance } from "fastify";
 import fastifyWebsocket from "@fastify/websocket";
 import WebSocket from "ws";
 
-import realTimeRoute from "@routes/realTime";
-import { SERVER_PUBLIC_KEY } from "@routes/realTime/consts";
-import { FASTIFY_SERVER_PORT_BASE, TEST_PUBLIC_KEY } from "./consts";
+import { SERVER_PUBLIC_KEY } from "@highland-cattle-chat/shared";
+import type { IncomeMessage } from "@highland-cattle-chat/shared";
 
-import type { IncomeMessage } from "@/types/messages";
+import realTimeRoute from "@routes/realTime";
+import { FASTIFY_SERVER_PORT_BASE, TEST_PUBLIC_KEY } from "./consts";
 
 describe("Websocket real-time route - Message type INIT", () => {
   const fastify: FastifyInstance = Fastify();
