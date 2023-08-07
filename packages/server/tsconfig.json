@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "strictNullChecks": true,
+    "noEmit": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "paths": {
+      "@routes/*": ["./src/routes/*"],
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "esbuild.config.mjs",
+    "test/**/*.ts",
+    "test/**/*.test.ts",
+    ".eslintrc.cjs",
+    "jest.config.cjs"
+  ]
+}
