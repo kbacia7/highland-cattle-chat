@@ -1,2 +1,4 @@
 node_modules/
 packages/shared/dist/
+packages/server/dist/
+packages/web-client/dist/

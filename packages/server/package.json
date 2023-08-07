@@ -1,5 +1,5 @@
 {
-  "name": "qwik-chat-app-server",
+  "name": "@highland-cattle-chat/server",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",

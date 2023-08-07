@@ -1,6 +1,6 @@
 {
-  "name": "my-qwik-basic-starter",
-  "description": "Demo App with Routing built-in (recommended)",
+  "name": "@highland-cattle-chat/web-client",
+  "version": "1.0.0",
   "engines": {
     "node": ">=15.0.0"
   },
