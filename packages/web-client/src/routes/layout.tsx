@@ -1,10 +1,8 @@
-import { component$ } from "@builder.io/qwik";
+import { Slot, component$, useContextProvider } from "@builder.io/qwik";
 import { routeLoader$ } from "@builder.io/qwik-city";
 import type { RequestHandler } from "@builder.io/qwik-city";
-import Chat from "~/components/Chat";
-import ConversationHeader from "~/components/ConversationHeader";
+import { ConversationsContext } from "~/components/ConversationsContext";
 
-import Input from "~/components/Input";
 import Nav from "~/components/Nav";
 
 export const onGet: RequestHandler = async ({ cacheControl }) => {
@@ -22,16 +20,15 @@ export const useServerTimeLoader = routeLoader$(() => ({
   date: new Date().toISOString(),
 }));
 
-export default component$(() => (
-  <div class="flex h-full">
-    <Nav />
-    <main class="w-full">
-      <ConversationHeader />
-      {/*TODO: Move it to CSS */}
-      <div style={{ height: "calc(100% - 44px - 74px)" }}>
-        <Chat />
-      </div>
-      <Input attributes={{ placeholder: "Message...." }} />
-    </main>
-  </div>
-));
+export default component$(() => {
+  useContextProvider(ConversationsContext, {
+    "key-id": "abc",
+  });
+
+  return (
+    <div class="flex h-full">
+      <Nav />
+      <Slot />
+    </div>
+  );
+});

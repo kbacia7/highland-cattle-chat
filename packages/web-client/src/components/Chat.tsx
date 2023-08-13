@@ -1,42 +1,33 @@
-import { component$, useStore, useVisibleTask$ } from "@builder.io/qwik";
+import { component$ } from "@builder.io/qwik";
+import {
+  MessageTypes,
+  type OutcomeMessage,
+} from "@highland-cattle-chat/shared";
 
-// interface Message {
-//   content: string;
-// }
+type Props = {
+  messages: OutcomeMessage[];
+};
 
-interface ChatState {
-  messages: string[]; //Message[];
-}
-
-export default component$(() => {
-  const state = useStore<ChatState>({ messages: [] });
-  useVisibleTask$(() => {
-    const channel = new BroadcastChannel("test_messages");
-    channel.addEventListener("message", (event) => {
-      console.log("Received", event.data);
-      state.messages.push(event.data);
-    });
-  });
-
-  console.log("state", state);
-
-  return (
-    <div class="p-5 overflow-y-auto h-full">
-      {state.messages.map((t) => (
-        <div class="mb-3 flex items-center" key={t}>
-          <div class="inline-block">
-            <img
-              class="rounded-full object-cover aspect-square inline"
-              width="50"
-              height="50"
-              src="/hedgehog.jpg"
-            />
-          </div>
-          <div class="ml-2 p-3 pl-3 w-1/3 bg-slate-300 rounded-lg inline-block">
-            <p>{t}</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-});
+export default component$<Props>(({ messages }) => (
+  <div class="p-5 overflow-y-auto h-full">
+    {messages?.length > 0
+      ? messages
+          .filter(({ type }) => type === MessageTypes.TEXT)
+          .map((message, index) => (
+            <div class="mb-3 flex items-center" key={index}>
+              <div class="inline-block">
+                <img
+                  class="rounded-full object-cover aspect-square inline"
+                  width="50"
+                  height="50"
+                  src="/hedgehog.jpg"
+                />
+              </div>
+              <div class="ml-2 p-3 pl-3 w-1/3 bg-slate-300 rounded-lg inline-block">
+                <p>{message.content}</p>
+              </div>
+            </div>
+          ))
+      : ""}
+  </div>
+));

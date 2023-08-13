@@ -12,18 +12,11 @@ module.exports = {
   parserOptions: {
     ecmaVersion: "latest",
     sourceType: "module",
-    project: "tsconfig.json",
+    project: "./tsconfig.json",
+    tsconfigRootDir: __dirname,
   },
-  // rules: {
-  //   "@typescript-eslint/strict-boolean-expressions": "off",
-  //   "@typescript-eslint/semi": ["error", "always"],
-  //   "@typescript-eslint/restrict-template-expressions": ["error", {
-  //     allowAny: false,
-  //     allowBoolean: true,
-  //     allowNullish: true,
-  //     allowNumber: true,
-  //     allowRegExp: false,
-  //     allowNever: false
-  //   }]
-  // }
+  rules: {
+    "@typescript-eslint/consistent-type-imports": "error",
+    "arrow-body-style": ["error", "as-needed"],
+  },
 };
