@@ -1,13 +1,18 @@
-import type { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
 
-import { MessageStatuses, MessageTypes, SERVER_PUBLIC_KEY } from "@highland-cattle-chat/shared";
-import type { OutcomeMessage } from "@highland-cattle-chat/shared";
+import {
+  MessageStatuses,
+  MessageTypes,
+  SERVER_PUBLIC_KEY,
+} from "@highland-cattle-chat/shared";
 
 import convertRawMessage from "./helpers/convertRawMessage";
 import validateIncomeMessage from "./helpers/validateIncomeMessage";
 import extractKeyId from "./helpers/extrackKeyId";
 import escapeHtml from "./helpers/escapeHtml";
+
+import type { OutcomeMessage } from "@highland-cattle-chat/shared";
+import type { FastifyInstance } from "fastify";
 
 type ConnectedClients = Record<
   string,

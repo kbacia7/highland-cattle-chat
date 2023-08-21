@@ -1,25 +1,30 @@
 import { afterAll, beforeAll, describe, expect, test } from "@jest/globals";
-import Fastify, { type FastifyInstance } from "fastify";
-import fastifyWebsocket from "@fastify/websocket";
+
 import WebSocket from "ws";
 
 import { SERVER_PUBLIC_KEY } from "@highland-cattle-chat/shared";
-import type { IncomeMessage, OutcomeMessage } from "@highland-cattle-chat/shared";
 
-import realTimeRoute from "@routes/realTime";
+import buildForTests from "@test/utils/buildForTests";
 
-import {
-  FASTIFY_SERVER_PORT_BASE,
-  SECOND_PUBLIC_KEY,
-  TEST_PUBLIC_KEY,
-} from "./consts";
+import generateKeysForTests from "@test/utils/generateKeysForTests";
+import { FASTIFY_SERVER_PORT_BASE } from "@test/utils/consts";
+
+import type { FastifyInstance } from "fastify";
+import type {
+  OutcomeMessage,
+  IncomeMessage,
+} from "@highland-cattle-chat/shared";
+import type { TestKeyPair } from "@test/utils/generateKeysForTests";
 
 describe("Websocket real-time route - Message type UNKNOWN_ERROR", () => {
-  const fastify: FastifyInstance = Fastify();
+  const fastify: FastifyInstance = buildForTests();
   const SERVER_PORT = FASTIFY_SERVER_PORT_BASE + 2;
+  let pgpTestKey: TestKeyPair;
+  let secondPgpTestKey: TestKeyPair;
+
   beforeAll(async () => {
-    fastify.register(fastifyWebsocket);
-    fastify.register(realTimeRoute);
+    pgpTestKey = await generateKeysForTests();
+    secondPgpTestKey = await generateKeysForTests();
     await fastify.listen({ port: SERVER_PORT });
   });
 
@@ -75,7 +80,7 @@ describe("Websocket real-time route - Message type UNKNOWN_ERROR", () => {
     const client = WebSocket.createWebSocketStream(ws);
     const message = {
       type: "anything",
-      senderPublicKey: TEST_PUBLIC_KEY,
+      senderPublicKey: pgpTestKey.publicKey,
     };
 
     client.write(JSON.stringify(message));
@@ -98,7 +103,7 @@ describe("Websocket real-time route - Message type UNKNOWN_ERROR", () => {
     client.write(
       JSON.stringify({
         type: "INIT",
-        senderPublicKey: TEST_PUBLIC_KEY,
+        senderPublicKey: pgpTestKey.publicKey,
       }),
     );
 
@@ -123,7 +128,7 @@ describe("Websocket real-time route - Message type UNKNOWN_ERROR", () => {
         expect(res).toStrictEqual({
           senderPublicKey: SERVER_PUBLIC_KEY,
           type: "INIT",
-          recipientPublicKey: TEST_PUBLIC_KEY,
+          recipientPublicKey: pgpTestKey.publicKey,
           status: "OK",
         });
 
@@ -132,8 +137,8 @@ describe("Websocket real-time route - Message type UNKNOWN_ERROR", () => {
         client.write(
           JSON.stringify({
             type: "TEXT",
-            senderPublicKey: TEST_PUBLIC_KEY,
-            recipientPublicKey: SECOND_PUBLIC_KEY,
+            senderPublicKey: pgpTestKey.publicKey,
+            recipientPublicKey: secondPgpTestKey.publicKey,
             content: [],
           }),
         );
@@ -141,8 +146,8 @@ describe("Websocket real-time route - Message type UNKNOWN_ERROR", () => {
         client.write(
           JSON.stringify({
             type: "TEXT",
-            senderPublicKey: TEST_PUBLIC_KEY,
-            recipientPublicKey: SECOND_PUBLIC_KEY,
+            senderPublicKey: pgpTestKey.publicKey,
+            recipientPublicKey: secondPgpTestKey.publicKey,
             content: {},
           }),
         );

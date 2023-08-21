@@ -119,8 +119,9 @@ internalChannel.addEventListener("message", async (event) => {
     case InternalMessageTypes.READY: {
       privateKey = await decryptKey({
         privateKey: await readPrivateKey({ armoredKey: message.content }),
-        passphrase: "<cut>",
+        passphrase: "123",
       });
+
       broadcastChannelActive = true;
       sendedChannel.postMessage(oldHistory);
       break;

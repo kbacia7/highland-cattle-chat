@@ -9,8 +9,13 @@
     "esModuleInterop": true,
     "paths": {
       "@routes/*": ["./src/routes/*"],
+      "@helpers/*": ["./src/helpers/*"],
+      "@contexts/*": ["./src/contexts/*"],
+      "@test/*": ["./test/*"],
       "@/*": ["./src/*"]
-    }
+    },
+    "allowJs": true,
+    "typeRoots": ["../../node_modules"]
   },
   "include": [
     "src/**/*.ts",

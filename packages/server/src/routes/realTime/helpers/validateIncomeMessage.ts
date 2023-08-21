@@ -1,5 +1,7 @@
-import Ajv, { type JSONSchemaType } from "ajv";
+import Ajv from "ajv";
 import fastUri from "fast-uri";
+
+import type { JSONSchemaType } from "ajv";
 import type { IncomeMessage } from "@highland-cattle-chat/shared";
 
 const ajv = new Ajv({

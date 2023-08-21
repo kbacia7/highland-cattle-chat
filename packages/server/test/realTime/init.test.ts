@@ -1,20 +1,24 @@
 import { afterAll, beforeAll, describe, expect, test } from "@jest/globals";
-import Fastify, { type FastifyInstance } from "fastify";
-import fastifyWebsocket from "@fastify/websocket";
 import WebSocket from "ws";
 
 import { SERVER_PUBLIC_KEY } from "@highland-cattle-chat/shared";
-import type { IncomeMessage } from "@highland-cattle-chat/shared";
 
-import realTimeRoute from "@routes/realTime";
-import { FASTIFY_SERVER_PORT_BASE, TEST_PUBLIC_KEY } from "./consts";
+import buildForTests from "@test/utils/buildForTests";
+
+import generateKeysForTests from "@test/utils/generateKeysForTests";
+import { FASTIFY_SERVER_PORT_BASE } from "@test/utils/consts";
+
+import type { FastifyInstance } from "fastify";
+import type { IncomeMessage } from "@highland-cattle-chat/shared";
+import type { TestKeyPair } from "@test/utils/generateKeysForTests";
 
 describe("Websocket real-time route - Message type INIT", () => {
-  const fastify: FastifyInstance = Fastify();
+  const fastify: FastifyInstance = buildForTests();
   const SERVER_PORT = FASTIFY_SERVER_PORT_BASE + 1;
+  let pgpTestKey: TestKeyPair;
+
   beforeAll(async () => {
-    fastify.register(fastifyWebsocket);
-    fastify.register(realTimeRoute);
+    pgpTestKey = await generateKeysForTests();
     await fastify.listen({ port: SERVER_PORT });
   });
 
@@ -27,7 +31,7 @@ describe("Websocket real-time route - Message type INIT", () => {
     const client = WebSocket.createWebSocketStream(ws);
     const initMessage: IncomeMessage = {
       type: "INIT",
-      senderPublicKey: TEST_PUBLIC_KEY,
+      senderPublicKey: pgpTestKey.publicKey,
     };
 
     client.write(JSON.stringify(initMessage));
@@ -36,7 +40,7 @@ describe("Websocket real-time route - Message type INIT", () => {
       expect(res).toStrictEqual({
         senderPublicKey: SERVER_PUBLIC_KEY,
         type: "INIT",
-        recipientPublicKey: TEST_PUBLIC_KEY,
+        recipientPublicKey: pgpTestKey.publicKey,
         status: "OK",
       });
 
@@ -51,7 +55,7 @@ describe("Websocket real-time route - Message type INIT", () => {
     let secondCall = false;
     const initMessage: IncomeMessage = {
       type: "INIT",
-      senderPublicKey: TEST_PUBLIC_KEY,
+      senderPublicKey: pgpTestKey.publicKey,
     };
 
     client.write(JSON.stringify(initMessage));
@@ -61,7 +65,7 @@ describe("Websocket real-time route - Message type INIT", () => {
         expect(res).toStrictEqual({
           senderPublicKey: SERVER_PUBLIC_KEY,
           type: "INIT",
-          recipientPublicKey: TEST_PUBLIC_KEY,
+          recipientPublicKey: pgpTestKey.publicKey,
           status: "ERROR",
         });
 
@@ -71,7 +75,7 @@ describe("Websocket real-time route - Message type INIT", () => {
         expect(res).toStrictEqual({
           senderPublicKey: SERVER_PUBLIC_KEY,
           type: "INIT",
-          recipientPublicKey: TEST_PUBLIC_KEY,
+          recipientPublicKey: pgpTestKey.publicKey,
           status: "OK",
         });
 
@@ -88,7 +92,7 @@ describe("Websocket real-time route - Message type INIT", () => {
     const secondClient = WebSocket.createWebSocketStream(secondWs);
     const initMessage: IncomeMessage = {
       type: "INIT",
-      senderPublicKey: TEST_PUBLIC_KEY,
+      senderPublicKey: pgpTestKey.publicKey,
     };
 
     firstClient.write(JSON.stringify(initMessage));
@@ -97,7 +101,7 @@ describe("Websocket real-time route - Message type INIT", () => {
       expect(res).toStrictEqual({
         senderPublicKey: SERVER_PUBLIC_KEY,
         type: "INIT",
-        recipientPublicKey: TEST_PUBLIC_KEY,
+        recipientPublicKey: pgpTestKey.publicKey,
         status: "OK",
       });
 
@@ -109,7 +113,7 @@ describe("Websocket real-time route - Message type INIT", () => {
       expect(res).toStrictEqual({
         senderPublicKey: SERVER_PUBLIC_KEY,
         type: "INIT",
-        recipientPublicKey: TEST_PUBLIC_KEY,
+        recipientPublicKey: pgpTestKey.publicKey,
         status: "ERROR",
       });
 
@@ -126,7 +130,7 @@ describe("Websocket real-time route - Message type INIT", () => {
     const secondClient = WebSocket.createWebSocketStream(secondWs);
     const initMessage: IncomeMessage = {
       type: "INIT",
-      senderPublicKey: TEST_PUBLIC_KEY,
+      senderPublicKey: pgpTestKey.publicKey,
     };
 
     const results: IncomeMessage[] = [];
@@ -135,14 +139,14 @@ describe("Websocket real-time route - Message type INIT", () => {
         expect(results).toContainEqual({
           senderPublicKey: SERVER_PUBLIC_KEY,
           type: "INIT",
-          recipientPublicKey: TEST_PUBLIC_KEY,
+          recipientPublicKey: pgpTestKey.publicKey,
           status: "OK",
         });
 
         expect(results).toContainEqual({
           senderPublicKey: SERVER_PUBLIC_KEY,
           type: "INIT",
-          recipientPublicKey: TEST_PUBLIC_KEY,
+          recipientPublicKey: pgpTestKey.publicKey,
           status: "ERROR",
         });
 

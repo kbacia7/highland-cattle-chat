@@ -1,26 +1,21 @@
 {
   "compilerOptions": {
-    "lib": [
-      "ES2022",
-    ],
     "outDir": "dist",
     "removeComments": true,
-    "target": "ES2022", 
+    "target": "ES2022",
     "skipLibCheck": true,
-    "esModuleInterop": true, 
-    "moduleResolution": "node", 
-    "alwaysStrict": true, 
+    "esModuleInterop": true,
+    "moduleResolution": "NodeNext",
+    "alwaysStrict": true,
     "allowUnreachableCode": false,
     "noImplicitAny": true,
     "strictNullChecks": true,
     "noImplicitReturns": true,
-    "noUncheckedIndexedAccess": true, 
-    "noUnusedLocals": true, 
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "declaration": true,
+    "declaration": true
   },
   "include": ["./src/**/*.ts"],
-  "exclude": [
-    "./node_modules/**/*"
-  ]
+  "exclude": ["./node_modules/**/*"]
 }
