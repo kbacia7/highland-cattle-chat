@@ -14,9 +14,17 @@ const fireStoreConnector: FastifyPluginCallback = async (
   options,
   done,
 ) => {
-  const firestore = new Firestore({
-    projectId: "highland-cattle-chat",
-  });
+  const firestore = new Firestore(
+    process.env.NODE_ENV !== "development"
+      ? {
+          projectId: "highland-cattle-chat",
+        }
+      : {
+          projectId: "highland-cattle-chat",
+          host: "127.0.0.1:8080",
+          ssl: false,
+        },
+  );
 
   if (!fastify.firestore) {
     fastify.decorate("firestore", firestore);

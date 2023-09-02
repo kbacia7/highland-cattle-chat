@@ -1,3 +1,6 @@
+import fs from "fs";
+import path from "path";
+
 import build from "./app";
 
 const LOGGER_OPTIONS = {
@@ -16,6 +19,10 @@ const LOGGER_OPTIONS = {
 
 const fastify = build({
   logger: LOGGER_OPTIONS[process.env.NODE_ENV],
+  https: {
+    key: fs.readFileSync(path.join("./https", "localhost-key.pem")),
+    cert: fs.readFileSync(path.join("./https", "localhost.pem")),
+  },
 });
 
 const start = async (): Promise<void> => {

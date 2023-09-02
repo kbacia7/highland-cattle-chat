@@ -11,7 +11,7 @@ type LoginStringRequest = FastifyRequest<{
   };
 }>;
 
-const setSessionCookie = (
+export const setSessionCookie = (
   userId: string,
   reply: FastifyReply,
   fastify: FastifyInstance,
