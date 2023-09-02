@@ -1,26 +1,41 @@
 {
   "compilerOptions": {
-    "allowJs": true,
-    "target": "ES2017",
-    "module": "ES2022",
-    "lib": ["es2022", "DOM", "WebWorker", "DOM.Iterable"],
-    "jsx": "react-jsx",
-    "jsxImportSource": "@builder.io/qwik",
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "moduleResolution": "node",
-    "esModuleInterop": true,
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
     "skipLibCheck": true,
-    "incremental": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
     "isolatedModules": true,
-    "outDir": "tmp",
     "noEmit": true,
-    "types": ["node", "vite/client"],
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "removeComments": true,
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
     "paths": {
       "~/*": ["./src/*"]
     }
   },
   "files": ["./.eslintrc.cjs"],
-  "include": ["src", "./*.d.ts", "tailwind.config.js", "postcss.config.js"]
+  "include": [
+    "src",
+    "./*.d.ts",
+    "tailwind.config.js",
+    "postcss.config.js",
+    "vite.config.ts",
+    "vite.config.web-worker.ts"
+  ],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }

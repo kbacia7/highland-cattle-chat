@@ -1,25 +1,25 @@
-import { component$, useSignal } from "@builder.io/qwik";
-import type { PropFunction, QwikIntrinsicElements } from "@builder.io/qwik";
+import { useRef } from "react";
 
-type Props = {
-  onSend$: PropFunction<(message: string) => void>;
-  attributes: QwikIntrinsicElements["input"];
-};
+interface Props extends React.ComponentPropsWithoutRef<"input"> {
+  onSend: (message: string) => void;
+}
 
-export default component$<Props>(({ onSend$, attributes }) => {
-  const message = useSignal("");
+const Input = ({ onSend, ...props }: Props) => {
+  const inputRef = useRef<HTMLInputElement>(null);
   return (
     <input
+      ref={inputRef}
       type="text"
-      class="p-5 block my-0 mx-auto rounded-full border-blue-200 border-2 h-11 w-1/2 decoration-slate-700 outline-none focus:drop-shadow-md focus:border-blue-300 focus:ring-1"
-      bind:value={message}
-      onKeyDown$={(event) => {
-        if (event.keyCode === 13) {
-          onSend$(message.value);
-          message.value = "";
+      className="p-5 block my-0 mx-auto rounded-full border-blue-200 border-2 h-11 w-1/2 decoration-slate-700 outline-none focus:drop-shadow-md focus:border-blue-300 focus:ring-1"
+      onKeyDown={(event) => {
+        if (event.keyCode === 13 && inputRef.current) {
+          onSend(inputRef.current?.value);
+          inputRef.current.value = "";
         }
       }}
-      {...attributes}
+      {...props}
     />
   );
-});
+};
+
+export default Input;

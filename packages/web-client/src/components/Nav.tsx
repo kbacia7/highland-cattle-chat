@@ -1,10 +1,11 @@
-import { component$ } from "@builder.io/qwik";
 import Add from "./icons/Add";
 import ProfileImage from "./ProfileImage";
 
-export default component$(() => (
-  <nav class="h-full bg-blue-500 w-16">
-    <ul class="text-center">
+import hedgehogImg from "../assets/hedgehog.jpg";
+
+const Nav = () => (
+  <nav className="h-full bg-blue-500 w-16">
+    <ul className="text-center">
       <li>
         <button>
           <Add />
@@ -12,9 +13,11 @@ export default component$(() => (
       </li>
       <li>
         <button>
-          <ProfileImage src="/hedgehog.jpg" size={40} />
+          <ProfileImage src={hedgehogImg} size={40} />
         </button>
       </li>
     </ul>
   </nav>
-));
+);
+
+export default Nav;

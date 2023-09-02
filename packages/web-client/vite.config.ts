@@ -1,15 +1,16 @@
-import { defineConfig } from 'vite';
-import { qwikVite } from '@builder.io/qwik/optimizer';
-import { qwikCity } from '@builder.io/qwik-city/vite';
-import tsconfigPaths from 'vite-tsconfig-paths';
+import fs from "fs";
+import path from "path";
 
-export default defineConfig(() => {
-  return {
-    plugins: [qwikCity(), qwikVite(), tsconfigPaths()],
-    preview: {
-      headers: {
-        'Cache-Control': 'public, max-age=600',
-      },
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react-swc";
+import tsconfigPaths from "vite-tsconfig-paths";
+
+export default defineConfig({
+  plugins: [react(), tsconfigPaths()],
+  server: {
+    https: {
+      key: fs.readFileSync(path.join("./https", "localhost-key.pem")),
+      cert: fs.readFileSync(path.join("./https", "localhost.pem")),
     },
-  };
+  },
 });

@@ -1,48 +1,38 @@
 {
   "name": "@highland-cattle-chat/web-client",
-  "version": "1.0.0",
-  "engines": {
-    "node": ">=15.0.0"
-  },
   "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "build": "qwik build",
-    "build.client": "vite build",
-    "build.preview": "vite build --ssr src/entry.preview.tsx; vite build -c vite.config.web-worker.ts",
-    "build.types": "tsc --incremental --noEmit",
-    "deploy": "echo 'Run \"npm run qwik add\" to install a server adapter'",
-    "dev": "vite build -c vite.config.web-worker.ts; vite --mode ssr;",
-    "dev.debug": "node --inspect-brk ./node_modules/vite/bin/vite.js --mode ssr --force",
-    "fmt": "prettier --write .",
-    "fmt.check": "prettier --check .",
-    "lint": "eslint \"src/**/*.ts*\"",
-    "preview": "qwik build preview && vite preview --open",
-    "start": "vite --open --mode ssr",
-    "qwik": "qwik"
-  },
-  "devDependencies": {
-    "@builder.io/qwik": "^1.1.5",
-    "@builder.io/qwik-city": "^1.1.5",
-    "@types/eslint": "8.40.0",
-    "@types/node": "^20.2.5",
-    "@typescript-eslint/eslint-plugin": "5.59.8",
-    "@typescript-eslint/parser": "5.59.8",
-    "autoprefixer": "^10.4.14",
-    "eslint": "8.41.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-prettier": "^4.2.1",
-    "eslint-plugin-qwik": "^1.1.5",
-    "openpgp": "^5.9.0",
-    "postcss": "^8.4.23",
-    "prettier": "2.8.8",
-    "tailwindcss": "^3.3.1",
-    "typescript": "5.0.4",
-    "undici": "5.22.1",
-    "vite": "4.3.9",
-    "vite-tsconfig-paths": "4.2.0"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "class-variance-authority": "^0.6.0",
-    "twemoji": "^14.0.2"
+    "class-variance-authority": "^0.7.0",
+    "idb-keyval": "^6.2.1",
+    "openpgp": "^5.9.0",
+    "prettier": "^3.0.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.15.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vitejs/plugin-react-swc": "^3.3.2",
+    "autoprefixer": "^10.4.15",
+    "eslint": "^8.45.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.3",
+    "postcss": "^8.4.28",
+    "tailwindcss": "^3.3.3",
+    "typescript": "^5.0.2",
+    "vite": "^4.4.5",
+    "vite-tsconfig-paths": "^4.2.0"
   }
 }
