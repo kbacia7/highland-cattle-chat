@@ -1,6 +1,7 @@
 import { verifySession } from "@helpers/sessions";
 
-import loadUserRoute from "@routes/loadUser";
+import loadConversationsRoute from "@routes/loadConversations";
+import loadConversationRoute from "@routes/loadConversation";
 
 import type { FastifyInstance } from "fastify";
 import type { SessionCookie } from "@highland-cattle-chat/shared";
@@ -34,7 +35,8 @@ const restrictedContext = async (fastify: FastifyInstance) => {
       return null;
     });
 
-    childContext.register(loadUserRoute);
+    childContext.register(loadConversationsRoute);
+    childContext.register(loadConversationRoute);
   });
 };
 

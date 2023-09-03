@@ -17,7 +17,7 @@ import generateKeysForTests from "@test/utils/generateKeysForTests";
 import type { DocumentData, DocumentReference } from "@google-cloud/firestore";
 import type { TestKeyPair } from "@test/utils/generateKeysForTests";
 
-describe("REST API - /load-user", () => {
+describe("REST API - /load-conversations", () => {
   const fastify = buildForTests();
   let pgpTestKey: TestKeyPair;
   let testUserRef: DocumentReference<DocumentData>;
@@ -83,7 +83,7 @@ describe("REST API - /load-user", () => {
 
     const response = await fastify.inject({
       method: "GET",
-      url: "/load-user",
+      url: "/load-conversations",
       headers: {
         cookie: authHeader,
       },
@@ -93,7 +93,7 @@ describe("REST API - /load-user", () => {
     expect(response.statusCode).toBe(200);
     testConversationRefs.forEach(async (ref) => {
       const data = (await ref.get())?.data();
-      expect(body.activeConversations).toContainEqual({
+      expect(body).toContainEqual({
         id: ref.id,
         image: data?.image,
         title: data?.title,
@@ -104,7 +104,7 @@ describe("REST API - /load-user", () => {
   test("should respond with status 403 when auth cookie is missing", async () => {
     const response = await fastify.inject({
       method: "GET",
-      url: "/load-user",
+      url: "/load-conversations",
     });
 
     expect(response.statusCode).toBe(403);
@@ -113,7 +113,7 @@ describe("REST API - /load-user", () => {
   test("should respond with status 403 when auth cookie contains random string", async () => {
     const response = await fastify.inject({
       method: "GET",
-      url: "/load-user",
+      url: "/load-conversations",
       headers: {
         cookie: `session=abcd`,
       },

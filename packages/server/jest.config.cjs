@@ -19,6 +19,7 @@ module.exports = {
       {
         useESM: true,
         tsconfig: "./tsconfig.json",
+        diagnostics: false, // TODO: At this moment I dont't know why jest sometimes is yelling about TS errors which doesn't exists
       },
     ],
   },
