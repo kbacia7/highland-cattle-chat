@@ -27,7 +27,7 @@ const restrictedContext = async (fastify: FastifyInstance) => {
           (await verifySession(
             session.token,
             session.userId,
-            fastify.firestore,
+            fastify.prisma,
           )) ?? "";
       } catch (e) {
         return reply.code(403).send();

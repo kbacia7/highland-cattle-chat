@@ -1,7 +1,8 @@
 import Fastify from "fastify";
 import fastifyWebsocket from "@fastify/websocket";
-import { Firestore } from "@google-cloud/firestore";
 import fastifyCookie from "@fastify/cookie";
+
+import { PrismaClient } from "@prisma/client";
 
 import realTimeRoute from "@routes/realTime";
 import loginUserRoute from "@routes/login";
@@ -19,15 +20,7 @@ const buildForTests = () => {
   });
 
   fastify.register(fastifyWebsocket);
-  fastify.decorate(
-    "firestore",
-    new Firestore({
-      projectId: "highland-cattle-chat",
-      host: "127.0.0.1:8080",
-      ssl: false,
-    }),
-  );
-
+  fastify.decorate("prisma", new PrismaClient());
   fastify.register(realTimeRoute);
   fastify.register(loginUserRoute);
   fastify.register(restrictedContext);

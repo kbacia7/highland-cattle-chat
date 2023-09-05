@@ -1,5 +1,3 @@
-import { FieldPath } from "@google-cloud/firestore";
-
 import type { FastifyInstance } from "fastify";
 import type { LoadConversationResponse } from "@highland-cattle-chat/shared";
 
@@ -24,32 +22,33 @@ const loadConversationRoute = async (fastify: FastifyInstance) => {
       },
     },
     async (req, reply) => {
-      const user = await fastify.firestore
-        .collection("users")
-        .doc(req.loggedUserId)
-        .get();
+      const user = await fastify.prisma.user.findUnique({
+        where: {
+          id: req.loggedUserId,
+        },
+      });
 
-      if (!user.exists) return reply.send(400);
+      if (!user) return reply.send(400);
 
-      const conversation = await fastify.firestore
-        .collection("conversations")
-        .where("users", "array-contains", user.ref)
-        .where(FieldPath.documentId(), "==", req.query.id)
-        .get();
+      const conversation = await fastify.prisma.conversation.findUnique({
+        where: {
+          participants: {
+            some: {
+              userId: user.id,
+            },
+          },
+          id: req.query.id,
+        },
+        include: {
+          messages: {
+            take: req.query.limit,
+          },
+        },
+      });
 
-      if (conversation.empty) return reply.code(403).send();
+      if (!conversation) return reply.code(403).send();
 
-      const messages = await fastify.firestore
-        .collection("messages")
-        .where("conversation", "==", conversation.docs[0].ref)
-        .orderBy("created")
-        .limit(req.query.limit)
-        .get();
-
-      return messages.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as LoadConversationResponse;
+      return conversation.messages as LoadConversationResponse;
     },
   );
 };

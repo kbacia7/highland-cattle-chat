@@ -12,11 +12,10 @@ type LoginStringRequest = FastifyRequest<{
 }>;
 
 export const setSessionCookie = (
+  token: string,
   userId: string,
   reply: FastifyReply,
-  fastify: FastifyInstance,
 ) => {
-  const token = createSession(userId, fastify.firestore);
   const cookie: SessionCookie = {
     userId,
     token,
@@ -58,20 +57,15 @@ const loginUserRoute = async (fastify: FastifyInstance) => {
       }
 
       const alias = cleartextMessage.getText();
-      const userQuery = await fastify.firestore
-        .collection("users")
-        .where("publicKey.alias", "==", alias)
-        .limit(1)
-        .get();
+      const user = await fastify.prisma.user.findUnique({
+        where: {
+          login: alias,
+        },
+      });
 
-      if (userQuery.empty) return reply.code(403).send();
+      if (!user) return reply.code(403).send();
 
-      const userRecord = userQuery.docs[0];
-      const user = userRecord.data();
-      const publicKey = Buffer.from(user.publicKey.value, "base64").toString(
-        "ascii",
-      );
-
+      const publicKey = Buffer.from(user.publicKey, "base64").toString("ascii");
       const verificationResult = await openpgp.verify({
         message: cleartextMessage,
         verificationKeys: await openpgp.readKey({ armoredKey: publicKey }),
@@ -84,7 +78,8 @@ const loginUserRoute = async (fastify: FastifyInstance) => {
         return reply.code(403).send();
       }
 
-      return setSessionCookie(userRecord.id, reply, fastify).send(user);
+      const token = await createSession(user.id, fastify.prisma);
+      return setSessionCookie(token, user.id, reply).send(user);
     },
   );
 };

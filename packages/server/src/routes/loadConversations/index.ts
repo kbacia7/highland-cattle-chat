@@ -6,23 +6,24 @@ const loadConversationsRoute = async (fastify: FastifyInstance) => {
     "/load-conversations",
     { logLevel: "debug" },
     async (req, reply) => {
-      const user = await fastify.firestore
-        .collection("users")
-        .doc(req.loggedUserId)
-        .get();
+      const user = await fastify.prisma.user.findUnique({
+        where: {
+          id: req.loggedUserId,
+        },
+        include: {
+          participates: {
+            include: {
+              conversation: true,
+            },
+          },
+        },
+      });
 
-      if (!user.exists) return reply.send(400);
+      if (!user) return reply.send(400);
 
-      const activeConversationsQuery = await fastify.firestore
-        .collection("conversations")
-        .select("image", "title")
-        .where("users", "array-contains", user.ref)
-        .get();
-
-      return activeConversationsQuery.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as LoadConversationsResponse;
+      return user.participates.map(
+        (participate) => participate.conversation,
+      ) as LoadConversationsResponse;
     },
   );
 };

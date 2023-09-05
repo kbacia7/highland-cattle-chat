@@ -9,7 +9,7 @@ import realTimeRoute from "@routes/realTime";
 import loginUserRoute from "@routes/login";
 import createFakeUserRoute from "@routes/createFakeUser";
 
-import fireStoreConnector from "./fireStoreConnector";
+import prismaConnector from "./prismaConnector";
 
 import type {
   FastifyHttpOptions,
@@ -35,7 +35,7 @@ const build = (
     secret: process.env.COOKIE_SECRET,
   });
   fastify.register(fastifyWebsocket);
-  fastify.register(fireStoreConnector);
+  fastify.register(prismaConnector);
   fastify.register(realTimeRoute);
   fastify.register(loginUserRoute);
   fastify.register(restrictedContext);

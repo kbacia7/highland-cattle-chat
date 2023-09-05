@@ -9,12 +9,6 @@ import {
 } from "@jest/globals";
 import { v4 as uuidv4 } from "uuid";
 
-import {
-  FieldValue,
-  type DocumentData,
-  type DocumentReference,
-} from "@google-cloud/firestore";
-
 import authorize from "@test/utils/authorize";
 import buildForTests from "@test/utils/buildForTests";
 
@@ -22,14 +16,16 @@ import generateKeysForTests from "@test/utils/generateKeysForTests";
 
 import generateString from "@test/utils/randomString";
 
+import type { Prisma } from "@prisma/client";
+
 import type { TestKeyPair } from "@test/utils/generateKeysForTests";
 
 describe("REST API - /load-conversation", () => {
   const fastify = buildForTests();
   let pgpTestKey: TestKeyPair;
-  let testUserRef: DocumentReference<DocumentData>;
-  let secondTestUserRef: DocumentReference<DocumentData>;
-  let testConversationRef: DocumentReference<DocumentData>;
+  let testUser: Prisma.UserUncheckedCreateInput;
+  let secondTestUser: Prisma.UserUncheckedCreateInput;
+  let testConversation: any;
 
   beforeAll(async () => {
     pgpTestKey = await generateKeysForTests();
@@ -41,58 +37,74 @@ describe("REST API - /load-conversation", () => {
   });
 
   beforeEach(async () => {
-    testUserRef = await fastify.firestore.collection("users").add({
-      displayName: "John",
-      publicKey: {
-        alias: "john",
-        value: Buffer.from(pgpTestKey.publicKey).toString("base64"),
+    testUser = await fastify.prisma.user.create({
+      data: {
+        displayName: "John",
+        login: "john",
+        publicKey: Buffer.from(pgpTestKey.publicKey).toString("base64"),
       },
     });
 
-    secondTestUserRef = await fastify.firestore.collection("users").add({
-      displayName: "Mike",
-      publicKey: {
-        alias: "mike",
-        value: Buffer.from(pgpTestKey.publicKey).toString("base64"),
+    secondTestUser = await fastify.prisma.user.create({
+      data: {
+        displayName: "Mike",
+        login: "mike",
+        publicKey: Buffer.from(pgpTestKey.publicKey).toString("base64"),
       },
     });
 
-    await fastify.firestore.collection("users").add({
-      displayName: "Zapp",
-      publicKey: {
-        alias: "zapp",
-        value: Buffer.from(pgpTestKey.publicKey).toString("base64"),
+    await fastify.prisma.user.create({
+      data: {
+        displayName: "Zapp",
+        login: "zapp",
+        publicKey: Buffer.from(pgpTestKey.publicKey).toString("base64"),
       },
     });
 
-    testConversationRef = await fastify.firestore
-      .collection("conversations")
-      .add({
-        users: [testUserRef, secondTestUserRef],
+    testConversation = await fastify.prisma.conversation.create({
+      data: {
         title: uuidv4(),
         image: "https://picsum.photos/200",
-      });
-
-    for (let i = 0; i < 100; i += 1) {
-      // eslint-disable-next-line no-await-in-loop
-      await fastify.firestore.collection("messages").add({
-        user: Math.random() > 0.5 ? testUserRef : secondTestUserRef,
-        conversation: testConversationRef,
-        content: generateString(Math.ceil(Math.random() * 9)),
-        created: FieldValue.serverTimestamp(),
-      });
-    }
+        participants: {
+          create: [
+            {
+              userId: testUser.id ?? "",
+            },
+            {
+              userId: secondTestUser.id ?? "",
+            },
+          ],
+        },
+        messages: {
+          create: [...Array(10)].map(() => ({
+            content: generateString(Math.ceil(Math.random() * 5)),
+            user: {
+              connect: {
+                id: Math.random() > 0.5 ? testUser.id : secondTestUser.id,
+              },
+            },
+          })),
+        },
+      },
+      include: {
+        messages: true,
+        participants: true,
+      },
+    });
   });
 
   afterEach(async () => {
-    const promises: Promise<FirebaseFirestore.WriteResult>[] = [];
-    const collections = await fastify.firestore.listCollections();
-    for (let i = 0; i < collections.length; i += 1) {
-      // eslint-disable-next-line no-await-in-loop
-      const docs = await collections[i].listDocuments();
-      for (let j = 0; j < docs.length; j += 1) promises.push(docs[j].delete());
-    }
-    await Promise.all(promises);
+    const res = await fastify.prisma.$runCommandRaw({
+      listCollections: 1,
+      nameOnly: true,
+    });
+
+    // @ts-ignore
+    res.cursor?.firstBatch?.forEach(async (collectionJson) => {
+      await fastify.prisma.$runCommandRaw({
+        drop: collectionJson.name,
+      });
+    });
   });
 
   test("should respond with status 200 and last 100 messages", async () => {
@@ -110,29 +122,26 @@ describe("REST API - /load-conversation", () => {
         cookie: authHeader,
       },
       query: {
-        id: testConversationRef.id,
+        id: testConversation.id ?? "",
       },
     });
 
     expect(response.statusCode).toBe(200);
     const body = response.json();
-    const messages = await fastify.firestore
-      .collection("messages")
-      .where("conversation", "==", testConversationRef.id)
-      .orderBy("created")
-      .limit(100)
-      .get();
-
-    messages.docs.forEach(async (message) => {
-      const data = message.data();
-      expect(body).toContainEqual({
-        id: message.id,
-        user: data?.user,
-        conversation: testConversationRef.id,
-        content: data?.content,
-        created: data?.created,
-      });
-    });
+    testConversation.messages.forEach(
+      (message: Prisma.MessageUncheckedCreateInput) => {
+        expect(body).toContainEqual({
+          id: message.id,
+          userId: message.userId,
+          conversationId: testConversation.id,
+          content: message.content,
+          createdAt:
+            message.createdAt instanceof Date
+              ? message.createdAt.toISOString()
+              : message.createdAt,
+        });
+      },
+    );
   });
 
   test("should respond with status 200 and last 10 messages", async () => {
@@ -150,30 +159,28 @@ describe("REST API - /load-conversation", () => {
         cookie: authHeader,
       },
       query: {
-        id: testConversationRef.id,
+        id: testConversation.id,
         limit: "10",
       },
     });
 
     const body = response.json();
     expect(response.statusCode).toBe(200);
-    const messages = await fastify.firestore
-      .collection("messages")
-      .where("conversation", "==", testConversationRef.id)
-      .orderBy("created")
-      .limit(10)
-      .get();
 
-    messages.docs.forEach(async (message) => {
-      const data = message.data();
-      expect(body).toContainEqual({
-        id: message.id,
-        user: data?.user,
-        conversation: testConversationRef.id,
-        content: data?.content,
-        created: data?.created,
-      });
-    });
+    testConversation.messages.forEach(
+      async (message: Prisma.MessageUncheckedCreateInput) => {
+        expect(body).toContainEqual({
+          id: message.id,
+          userId: message.userId,
+          conversationId: testConversation.id,
+          content: message.content,
+          createdAt:
+            message.createdAt instanceof Date
+              ? message.createdAt.toISOString()
+              : message.createdAt,
+        });
+      },
+    );
   });
 
   test("should respond with status 403 when user isn't participate in conversation", async () => {
@@ -191,7 +198,7 @@ describe("REST API - /load-conversation", () => {
         cookie: authHeader,
       },
       query: {
-        id: testConversationRef.id,
+        id: testConversation.id,
       },
     });
 
@@ -203,7 +210,7 @@ describe("REST API - /load-conversation", () => {
       method: "GET",
       url: "/load-conversation",
       query: {
-        id: testConversationRef.id,
+        id: testConversation.id,
       },
     });
 
@@ -218,7 +225,7 @@ describe("REST API - /load-conversation", () => {
         cookie: `session=abcd`,
       },
       query: {
-        id: testConversationRef.id,
+        id: testConversation.id,
       },
     });
 

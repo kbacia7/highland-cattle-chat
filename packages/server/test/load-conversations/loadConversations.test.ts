@@ -14,15 +14,15 @@ import buildForTests from "@test/utils/buildForTests";
 
 import generateKeysForTests from "@test/utils/generateKeysForTests";
 
-import type { DocumentData, DocumentReference } from "@google-cloud/firestore";
+import type { Prisma } from "@prisma/client";
 import type { TestKeyPair } from "@test/utils/generateKeysForTests";
 
 describe("REST API - /load-conversations", () => {
   const fastify = buildForTests();
   let pgpTestKey: TestKeyPair;
-  let testUserRef: DocumentReference<DocumentData>;
-  let secondTestUserRef: DocumentReference<DocumentData>;
-  const testConversationRefs: DocumentReference<DocumentData>[] = [];
+  let testUser: Prisma.UserUncheckedCreateInput;
+  let secondTestUser: Prisma.UserUncheckedCreateInput;
+  const testConversations: Prisma.ConversationUncheckedCreateInput[] = [];
 
   beforeAll(async () => {
     pgpTestKey = await generateKeysForTests();
@@ -34,43 +34,57 @@ describe("REST API - /load-conversations", () => {
   });
 
   beforeEach(async () => {
-    testUserRef = await fastify.firestore.collection("users").add({
-      displayName: "John",
-      publicKey: {
-        alias: "john",
-        value: Buffer.from(pgpTestKey.publicKey).toString("base64"),
+    testUser = await fastify.prisma.user.create({
+      data: {
+        displayName: "John",
+        login: "john",
+        publicKey: Buffer.from(pgpTestKey.publicKey).toString("base64"),
       },
     });
 
-    secondTestUserRef = await fastify.firestore.collection("users").add({
-      displayName: "Mike",
-      publicKey: {
-        alias: "mike",
-        value: Buffer.from(pgpTestKey.publicKey).toString("base64"),
+    secondTestUser = await fastify.prisma.user.create({
+      data: {
+        displayName: "Mike",
+        login: "mike",
+        publicKey: Buffer.from(pgpTestKey.publicKey).toString("base64"),
       },
     });
 
     for (let i = 0; i < 3; i += 1) {
-      testConversationRefs.push(
+      testConversations.push(
         // eslint-disable-next-line no-await-in-loop
-        await fastify.firestore.collection("conversations").add({
-          users: [testUserRef, secondTestUserRef],
-          title: uuidv4(),
-          image: "https://picsum.photos/200",
+        await fastify.prisma.conversation.create({
+          data: {
+            title: uuidv4(),
+            image: "https://picsum.photos/200",
+            participants: {
+              create: [
+                {
+                  userId: testUser.id ?? "",
+                },
+                {
+                  userId: secondTestUser.id ?? "",
+                },
+              ],
+            },
+          },
         }),
       );
     }
   });
 
   afterEach(async () => {
-    const promises: Promise<FirebaseFirestore.WriteResult>[] = [];
-    const collections = await fastify.firestore.listCollections();
-    for (let i = 0; i < collections.length; i += 1) {
-      // eslint-disable-next-line no-await-in-loop
-      const docs = await collections[i].listDocuments();
-      for (let j = 0; j < docs.length; j += 1) promises.push(docs[j].delete());
-    }
-    await Promise.all(promises);
+    const res = await fastify.prisma.$runCommandRaw({
+      listCollections: 1,
+      nameOnly: true,
+    });
+
+    // @ts-ignore
+    res.cursor?.firstBatch?.forEach(async (collectionJson) => {
+      await fastify.prisma.$runCommandRaw({
+        drop: collectionJson.name,
+      });
+    });
   });
 
   test("should respond with status 200 and user conversations", async () => {
@@ -91,12 +105,15 @@ describe("REST API - /load-conversations", () => {
 
     const body = response.json();
     expect(response.statusCode).toBe(200);
-    testConversationRefs.forEach(async (ref) => {
-      const data = (await ref.get())?.data();
+    testConversations.forEach(async (conversation) => {
       expect(body).toContainEqual({
-        id: ref.id,
-        image: data?.image,
-        title: data?.title,
+        id: conversation.id,
+        image: conversation.image,
+        title: conversation.title,
+        createdAt:
+          conversation.createdAt instanceof Date
+            ? conversation.createdAt.toISOString()
+            : conversation.createdAt,
       });
     });
   });

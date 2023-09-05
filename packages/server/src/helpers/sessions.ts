@@ -3,23 +3,25 @@ import { randomBytes } from "crypto";
 import { v4 as uuidv4 } from "uuid";
 import jwt from "jsonwebtoken";
 
-import type { Firestore } from "@google-cloud/firestore";
+import type { PrismaClient } from "@prisma/client";
 
 type JWTTokenContent = {
   userId: string;
 };
 
 export const SESSION_AGE_IN_MS = 15 * 1000 * 60;
-export const createSession = (userId: string, firestore: Firestore) => {
-  const expiresAt = new Date().valueOf() + SESSION_AGE_IN_MS;
+export const createSession = async (userId: string, prisma: PrismaClient) => {
+  const expiresAt = new Date(new Date().valueOf() + SESSION_AGE_IN_MS);
   const secret = uuidv4({
     random: randomBytes(16),
   });
 
-  firestore.collection("sessions").add({
-    user: firestore.doc(`users/${userId}`),
-    expiresAt,
-    secret,
+  await prisma.session.create({
+    data: {
+      userId,
+      expiresAt,
+      secret,
+    },
   });
 
   const content: JWTTokenContent = { userId };
@@ -31,18 +33,21 @@ export const createSession = (userId: string, firestore: Firestore) => {
 export const verifySession = async (
   token: string,
   userId: string,
-  firestore: Firestore,
+  prisma: PrismaClient,
 ) => {
-  const sessions = await firestore
-    .collection("sessions")
-    .where("user", "==", firestore.collection("users").doc(userId))
-    .where("expiresAt", ">", new Date().valueOf())
-    .get();
+  const sessions = await prisma.session.findMany({
+    where: {
+      userId,
+      expiresAt: {
+        gt: new Date(),
+      },
+    },
+  });
 
-  if (sessions.empty) return null;
+  if (!sessions.length) return null;
 
-  for (let i = 0; i < sessions.docs.length; i += 1) {
-    const { secret } = sessions.docs[i].data();
+  for (let i = 0; i < sessions.length; i += 1) {
+    const { secret } = sessions[i];
     try {
       jwt.verify(token, secret);
       return userId;
