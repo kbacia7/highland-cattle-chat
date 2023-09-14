@@ -8,7 +8,9 @@ export type TestKeyPair = {
   passphrase: string;
 };
 
-const generateKeysForTests = async (): Promise<TestKeyPair> => {
+const generateKeysForTests = async (
+  keyExpirationTime: number = 60,
+): Promise<TestKeyPair> => {
   const passphrase = uuidv4();
   const { publicKey, privateKey, revocationCertificate } =
     await openpgp.generateKey({
@@ -21,7 +23,7 @@ const generateKeysForTests = async (): Promise<TestKeyPair> => {
           comment: "Key generated for tests",
         },
       ],
-      keyExpirationTime: 60,
+      keyExpirationTime,
     });
 
   return { publicKey, privateKey, revocationCertificate, passphrase };

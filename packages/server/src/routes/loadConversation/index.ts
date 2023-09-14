@@ -39,16 +39,38 @@ const loadConversationRoute = async (fastify: FastifyInstance) => {
           },
           id: req.query.id,
         },
-        include: {
+        select: {
+          image: true,
           messages: {
+            select: {
+              id: true,
+              userId: true,
+              createdAt: true,
+              content: true,
+            },
             take: req.query.limit,
+          },
+          participants: {
+            select: {
+              user: {
+                select: {
+                  id: true,
+                  displayName: true,
+                  publicKey: true,
+                },
+              },
+            },
           },
         },
       });
 
       if (!conversation) return reply.code(403).send();
 
-      return conversation.messages as LoadConversationResponse;
+      return {
+        messages: conversation.messages,
+        participants: conversation.participants,
+        image: conversation.image,
+      } as LoadConversationResponse;
     },
   );
 };

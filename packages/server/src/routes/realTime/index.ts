@@ -4,6 +4,7 @@ import {
   MessageStatuses,
   MessageTypes,
   SERVER_PUBLIC_KEY,
+  SERVER_USER_ID,
 } from "@highland-cattle-chat/shared";
 
 import convertRawMessage from "./helpers/convertRawMessage";
@@ -34,6 +35,7 @@ const getActiveSocketByKeyId = (keyId?: string) =>
 const respondWithUnknownError = (socket: WebSocket) => {
   const response: OutcomeMessage = {
     senderPublicKey: SERVER_PUBLIC_KEY,
+    senderUserId: SERVER_USER_ID,
     type: MessageTypes.UNKNOWN_ERROR,
     status: MessageStatuses.ERROR,
   };
@@ -63,6 +65,7 @@ const handleMessage = async (
         const response: OutcomeMessage = {
           type: MessageTypes.INIT,
           senderPublicKey: SERVER_PUBLIC_KEY,
+          senderUserId: SERVER_USER_ID,
           recipientPublicKey: message.senderPublicKey,
           status: MessageStatuses.ERROR,
         };
@@ -78,6 +81,7 @@ const handleMessage = async (
 
       const response: OutcomeMessage = {
         senderPublicKey: SERVER_PUBLIC_KEY,
+        senderUserId: "SERVER",
         recipientPublicKey: message.senderPublicKey,
         type: MessageTypes.INIT,
         status: MessageStatuses.OK,
@@ -92,6 +96,7 @@ const handleMessage = async (
         const response: OutcomeMessage = {
           type: MessageTypes.TEXT,
           senderPublicKey: SERVER_PUBLIC_KEY,
+          senderUserId: SERVER_USER_ID,
           recipientPublicKey: message.senderPublicKey,
           status: MessageStatuses.ERROR,
         };

@@ -1,7 +1,11 @@
 import { afterAll, beforeAll, describe, expect, test } from "@jest/globals";
 import WebSocket from "ws";
+import { v4 as uuidv4 } from "uuid";
 
-import { SERVER_PUBLIC_KEY } from "@highland-cattle-chat/shared";
+import {
+  SERVER_PUBLIC_KEY,
+  SERVER_USER_ID,
+} from "@highland-cattle-chat/shared";
 
 import buildForTests from "@test/utils/buildForTests";
 
@@ -32,6 +36,7 @@ describe("Websocket real-time route - Message type INIT", () => {
     const initMessage: IncomeMessage = {
       type: "INIT",
       senderPublicKey: pgpTestKey.publicKey,
+      senderUserId: uuidv4(),
     };
 
     client.write(JSON.stringify(initMessage));
@@ -39,6 +44,7 @@ describe("Websocket real-time route - Message type INIT", () => {
       const res = JSON.parse(chunk.toString());
       expect(res).toStrictEqual({
         senderPublicKey: SERVER_PUBLIC_KEY,
+        senderUserId: SERVER_USER_ID,
         type: "INIT",
         recipientPublicKey: pgpTestKey.publicKey,
         status: "OK",
@@ -56,6 +62,7 @@ describe("Websocket real-time route - Message type INIT", () => {
     const initMessage: IncomeMessage = {
       type: "INIT",
       senderPublicKey: pgpTestKey.publicKey,
+      senderUserId: uuidv4(),
     };
 
     client.write(JSON.stringify(initMessage));
@@ -64,6 +71,7 @@ describe("Websocket real-time route - Message type INIT", () => {
       if (secondCall) {
         expect(res).toStrictEqual({
           senderPublicKey: SERVER_PUBLIC_KEY,
+          senderUserId: SERVER_USER_ID,
           type: "INIT",
           recipientPublicKey: pgpTestKey.publicKey,
           status: "ERROR",
@@ -74,6 +82,7 @@ describe("Websocket real-time route - Message type INIT", () => {
       } else {
         expect(res).toStrictEqual({
           senderPublicKey: SERVER_PUBLIC_KEY,
+          senderUserId: SERVER_USER_ID,
           type: "INIT",
           recipientPublicKey: pgpTestKey.publicKey,
           status: "OK",
@@ -93,6 +102,7 @@ describe("Websocket real-time route - Message type INIT", () => {
     const initMessage: IncomeMessage = {
       type: "INIT",
       senderPublicKey: pgpTestKey.publicKey,
+      senderUserId: uuidv4(),
     };
 
     firstClient.write(JSON.stringify(initMessage));
@@ -100,6 +110,7 @@ describe("Websocket real-time route - Message type INIT", () => {
       const res = JSON.parse(chunk.toString());
       expect(res).toStrictEqual({
         senderPublicKey: SERVER_PUBLIC_KEY,
+        senderUserId: SERVER_USER_ID,
         type: "INIT",
         recipientPublicKey: pgpTestKey.publicKey,
         status: "OK",
@@ -112,6 +123,7 @@ describe("Websocket real-time route - Message type INIT", () => {
       const res = JSON.parse(chunk.toString());
       expect(res).toStrictEqual({
         senderPublicKey: SERVER_PUBLIC_KEY,
+        senderUserId: SERVER_USER_ID,
         type: "INIT",
         recipientPublicKey: pgpTestKey.publicKey,
         status: "ERROR",
@@ -131,6 +143,7 @@ describe("Websocket real-time route - Message type INIT", () => {
     const initMessage: IncomeMessage = {
       type: "INIT",
       senderPublicKey: pgpTestKey.publicKey,
+      senderUserId: uuidv4(),
     };
 
     const results: IncomeMessage[] = [];
@@ -138,6 +151,7 @@ describe("Websocket real-time route - Message type INIT", () => {
       if (results.length === 2) {
         expect(results).toContainEqual({
           senderPublicKey: SERVER_PUBLIC_KEY,
+          senderUserId: SERVER_USER_ID,
           type: "INIT",
           recipientPublicKey: pgpTestKey.publicKey,
           status: "OK",
@@ -145,6 +159,7 @@ describe("Websocket real-time route - Message type INIT", () => {
 
         expect(results).toContainEqual({
           senderPublicKey: SERVER_PUBLIC_KEY,
+          senderUserId: SERVER_USER_ID,
           type: "INIT",
           recipientPublicKey: pgpTestKey.publicKey,
           status: "ERROR",

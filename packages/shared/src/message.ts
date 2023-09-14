@@ -1,3 +1,4 @@
+export const SERVER_USER_ID = `SERVER`;
 export const SERVER_PUBLIC_KEY = `-----BEGIN PGP PUBLIC KEY BLOCK-----
 
 mQINBF5LDcsBEADGj6JBqnkSOllARdz5yqrOCr6T1fmYQ2YJR3wVFqrwlnMpWKI1
@@ -70,8 +71,56 @@ export type IncomeMessage = {
   senderPublicKey: string;
   recipientPublicKey?: string;
   content?: string;
+  senderUserId: string;
 };
 
 export interface OutcomeMessage extends IncomeMessage {
   status: MessageStatus;
 }
+
+export type MessageRecord = {
+  id: string;
+  content: string;
+  userId: string;
+  conversationId: string;
+  createdAt: Date;
+};
+
+export type UserRecord = {
+  id?: string;
+  displayName: string;
+  login: string;
+  publicKey: string;
+  createdAt?: string;
+};
+
+export type ConversationRecord = {
+  id: string;
+  title: string;
+  image: string;
+  createdAt?: string;
+};
+
+export type ConversationParticipant<T = UserRecord> = {
+  id?: string;
+  userId: string;
+  conversationId: string;
+  createdAt?: string;
+  user: T;
+};
+
+export type LoadConversationResponse = {
+  messages: Pick<
+    Required<MessageRecord>,
+    "id" | "createdAt" | "content" | "userId"
+  >[];
+  participants: Pick<
+    Required<
+      ConversationParticipant<
+        Pick<UserRecord, "displayName" | "publicKey" | "id">
+      >
+    >,
+    "user"
+  >[];
+  image: string;
+};

@@ -19,6 +19,7 @@ const incomeMessageSchema: JSONSchemaType<IncomeMessage> = {
   properties: {
     type: { type: "string" },
     senderPublicKey: { type: "string" },
+    senderUserId: { type: "string" },
     recipientPublicKey: { type: "string", nullable: true },
     content: { type: "string", nullable: true },
   },

@@ -9,7 +9,7 @@ type JWTTokenContent = {
   userId: string;
 };
 
-export const SESSION_AGE_IN_MS = 15 * 1000 * 60;
+export const SESSION_AGE_IN_MS = 15 * 1000 * 60 * 1000;
 export const createSession = async (userId: string, prisma: PrismaClient) => {
   const expiresAt = new Date(new Date().valueOf() + SESSION_AGE_IN_MS);
   const secret = uuidv4({

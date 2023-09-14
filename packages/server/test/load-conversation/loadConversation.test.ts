@@ -88,7 +88,11 @@ describe("REST API - /load-conversation", () => {
       },
       include: {
         messages: true,
-        participants: true,
+        participants: {
+          include: {
+            user: true,
+          },
+        },
       },
     });
   });
@@ -126,22 +130,29 @@ describe("REST API - /load-conversation", () => {
       },
     });
 
-    expect(response.statusCode).toBe(200);
     const body = response.json();
-    testConversation.messages.forEach(
-      (message: Prisma.MessageUncheckedCreateInput) => {
-        expect(body).toContainEqual({
+    expect(response.statusCode).toBe(200);
+    expect(body).toEqual({
+      image: testConversation.image,
+      participants: testConversation.participants.map((participant: any) => ({
+        user: {
+          id: participant.user.id,
+          displayName: participant.user.displayName,
+          publicKey: participant.user.publicKey,
+        },
+      })),
+      messages: testConversation.messages.map(
+        (message: Prisma.MessageUncheckedCreateInput) => ({
           id: message.id,
           userId: message.userId,
-          conversationId: testConversation.id,
           content: message.content,
           createdAt:
             message.createdAt instanceof Date
               ? message.createdAt.toISOString()
               : message.createdAt,
-        });
-      },
-    );
+        }),
+      ),
+    });
   });
 
   test("should respond with status 200 and last 10 messages", async () => {
@@ -166,21 +177,27 @@ describe("REST API - /load-conversation", () => {
 
     const body = response.json();
     expect(response.statusCode).toBe(200);
-
-    testConversation.messages.forEach(
-      async (message: Prisma.MessageUncheckedCreateInput) => {
-        expect(body).toContainEqual({
+    expect(body).toEqual({
+      image: testConversation.image,
+      participants: testConversation.participants.map((participant: any) => ({
+        user: {
+          id: participant.user.id,
+          displayName: participant.user.displayName,
+          publicKey: participant.user.publicKey,
+        },
+      })),
+      messages: testConversation.messages.map(
+        (message: Prisma.MessageUncheckedCreateInput) => ({
           id: message.id,
           userId: message.userId,
-          conversationId: testConversation.id,
           content: message.content,
           createdAt:
             message.createdAt instanceof Date
               ? message.createdAt.toISOString()
               : message.createdAt,
-        });
-      },
-    );
+        }),
+      ),
+    });
   });
 
   test("should respond with status 403 when user isn't participate in conversation", async () => {

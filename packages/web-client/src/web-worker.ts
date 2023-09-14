@@ -9,15 +9,14 @@ import {
   decrypt,
   readMessage,
 } from "openpgp";
-import { set } from "idb-keyval";
+import { get } from "idb-keyval";
 
 import { InternalMessageTypes } from "./consts/broadcast";
 
-import { CREATE_FAKE_USER } from "./consts/endpoints";
 import {
-  PRIVATE_KEY_ITEM_NAME,
   PRIVATE_KEY_PASSPHRASE_ITEM_NAME,
   PUBLIC_KEY_ITEM_NAME,
+  USER_ID_KEY_ITEM_NAME,
 } from "./utils/localStorage";
 
 import type { PrivateKey } from "openpgp";
@@ -35,78 +34,72 @@ const receivedChannel = new BroadcastChannel("received_messages");
 const sendedChannel = new BroadcastChannel("sended_messages");
 const internalChannel = new BroadcastChannel("internal_messages");
 
-fetch(`https://localhost:3000/${CREATE_FAKE_USER}`, {
-  method: "GET",
-  mode: "cors",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  credentials: "include",
-}).then(async (response) => {
-  const json = await response.json();
-  const socket = new WebSocket("ws://localhost:3000/real-time");
-  const TEST_PUBLIC_KEY: string = json.publicKey;
-  set(PRIVATE_KEY_ITEM_NAME, json.privateKey);
-  set(PRIVATE_KEY_PASSPHRASE_ITEM_NAME, json.passphrase);
-  set(PUBLIC_KEY_ITEM_NAME, json.publicKey);
+const socket = new WebSocket("wss://localhost:3000/real-time");
 
-  socket.addEventListener("open", () => {
-    socket.send(
-      JSON.stringify({
-        type: MessageTypes.INIT,
-        senderPublicKey: TEST_PUBLIC_KEY,
-      }),
-    );
-  });
+const TEST_PUBLIC_KEY = await get<string>(PUBLIC_KEY_ITEM_NAME);
+const USER_ID = await get<string>(USER_ID_KEY_ITEM_NAME);
+if (!TEST_PUBLIC_KEY || !USER_ID) {
+  throw new Error("Oops, TEST_PUBLIC_KEY or USER_ID is missing");
+}
 
-  socket.addEventListener("message", async (event) => {
-    const message: OutcomeMessage = JSON.parse(event.data);
-    if (message.content && message.type === MessageTypes.TEXT) {
-      message.content = (
-        await decrypt({
-          message: await readMessage({
-            armoredMessage: message.content,
-          }),
-          decryptionKeys: privateKey,
-        })
-      ).data.toString();
-    }
-    if (broadcastChannelActive) receivedChannel.postMessage(message);
-    else oldHistory.push(message);
-  });
+socket.addEventListener("open", () => {
+  const initMessage: IncomeMessage = {
+    type: MessageTypes.INIT,
+    senderPublicKey: TEST_PUBLIC_KEY,
+    senderUserId: USER_ID,
+  };
 
-  sendedChannel.addEventListener("message", async (event) => {
-    const message: IncomeMessage = event.data;
-    if (!message.content || !message.recipientPublicKey) return;
+  socket.send(JSON.stringify(initMessage));
+});
 
-    message.recipientPublicKey = TEST_PUBLIC_KEY;
-    message.senderPublicKey = TEST_PUBLIC_KEY;
+socket.addEventListener("message", async (event) => {
+  const message: OutcomeMessage = JSON.parse(event.data);
+  if (message.content && message.type === MessageTypes.TEXT) {
     message.content = (
-      await encrypt({
-        message: await createMessage({ text: message.content }),
-        encryptionKeys: await readKey({
+      await decrypt({
+        message: await readMessage({
+          armoredMessage: message.content,
+        }),
+        decryptionKeys: privateKey,
+      })
+    ).data.toString();
+  }
+  if (broadcastChannelActive) receivedChannel.postMessage(message);
+  else oldHistory.push(message);
+});
+
+sendedChannel.addEventListener("message", async (event) => {
+  const message: IncomeMessage = event.data;
+  if (!message.content || !message.recipientPublicKey) return;
+  message.content = (
+    await encrypt({
+      message: await createMessage({ text: message.content }),
+      encryptionKeys: [
+        await readKey({
+          armoredKey: message.senderPublicKey,
+        }),
+        await readKey({
           armoredKey: message.recipientPublicKey,
         }),
-      })
-    ).toString();
+      ],
+    })
+  ).toString();
 
-    console.log("send", message);
-    socket.send(JSON.stringify(message));
-  });
+  socket.send(JSON.stringify(message));
+});
 
-  internalChannel.addEventListener("message", async (event) => {
-    const message: InternalMessage = event.data;
-    switch (message.type) {
-      case InternalMessageTypes.READY: {
-        privateKey = await decryptKey({
-          privateKey: await readPrivateKey({ armoredKey: message.content }),
-          passphrase: json.passphrase,
-        });
+internalChannel.addEventListener("message", async (event) => {
+  const message: InternalMessage = event.data;
+  switch (message.type) {
+    case InternalMessageTypes.READY: {
+      privateKey = await decryptKey({
+        privateKey: await readPrivateKey({ armoredKey: message.content }),
+        passphrase: await get<string>(PRIVATE_KEY_PASSPHRASE_ITEM_NAME),
+      });
 
-        broadcastChannelActive = true;
-        sendedChannel.postMessage(oldHistory);
-        break;
-      }
+      broadcastChannelActive = true;
+      sendedChannel.postMessage(oldHistory);
+      break;
     }
-  });
+  }
 });
