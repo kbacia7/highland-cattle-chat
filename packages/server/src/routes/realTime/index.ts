@@ -3,13 +3,11 @@ import { WebSocket } from "ws";
 import {
   MessageStatuses,
   MessageTypes,
-  SERVER_PUBLIC_KEY,
   SERVER_USER_ID,
 } from "@highland-cattle-chat/shared";
 
 import convertRawMessage from "./helpers/convertRawMessage";
 import validateIncomeMessage from "./helpers/validateIncomeMessage";
-import extractKeyId from "./helpers/extrackKeyId";
 import escapeHtml from "./helpers/escapeHtml";
 
 import type { OutcomeMessage } from "@highland-cattle-chat/shared";
@@ -19,22 +17,20 @@ type ConnectedClients = Record<
   string,
   {
     socket: WebSocket;
-    armoredKey: string;
   }
 >;
 
 const connectedClients: ConnectedClients = {};
 
-const getActiveSocketByKeyId = (keyId?: string) =>
-  keyId &&
-  connectedClients[keyId] &&
-  connectedClients[keyId].socket.readyState === WebSocket.OPEN
-    ? connectedClients[keyId].socket
+const getActiveSocketByUserId = (userId?: string) =>
+  userId &&
+  connectedClients[userId] &&
+  connectedClients[userId].socket.readyState === WebSocket.OPEN
+    ? connectedClients[userId].socket
     : undefined;
 
 const respondWithUnknownError = (socket: WebSocket) => {
   const response: OutcomeMessage = {
-    senderPublicKey: SERVER_PUBLIC_KEY,
     senderUserId: SERVER_USER_ID,
     type: MessageTypes.UNKNOWN_ERROR,
     status: MessageStatuses.ERROR,
@@ -53,20 +49,13 @@ const handleMessage = async (
     return;
   }
 
-  const senderKeyId = await extractKeyId(message.senderPublicKey);
-  if (!senderKeyId) {
-    respondWithUnknownError(socket);
-    return;
-  }
-
   switch (message.type) {
     case MessageTypes.INIT: {
-      if (getActiveSocketByKeyId(senderKeyId)) {
+      if (getActiveSocketByUserId(message.senderUserId)) {
         const response: OutcomeMessage = {
           type: MessageTypes.INIT,
-          senderPublicKey: SERVER_PUBLIC_KEY,
           senderUserId: SERVER_USER_ID,
-          recipientPublicKey: message.senderPublicKey,
+          recipientUserId: message.senderUserId,
           status: MessageStatuses.ERROR,
         };
 
@@ -74,15 +63,13 @@ const handleMessage = async (
         return;
       }
 
-      connectedClients[senderKeyId] = {
+      connectedClients[message.senderUserId] = {
         socket,
-        armoredKey: message.senderPublicKey,
       };
 
       const response: OutcomeMessage = {
-        senderPublicKey: SERVER_PUBLIC_KEY,
-        senderUserId: "SERVER",
-        recipientPublicKey: message.senderPublicKey,
+        senderUserId: SERVER_USER_ID,
+        recipientUserId: message.senderUserId,
         type: MessageTypes.INIT,
         status: MessageStatuses.OK,
       };
@@ -92,12 +79,11 @@ const handleMessage = async (
     }
 
     case MessageTypes.TEXT: {
-      if (!message.content || !message.recipientPublicKey) {
+      if (!message.content || !message.recipientUserId) {
         const response: OutcomeMessage = {
           type: MessageTypes.TEXT,
-          senderPublicKey: SERVER_PUBLIC_KEY,
           senderUserId: SERVER_USER_ID,
-          recipientPublicKey: message.senderPublicKey,
+          recipientUserId: message.senderUserId,
           status: MessageStatuses.ERROR,
         };
 
@@ -111,13 +97,12 @@ const handleMessage = async (
         status: MessageStatuses.OK,
       });
 
-      const recipientKeyId = await extractKeyId(message.recipientPublicKey);
-      const recipientSocket = getActiveSocketByKeyId(recipientKeyId);
+      const recipientSocket = getActiveSocketByUserId(message.recipientUserId);
       if (recipientSocket) {
         recipientSocket.send(outcomeMessage);
       }
 
-      const senderSocket = getActiveSocketByKeyId(senderKeyId);
+      const senderSocket = getActiveSocketByUserId(message.senderUserId);
       if (senderSocket) {
         senderSocket.send(outcomeMessage);
       }

@@ -2,27 +2,20 @@ import { afterAll, beforeAll, describe, expect, test } from "@jest/globals";
 import WebSocket from "ws";
 import { v4 as uuidv4 } from "uuid";
 
-import {
-  SERVER_PUBLIC_KEY,
-  SERVER_USER_ID,
-} from "@highland-cattle-chat/shared";
+import { SERVER_USER_ID } from "@highland-cattle-chat/shared";
 
 import buildForTests from "@test/utils/buildForTests";
 
-import generateKeysForTests from "@test/utils/generateKeysForTests";
 import { FASTIFY_SERVER_PORT_BASE } from "@test/utils/consts";
 
 import type { FastifyInstance } from "fastify";
 import type { IncomeMessage } from "@highland-cattle-chat/shared";
-import type { TestKeyPair } from "@test/utils/generateKeysForTests";
 
 describe("Websocket real-time route - Message type INIT", () => {
   const fastify: FastifyInstance = buildForTests();
   const SERVER_PORT = FASTIFY_SERVER_PORT_BASE + 1;
-  let pgpTestKey: TestKeyPair;
 
   beforeAll(async () => {
-    pgpTestKey = await generateKeysForTests();
     await fastify.listen({ port: SERVER_PORT });
   });
 
@@ -33,20 +26,19 @@ describe("Websocket real-time route - Message type INIT", () => {
   test("should respond on init message type", (done) => {
     const ws = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
     const client = WebSocket.createWebSocketStream(ws);
+    const senderUserId = uuidv4();
     const initMessage: IncomeMessage = {
       type: "INIT",
-      senderPublicKey: pgpTestKey.publicKey,
-      senderUserId: uuidv4(),
+      senderUserId,
     };
 
     client.write(JSON.stringify(initMessage));
     client.on("data", (chunk: Buffer) => {
       const res = JSON.parse(chunk.toString());
       expect(res).toStrictEqual({
-        senderPublicKey: SERVER_PUBLIC_KEY,
         senderUserId: SERVER_USER_ID,
         type: "INIT",
-        recipientPublicKey: pgpTestKey.publicKey,
+        recipientUserId: senderUserId,
         status: "OK",
       });
 
@@ -55,14 +47,14 @@ describe("Websocket real-time route - Message type INIT", () => {
     });
   });
 
-  test("should respond with status ERROR on init message when connection to user with senderPublicKey is yet opened (one WS connection)", (done) => {
+  test("should respond with status ERROR on init message when connection to user with senderUserId is yet opened (one WS connection)", (done) => {
     const ws = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
     const client = WebSocket.createWebSocketStream(ws);
     let secondCall = false;
+    const senderUserId = uuidv4();
     const initMessage: IncomeMessage = {
       type: "INIT",
-      senderPublicKey: pgpTestKey.publicKey,
-      senderUserId: uuidv4(),
+      senderUserId,
     };
 
     client.write(JSON.stringify(initMessage));
@@ -70,10 +62,9 @@ describe("Websocket real-time route - Message type INIT", () => {
       const res = JSON.parse(chunk.toString());
       if (secondCall) {
         expect(res).toStrictEqual({
-          senderPublicKey: SERVER_PUBLIC_KEY,
           senderUserId: SERVER_USER_ID,
           type: "INIT",
-          recipientPublicKey: pgpTestKey.publicKey,
+          recipientUserId: senderUserId,
           status: "ERROR",
         });
 
@@ -81,10 +72,9 @@ describe("Websocket real-time route - Message type INIT", () => {
         done();
       } else {
         expect(res).toStrictEqual({
-          senderPublicKey: SERVER_PUBLIC_KEY,
           senderUserId: SERVER_USER_ID,
           type: "INIT",
-          recipientPublicKey: pgpTestKey.publicKey,
+          recipientUserId: senderUserId,
           status: "OK",
         });
 
@@ -94,25 +84,24 @@ describe("Websocket real-time route - Message type INIT", () => {
     });
   });
 
-  test("should respond with status ERROR on init message when connection to user with senderPublicKey is yet opened (two WS connections, one after each other)", (done) => {
+  test("should respond with status ERROR on init message when connection to user with senderUserId is yet opened (two WS connections, one after each other)", (done) => {
     const firstWs = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
     const secondWs = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
     const firstClient = WebSocket.createWebSocketStream(firstWs);
     const secondClient = WebSocket.createWebSocketStream(secondWs);
+    const senderUserId = uuidv4();
     const initMessage: IncomeMessage = {
       type: "INIT",
-      senderPublicKey: pgpTestKey.publicKey,
-      senderUserId: uuidv4(),
+      senderUserId,
     };
 
     firstClient.write(JSON.stringify(initMessage));
     firstClient.on("data", (chunk: Buffer) => {
       const res = JSON.parse(chunk.toString());
       expect(res).toStrictEqual({
-        senderPublicKey: SERVER_PUBLIC_KEY,
         senderUserId: SERVER_USER_ID,
         type: "INIT",
-        recipientPublicKey: pgpTestKey.publicKey,
+        recipientUserId: senderUserId,
         status: "OK",
       });
 
@@ -122,10 +111,9 @@ describe("Websocket real-time route - Message type INIT", () => {
     secondClient.on("data", (chunk: Buffer) => {
       const res = JSON.parse(chunk.toString());
       expect(res).toStrictEqual({
-        senderPublicKey: SERVER_PUBLIC_KEY,
         senderUserId: SERVER_USER_ID,
         type: "INIT",
-        recipientPublicKey: pgpTestKey.publicKey,
+        recipientUserId: senderUserId,
         status: "ERROR",
       });
 
@@ -135,33 +123,31 @@ describe("Websocket real-time route - Message type INIT", () => {
     });
   });
 
-  test("should respond with status ERROR on init message when connection to user with senderPublicKey is yet opened (two WS connections, parallel)", (done) => {
+  test("should respond with status ERROR on init message when connection to user with senderUserId is yet opened (two WS connections, parallel)", (done) => {
     const firstWs = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
     const secondWs = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
     const firstClient = WebSocket.createWebSocketStream(firstWs);
     const secondClient = WebSocket.createWebSocketStream(secondWs);
+    const senderUserId = uuidv4();
     const initMessage: IncomeMessage = {
       type: "INIT",
-      senderPublicKey: pgpTestKey.publicKey,
-      senderUserId: uuidv4(),
+      senderUserId,
     };
 
     const results: IncomeMessage[] = [];
     const onEnd = () => {
       if (results.length === 2) {
         expect(results).toContainEqual({
-          senderPublicKey: SERVER_PUBLIC_KEY,
           senderUserId: SERVER_USER_ID,
           type: "INIT",
-          recipientPublicKey: pgpTestKey.publicKey,
+          recipientUserId: senderUserId,
           status: "OK",
         });
 
         expect(results).toContainEqual({
-          senderPublicKey: SERVER_PUBLIC_KEY,
           senderUserId: SERVER_USER_ID,
           type: "INIT",
-          recipientPublicKey: pgpTestKey.publicKey,
+          recipientUserId: senderUserId,
           status: "ERROR",
         });
 

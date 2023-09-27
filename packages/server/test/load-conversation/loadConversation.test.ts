@@ -12,23 +12,17 @@ import { v4 as uuidv4 } from "uuid";
 import authorize from "@test/utils/authorize";
 import buildForTests from "@test/utils/buildForTests";
 
-import generateKeysForTests from "@test/utils/generateKeysForTests";
-
 import generateString from "@test/utils/randomString";
 
 import type { Prisma } from "@prisma/client";
 
-import type { TestKeyPair } from "@test/utils/generateKeysForTests";
-
 describe("REST API - /load-conversation", () => {
   const fastify = buildForTests();
-  let pgpTestKey: TestKeyPair;
   let testUser: Prisma.UserUncheckedCreateInput;
   let secondTestUser: Prisma.UserUncheckedCreateInput;
   let testConversation: any;
 
   beforeAll(async () => {
-    pgpTestKey = await generateKeysForTests();
     buildForTests();
   });
 
@@ -41,7 +35,6 @@ describe("REST API - /load-conversation", () => {
       data: {
         displayName: "John",
         login: "john",
-        publicKey: Buffer.from(pgpTestKey.publicKey).toString("base64"),
       },
     });
 
@@ -49,7 +42,6 @@ describe("REST API - /load-conversation", () => {
       data: {
         displayName: "Mike",
         login: "mike",
-        publicKey: Buffer.from(pgpTestKey.publicKey).toString("base64"),
       },
     });
 
@@ -57,7 +49,6 @@ describe("REST API - /load-conversation", () => {
       data: {
         displayName: "Zapp",
         login: "zapp",
-        publicKey: Buffer.from(pgpTestKey.publicKey).toString("base64"),
       },
     });
 
@@ -112,13 +103,7 @@ describe("REST API - /load-conversation", () => {
   });
 
   test("should respond with status 200 and last 100 messages", async () => {
-    const authHeader = await authorize(
-      pgpTestKey.privateKey,
-      pgpTestKey.passphrase,
-      "john",
-      fastify,
-    );
-
+    const authHeader = await authorize("john", fastify);
     const response = await fastify.inject({
       method: "GET",
       url: "/load-conversation",
@@ -138,7 +123,6 @@ describe("REST API - /load-conversation", () => {
         user: {
           id: participant.user.id,
           displayName: participant.user.displayName,
-          publicKey: participant.user.publicKey,
         },
       })),
       messages: testConversation.messages.map(
@@ -156,13 +140,7 @@ describe("REST API - /load-conversation", () => {
   });
 
   test("should respond with status 200 and last 10 messages", async () => {
-    const authHeader = await authorize(
-      pgpTestKey.privateKey,
-      pgpTestKey.passphrase,
-      "john",
-      fastify,
-    );
-
+    const authHeader = await authorize("john", fastify);
     const response = await fastify.inject({
       method: "GET",
       url: "/load-conversation",
@@ -183,7 +161,6 @@ describe("REST API - /load-conversation", () => {
         user: {
           id: participant.user.id,
           displayName: participant.user.displayName,
-          publicKey: participant.user.publicKey,
         },
       })),
       messages: testConversation.messages.map(
@@ -201,13 +178,7 @@ describe("REST API - /load-conversation", () => {
   });
 
   test("should respond with status 403 when user isn't participate in conversation", async () => {
-    const authHeader = await authorize(
-      pgpTestKey.privateKey,
-      pgpTestKey.passphrase,
-      "zapp",
-      fastify,
-    );
-
+    const authHeader = await authorize("zapp", fastify);
     const response = await fastify.inject({
       method: "GET",
       url: "/load-conversation",
@@ -250,13 +221,7 @@ describe("REST API - /load-conversation", () => {
   });
 
   test("should respond with status 400 when id query string is missing", async () => {
-    const authHeader = await authorize(
-      pgpTestKey.privateKey,
-      pgpTestKey.passphrase,
-      "john",
-      fastify,
-    );
-
+    const authHeader = await authorize("john", fastify);
     const response = await fastify.inject({
       method: "GET",
       url: "/load-conversation",

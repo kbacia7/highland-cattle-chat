@@ -2,31 +2,22 @@ import { afterAll, beforeAll, describe, expect, test } from "@jest/globals";
 import { v4 as uuidv4 } from "uuid";
 import WebSocket from "ws";
 
-import {
-  SERVER_PUBLIC_KEY,
-  SERVER_USER_ID,
-} from "@highland-cattle-chat/shared";
+import { SERVER_USER_ID } from "@highland-cattle-chat/shared";
 
 import buildForTests from "@test/utils/buildForTests";
 
-import generateKeysForTests from "@test/utils/generateKeysForTests";
 import { FASTIFY_SERVER_PORT_BASE } from "@test/utils/consts";
 
 import type { FastifyInstance } from "fastify";
 import type { OutcomeMessage } from "@highland-cattle-chat/shared";
-import type { TestKeyPair } from "@test/utils/generateKeysForTests";
 
 describe("Websocket real-time route - Message type TEXT", () => {
   const fastify: FastifyInstance = buildForTests();
   const SERVER_PORT = FASTIFY_SERVER_PORT_BASE + 3;
-  let pgpTestKey: TestKeyPair;
-  let secondPgpTestKey: TestKeyPair;
   const senderUserId = uuidv4();
   const secondSenderUserId = uuidv4();
 
   beforeAll(async () => {
-    pgpTestKey = await generateKeysForTests();
-    secondPgpTestKey = await generateKeysForTests();
     await fastify.listen({ port: SERVER_PORT });
   });
 
@@ -48,9 +39,8 @@ describe("Websocket real-time route - Message type TEXT", () => {
       senderClient.write(
         JSON.stringify({
           type: "TEXT",
-          senderPublicKey: pgpTestKey.publicKey,
           senderUserId,
-          recipientPublicKey: secondPgpTestKey.publicKey,
+          recipientUserId: secondSenderUserId,
           content: "Message",
         }),
       );
@@ -58,7 +48,6 @@ describe("Websocket real-time route - Message type TEXT", () => {
     senderClient.write(
       JSON.stringify({
         type: "INIT",
-        senderPublicKey: pgpTestKey.publicKey,
         senderUserId,
       }),
     );
@@ -66,7 +55,6 @@ describe("Websocket real-time route - Message type TEXT", () => {
     recipientClient.write(
       JSON.stringify({
         type: "INIT",
-        senderPublicKey: secondPgpTestKey.publicKey,
         senderUserId: secondSenderUserId,
       }),
     );
@@ -84,10 +72,9 @@ describe("Websocket real-time route - Message type TEXT", () => {
       if (res.type === "INIT") {
         doneInitializations += 1;
         expect(res).toStrictEqual({
-          senderPublicKey: SERVER_PUBLIC_KEY,
           senderUserId: SERVER_USER_ID,
           type: "INIT",
-          recipientPublicKey: pgpTestKey.publicKey,
+          recipientUserId: senderUserId,
           status: "OK",
         });
 
@@ -95,10 +82,9 @@ describe("Websocket real-time route - Message type TEXT", () => {
       } else {
         receivedText += 1;
         expect(res).toStrictEqual({
-          senderPublicKey: pgpTestKey.publicKey,
           senderUserId,
           type: "TEXT",
-          recipientPublicKey: secondPgpTestKey.publicKey,
+          recipientUserId: secondSenderUserId,
           content: "Message",
           status: "OK",
         });
@@ -112,10 +98,9 @@ describe("Websocket real-time route - Message type TEXT", () => {
       if (res.type === "INIT") {
         doneInitializations += 1;
         expect(res).toStrictEqual({
-          senderPublicKey: SERVER_PUBLIC_KEY,
           senderUserId: SERVER_USER_ID,
           type: "INIT",
-          recipientPublicKey: secondPgpTestKey.publicKey,
+          recipientUserId: secondSenderUserId,
           status: "OK",
         });
 
@@ -123,10 +108,9 @@ describe("Websocket real-time route - Message type TEXT", () => {
       } else {
         receivedText += 1;
         expect(res).toStrictEqual({
-          senderPublicKey: pgpTestKey.publicKey,
           senderUserId,
           type: "TEXT",
-          recipientPublicKey: secondPgpTestKey.publicKey,
+          recipientUserId: secondSenderUserId,
           content: "Message",
           status: "OK",
         });
@@ -149,9 +133,8 @@ describe("Websocket real-time route - Message type TEXT", () => {
       senderClient.write(
         JSON.stringify({
           type: "TEXT",
-          senderPublicKey: pgpTestKey.publicKey,
           senderUserId,
-          recipientPublicKey: secondPgpTestKey.publicKey,
+          recipientUserId: secondSenderUserId,
           content: "Message",
         }),
       );
@@ -159,7 +142,6 @@ describe("Websocket real-time route - Message type TEXT", () => {
     senderClient.write(
       JSON.stringify({
         type: "INIT",
-        senderPublicKey: pgpTestKey.publicKey,
         senderUserId,
       }),
     );
@@ -167,7 +149,6 @@ describe("Websocket real-time route - Message type TEXT", () => {
     recipientClient.write(
       JSON.stringify({
         type: "INIT",
-        senderPublicKey: secondPgpTestKey.publicKey,
         senderUserId: secondSenderUserId,
       }),
     );
@@ -177,20 +158,18 @@ describe("Websocket real-time route - Message type TEXT", () => {
       if (res.type === "INIT") {
         doneInitializations += 1;
         expect(res).toStrictEqual({
-          senderPublicKey: SERVER_PUBLIC_KEY,
           senderUserId: SERVER_USER_ID,
+          recipientUserId: senderUserId,
           type: "INIT",
-          recipientPublicKey: pgpTestKey.publicKey,
           status: "OK",
         });
 
         onInit();
       } else {
         expect(res).toStrictEqual({
-          senderPublicKey: pgpTestKey.publicKey,
           senderUserId,
           type: "TEXT",
-          recipientPublicKey: secondPgpTestKey.publicKey,
+          recipientUserId: secondSenderUserId,
           content: "Message",
           status: "OK",
         });
@@ -205,10 +184,9 @@ describe("Websocket real-time route - Message type TEXT", () => {
       if (res.type === "INIT") {
         doneInitializations += 1;
         expect(res).toStrictEqual({
-          senderPublicKey: SERVER_PUBLIC_KEY,
           senderUserId: SERVER_USER_ID,
           type: "INIT",
-          recipientPublicKey: secondPgpTestKey.publicKey,
+          recipientUserId: secondSenderUserId,
           status: "OK",
         });
 
@@ -231,9 +209,8 @@ describe("Websocket real-time route - Message type TEXT", () => {
         senderClient.write(
           JSON.stringify({
             type: "TEXT",
-            senderPublicKey: pgpTestKey.publicKey,
             senderUserId,
-            recipientPublicKey: secondPgpTestKey.publicKey,
+            recipientUserId: secondSenderUserId,
             content: "Message",
           }),
         );
@@ -245,7 +222,6 @@ describe("Websocket real-time route - Message type TEXT", () => {
     senderClient.write(
       JSON.stringify({
         type: "INIT",
-        senderPublicKey: pgpTestKey.publicKey,
         senderUserId,
       }),
     );
@@ -253,7 +229,6 @@ describe("Websocket real-time route - Message type TEXT", () => {
     recipientClient.write(
       JSON.stringify({
         type: "INIT",
-        senderPublicKey: secondPgpTestKey.publicKey,
         senderUserId: secondSenderUserId,
       }),
     );
@@ -263,10 +238,9 @@ describe("Websocket real-time route - Message type TEXT", () => {
       if (res.type === "INIT") {
         doneInitializations += 1;
         expect(res).toStrictEqual({
-          senderPublicKey: SERVER_PUBLIC_KEY,
           senderUserId: SERVER_USER_ID,
+          recipientUserId: senderUserId,
           type: "INIT",
-          recipientPublicKey: pgpTestKey.publicKey,
           status: "OK",
         });
 
@@ -279,20 +253,18 @@ describe("Websocket real-time route - Message type TEXT", () => {
       if (res.type === "INIT") {
         doneInitializations += 1;
         expect(res).toStrictEqual({
-          senderPublicKey: SERVER_PUBLIC_KEY,
           senderUserId: SERVER_USER_ID,
+          recipientUserId: secondSenderUserId,
           type: "INIT",
-          recipientPublicKey: secondPgpTestKey.publicKey,
           status: "OK",
         });
 
         onInit();
       } else {
         expect(res).toStrictEqual({
-          senderPublicKey: pgpTestKey.publicKey,
           senderUserId,
+          recipientUserId: secondSenderUserId,
           type: "TEXT",
-          recipientPublicKey: secondPgpTestKey.publicKey,
           content: "Message",
           status: "OK",
         });
@@ -304,13 +276,12 @@ describe("Websocket real-time route - Message type TEXT", () => {
     });
   });
 
-  test("should respond message to sender with status ERROR if recipientPublicKey is not provided", (done) => {
+  test("should respond message to sender with status ERROR if recipientUserId is not provided", (done) => {
     const senderWs = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
     const senderClient = WebSocket.createWebSocketStream(senderWs);
     senderClient.write(
       JSON.stringify({
         type: "INIT",
-        senderPublicKey: pgpTestKey.publicKey,
         senderUserId,
       }),
     );
@@ -319,16 +290,14 @@ describe("Websocket real-time route - Message type TEXT", () => {
       const res = JSON.parse(chunk.toString()) as OutcomeMessage;
       if (res.type === "INIT") {
         expect(res).toStrictEqual({
-          senderPublicKey: SERVER_PUBLIC_KEY,
           senderUserId: SERVER_USER_ID,
+          recipientUserId: senderUserId,
           type: "INIT",
-          recipientPublicKey: pgpTestKey.publicKey,
           status: "OK",
         });
 
         senderClient.write(
           JSON.stringify({
-            senderPublicKey: pgpTestKey.publicKey,
             senderUserId,
             type: "TEXT",
             content: "Message",
@@ -336,10 +305,9 @@ describe("Websocket real-time route - Message type TEXT", () => {
         );
       } else {
         expect(res).toStrictEqual({
-          senderPublicKey: SERVER_PUBLIC_KEY,
           senderUserId: SERVER_USER_ID,
           type: "TEXT",
-          recipientPublicKey: pgpTestKey.publicKey,
+          recipientUserId: senderUserId,
           status: "ERROR",
         });
 
@@ -355,7 +323,6 @@ describe("Websocket real-time route - Message type TEXT", () => {
     senderClient.write(
       JSON.stringify({
         type: "INIT",
-        senderPublicKey: pgpTestKey.publicKey,
         senderUserId,
       }),
     );
@@ -364,28 +331,25 @@ describe("Websocket real-time route - Message type TEXT", () => {
       const res = JSON.parse(chunk.toString()) as OutcomeMessage;
       if (res.type === "INIT") {
         expect(res).toStrictEqual({
-          senderPublicKey: SERVER_PUBLIC_KEY,
           senderUserId: SERVER_USER_ID,
+          recipientUserId: senderUserId,
           type: "INIT",
-          recipientPublicKey: pgpTestKey.publicKey,
           status: "OK",
         });
 
         senderClient.write(
           JSON.stringify({
             type: "TEXT",
-            senderPublicKey: pgpTestKey.publicKey,
             senderUserId,
-            recipientPublicKey: secondPgpTestKey.publicKey,
+            recipientUserId: secondSenderUserId,
           }),
         );
       } else {
         expect(res).toStrictEqual({
-          senderPublicKey: SERVER_PUBLIC_KEY,
           senderUserId: SERVER_USER_ID,
           type: "TEXT",
-          recipientPublicKey: pgpTestKey.publicKey,
           status: "ERROR",
+          recipientUserId: senderUserId,
         });
 
         senderWs.close();

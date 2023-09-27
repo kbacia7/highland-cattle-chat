@@ -18,12 +18,11 @@ const incomeMessageSchema: JSONSchemaType<IncomeMessage> = {
   $id: "/schemas/incoming-message.json",
   properties: {
     type: { type: "string" },
-    senderPublicKey: { type: "string" },
     senderUserId: { type: "string" },
-    recipientPublicKey: { type: "string", nullable: true },
+    recipientUserId: { type: "string", nullable: true },
     content: { type: "string", nullable: true },
   },
-  required: ["senderPublicKey", "type"],
+  required: ["senderUserId", "type"],
 };
 
 const validateIncomeMessage = ajv.compile(incomeMessageSchema);

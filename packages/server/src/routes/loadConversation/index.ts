@@ -56,7 +56,6 @@ const loadConversationRoute = async (fastify: FastifyInstance) => {
                 select: {
                   id: true,
                   displayName: true,
-                  publicKey: true,
                 },
               },
             },

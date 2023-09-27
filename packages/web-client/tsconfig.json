@@ -27,7 +27,8 @@
     "paths": {
       "~/*": ["./src/*"]
     },
-    "types": ["vite/client"]
+    "types": ["vite/client"],
+    "allowJs": true
   },
   "files": ["./.eslintrc.cjs"],
   "include": [

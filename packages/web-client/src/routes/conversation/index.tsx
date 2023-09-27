@@ -27,46 +27,52 @@ const transformOutcomeMessage = (message: OutcomeMessage) => {
   return messageRecord;
 };
 
+const findRecipientId = (
+  userId: string,
+  participants?: LoadConversationResponse["participants"],
+) =>
+  participants?.find((participant) => participant.user.id !== userId)?.user.id;
+
 const ConversationRoute = () => {
   const { id } = useParams();
-  const { userId, privateKey, publicKey } = useAppSelector(
-    (state) => state.loggedUser,
-  );
-
-  const { currentData } = useLoadConversationQuery({
+  const { userId } = useAppSelector((state) => state.loggedUser);
+  const { currentData, isLoading } = useLoadConversationQuery({
     id: id ?? "",
   });
 
-  const participantPublicKey = currentData?.participants.find(
-    (participant) => participant.user.id !== userId,
-  )?.user.publicKey;
-
+  const recipientUserId = findRecipientId(userId, currentData?.participants);
   const [messages, setMessages] = useState<
     LoadConversationResponse["messages"]
   >([]);
 
   useEffect(() => {
-    (async () => {
-      const channel = new BroadcastChannel("received_messages");
+    if (!isLoading) {
       const internalChannel = new BroadcastChannel("internal_messages");
       internalChannel.postMessage({
         type: InternalMessageTypes.READY,
-        content: privateKey,
       });
+    }
+  }, [isLoading]);
 
-      channel.addEventListener("message", (event) => {
-        const message: OutcomeMessage | OutcomeMessage[] = event.data;
-        if (Array.isArray(message)) {
-          setMessages([
-            ...messages,
-            ...message.map((msg) => transformOutcomeMessage(msg)),
-          ]);
-        } else {
-          setMessages([...messages, transformOutcomeMessage(message)]);
-        }
-      });
-    })();
-  }, [messages, privateKey]);
+  useEffect(() => {
+    const channel = new BroadcastChannel("received_messages");
+    channel.addEventListener("message", (event) => {
+      const message: OutcomeMessage | OutcomeMessage[] = event.data;
+      if (Array.isArray(message)) {
+        setMessages((value) => [
+          ...value,
+          ...message
+            .filter((m) => m.type === MessageTypes.TEXT)
+            .map((msg) => transformOutcomeMessage(msg)),
+        ]);
+      } else {
+        if (message.type === MessageTypes.TEXT)
+          setMessages((value) => [...value, transformOutcomeMessage(message)]);
+      }
+    });
+
+    return () => channel.close();
+  }, []);
 
   useEffect(() => {
     setMessages(currentData?.messages ?? []);
@@ -86,18 +92,15 @@ const ConversationRoute = () => {
       </div>
       <Input
         onSend={async (message: string) => {
-          if (participantPublicKey) {
-            const channel = new BroadcastChannel("sended_messages");
-            const msg: IncomeMessage = {
-              senderPublicKey: publicKey,
-              senderUserId: userId,
-              recipientPublicKey: atob(participantPublicKey),
-              type: MessageTypes.TEXT,
-              content: message,
-            };
+          const channel = new BroadcastChannel("sended_messages");
+          const msg: IncomeMessage = {
+            senderUserId: userId,
+            recipientUserId,
+            type: MessageTypes.TEXT,
+            content: message,
+          };
 
-            channel.postMessage(msg);
-          }
+          channel.postMessage(msg);
         }}
         placeholder={"Message..."}
       />

@@ -1,10 +1,8 @@
-import * as openpgp from "openpgp";
 import jwt from "jsonwebtoken";
 import {
   describe,
   test,
   expect,
-  beforeAll,
   afterAll,
   beforeEach,
   afterEach,
@@ -12,21 +10,14 @@ import {
 import fastifyCookie from "@fastify/cookie";
 
 import buildForTests from "@test/utils/buildForTests";
-import generateKeysForTests from "@test/utils/generateKeysForTests";
 import { FAKE_COOKIE_SECRET } from "@test/utils/consts";
 
 import type { Prisma } from "@prisma/client";
-import type { TestKeyPair } from "@test/utils/generateKeysForTests";
 import type { JwtPayload } from "jsonwebtoken";
 
 describe("REST API - /login", () => {
   const fastify = buildForTests();
   let testUser: Prisma.UserUncheckedCreateInput;
-  let pgpTestKey: TestKeyPair;
-
-  beforeAll(async () => {
-    pgpTestKey = await generateKeysForTests();
-  });
 
   afterAll(async () => {
     await fastify.close();
@@ -37,7 +28,6 @@ describe("REST API - /login", () => {
       data: {
         displayName: "John",
         login: "john",
-        publicKey: Buffer.from(pgpTestKey.publicKey).toString("base64"),
       },
     });
   });
@@ -55,22 +45,13 @@ describe("REST API - /login", () => {
       });
     });
   });
-  test("should respond cookie with JWT token", async () => {
-    const privateKey = await openpgp.decryptKey({
-      privateKey: await openpgp.readPrivateKey({
-        armoredKey: pgpTestKey.privateKey,
-      }),
-      passphrase: pgpTestKey.passphrase,
-    });
 
+  test("should respond cookie with JWT token", async () => {
     const response = await fastify.inject({
       method: "POST",
       url: "/login",
       body: {
-        signedAlias: await openpgp.sign({
-          message: await openpgp.createCleartextMessage({ text: "john" }),
-          signingKeys: privateKey,
-        }),
+        alias: "john",
       },
     });
 
@@ -102,47 +83,12 @@ describe("REST API - /login", () => {
     expect(response.statusCode).toBe(200);
   });
 
-  test("should respond with 403 without session when signedAlias is signed alias of user who doesn't exists", async () => {
-    const privateKey = await openpgp.decryptKey({
-      privateKey: await openpgp.readPrivateKey({
-        armoredKey: pgpTestKey.privateKey,
-      }),
-      passphrase: pgpTestKey.passphrase,
-    });
-
+  test("should respond with 403 without session when alias is not user who exists", async () => {
     const response = await fastify.inject({
       method: "POST",
       url: "/login",
       body: {
-        signedAlias: await openpgp.sign({
-          message: await openpgp.createCleartextMessage({ text: "abcd" }),
-          signingKeys: privateKey,
-        }),
-      },
-    });
-
-    const session = await fastify.prisma.session.findFirst({
-      where: {
-        userId: testUser.id,
-        expiresAt: {
-          gt: new Date(),
-        },
-      },
-    });
-
-    expect(session).toBeNull();
-    const cookie = response.cookies.find(({ name }) => name === "session");
-
-    expect(cookie).toBeUndefined();
-    expect(response.statusCode).toBe(403);
-  });
-
-  test("should respond with 400 without session when signedAlias is not signed PGP message", async () => {
-    const response = await fastify.inject({
-      method: "POST",
-      url: "/login",
-      body: {
-        signedAlias: "abcd",
+        alias: "abcd",
       },
     });
 
@@ -151,10 +97,10 @@ describe("REST API - /login", () => {
     const cookie = response.cookies.find(({ name }) => name === "session");
 
     expect(cookie).toBeUndefined();
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(403);
   });
 
-  test("should respond with 400 without session when signedAlias is not provided", async () => {
+  test("should respond with 400 without session when alias is not provided", async () => {
     const response = await fastify.inject({
       method: "POST",
       url: "/login",
@@ -170,21 +116,11 @@ describe("REST API - /login", () => {
   });
 
   test("should respond with 404 without session when try to use /login endpoint with GET", async () => {
-    const privateKey = await openpgp.decryptKey({
-      privateKey: await openpgp.readPrivateKey({
-        armoredKey: pgpTestKey.privateKey,
-      }),
-      passphrase: pgpTestKey.passphrase,
-    });
-
     const response = await fastify.inject({
       method: "GET",
       url: "/login",
       body: {
-        signedAlias: await openpgp.sign({
-          message: await openpgp.createCleartextMessage({ text: "john" }),
-          signingKeys: privateKey,
-        }),
+        alias: "john",
       },
     });
 

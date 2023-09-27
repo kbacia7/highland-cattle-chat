@@ -12,20 +12,15 @@ import { v4 as uuidv4 } from "uuid";
 import authorize from "@test/utils/authorize";
 import buildForTests from "@test/utils/buildForTests";
 
-import generateKeysForTests from "@test/utils/generateKeysForTests";
-
 import type { Prisma } from "@prisma/client";
-import type { TestKeyPair } from "@test/utils/generateKeysForTests";
 
 describe("REST API - /load-conversations", () => {
   const fastify = buildForTests();
-  let pgpTestKey: TestKeyPair;
   let testUser: Prisma.UserUncheckedCreateInput;
   let secondTestUser: Prisma.UserUncheckedCreateInput;
   const testConversations: Prisma.ConversationUncheckedCreateInput[] = [];
 
   beforeAll(async () => {
-    pgpTestKey = await generateKeysForTests();
     buildForTests();
   });
 
@@ -38,7 +33,6 @@ describe("REST API - /load-conversations", () => {
       data: {
         displayName: "John",
         login: "john",
-        publicKey: Buffer.from(pgpTestKey.publicKey).toString("base64"),
       },
     });
 
@@ -46,7 +40,6 @@ describe("REST API - /load-conversations", () => {
       data: {
         displayName: "Mike",
         login: "mike",
-        publicKey: Buffer.from(pgpTestKey.publicKey).toString("base64"),
       },
     });
 
@@ -88,13 +81,7 @@ describe("REST API - /load-conversations", () => {
   });
 
   test("should respond with status 200 and user conversations", async () => {
-    const authHeader = await authorize(
-      pgpTestKey.privateKey,
-      pgpTestKey.passphrase,
-      "john",
-      fastify,
-    );
-
+    const authHeader = await authorize("john", fastify);
     const response = await fastify.inject({
       method: "GET",
       url: "/load-conversations",

@@ -1,5 +1,3 @@
-import * as openpgp from "openpgp";
-
 import { SESSION_AGE_IN_MS, createSession } from "@helpers/sessions";
 
 import type { SessionCookie } from "@highland-cattle-chat/shared";
@@ -7,7 +5,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 
 type LoginStringRequest = FastifyRequest<{
   Body: {
-    signedAlias: string;
+    alias: string;
   };
 }>;
 
@@ -39,44 +37,23 @@ const loginUserRoute = async (fastify: FastifyInstance) => {
       schema: {
         body: {
           type: "object",
-          required: ["signedAlias"],
+          required: ["alias"],
           properties: {
-            signedAlias: { type: "string" },
+            alias: { type: "string" },
           },
         },
       },
     },
     async (req: LoginStringRequest, reply) => {
-      let cleartextMessage;
-      try {
-        cleartextMessage = await openpgp.readCleartextMessage({
-          cleartextMessage: req.body.signedAlias,
-        });
-      } catch (e) {
-        return reply.code(400).send();
-      }
-
-      const alias = cleartextMessage.getText();
       const user = await fastify.prisma.user.findUnique({
         where: {
-          login: alias,
+          login: req.body.alias,
         },
       });
 
       if (!user) return reply.code(403).send();
 
-      const publicKey = Buffer.from(user.publicKey, "base64").toString("ascii");
-      const verificationResult = await openpgp.verify({
-        message: cleartextMessage,
-        verificationKeys: await openpgp.readKey({ armoredKey: publicKey }),
-      });
-
-      const { verified } = verificationResult.signatures[0];
-      try {
-        await verified;
-      } catch (e) {
-        return reply.code(403).send();
-      }
+      // TODO: Create new login route after remove openpgp idea
 
       const token = await createSession(user.id, fastify.prisma);
       return setSessionCookie(token, user.id, reply).send(user);
