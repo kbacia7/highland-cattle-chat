@@ -17,8 +17,6 @@ import type {
 describe("Websocket real-time route - Message type UNKNOWN_ERROR", () => {
   const fastify: FastifyInstance = buildForTests();
   const SERVER_PORT = FASTIFY_SERVER_PORT_BASE + 2;
-  const senderUserId = uuidv4();
-  const secondSenderUserId = uuidv4();
 
   beforeAll(async () => {
     await fastify.listen({ port: SERVER_PORT });
@@ -28,7 +26,7 @@ describe("Websocket real-time route - Message type UNKNOWN_ERROR", () => {
     fastify.close();
   });
 
-  test("should respond with message type UNKNOWN_ERROR on init message when senderUserId is not provided", (done) => {
+  test("should respond with message type UNKNOWN_ERROR on init message when userId is not provided", (done) => {
     const ws = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
     const client = WebSocket.createWebSocketStream(ws);
     // @ts-ignore
@@ -40,10 +38,10 @@ describe("Websocket real-time route - Message type UNKNOWN_ERROR", () => {
     client.on("data", (chunk: Buffer) => {
       const res = JSON.parse(chunk.toString());
       expect(res).toStrictEqual({
-        senderUserId: SERVER_USER_ID,
+        userId: SERVER_USER_ID,
         type: "UNKNOWN_ERROR",
         status: "ERROR",
-      });
+      } as OutcomeMessage);
 
       ws.close();
       done();
@@ -53,19 +51,20 @@ describe("Websocket real-time route - Message type UNKNOWN_ERROR", () => {
   test("should respond with message type UNKNOWN_ERROR on unknown message type", (done) => {
     const ws = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
     const client = WebSocket.createWebSocketStream(ws);
-    const message = {
+    const message: IncomeMessage = {
+      // @ts-ignore
       type: "anything",
-      senderUserId,
+      userId: uuidv4(),
     };
 
     client.write(JSON.stringify(message));
     client.on("data", (chunk: Buffer) => {
       const res = JSON.parse(chunk.toString());
       expect(res).toStrictEqual({
-        senderUserId: SERVER_USER_ID,
+        userId: SERVER_USER_ID,
         type: "UNKNOWN_ERROR",
         status: "ERROR",
-      });
+      } as OutcomeMessage);
 
       ws.close();
       done();
@@ -78,8 +77,8 @@ describe("Websocket real-time route - Message type UNKNOWN_ERROR", () => {
     client.write(
       JSON.stringify({
         type: "INIT",
-        senderUserId,
-      }),
+        userId: uuidv4(),
+      } as IncomeMessage),
     );
 
     const results: OutcomeMessage[] = [];
@@ -87,11 +86,14 @@ describe("Websocket real-time route - Message type UNKNOWN_ERROR", () => {
     const onEnd = () => {
       if (results.length === EXCEPTED_ERRORS) {
         expect(results).toStrictEqual(
-          Array.from(Array(EXCEPTED_ERRORS)).map(() => ({
-            type: "UNKNOWN_ERROR",
-            senderUserId: SERVER_USER_ID,
-            status: "ERROR",
-          })),
+          Array.from(Array(EXCEPTED_ERRORS)).map(
+            () =>
+              ({
+                type: "UNKNOWN_ERROR",
+                userId: SERVER_USER_ID,
+                status: "ERROR",
+              } as OutcomeMessage),
+          ),
         );
 
         done();
@@ -102,30 +104,29 @@ describe("Websocket real-time route - Message type UNKNOWN_ERROR", () => {
       const res = JSON.parse(chunk.toString()) as OutcomeMessage;
       if (res.type === "INIT") {
         expect(res).toStrictEqual({
-          senderUserId: SERVER_USER_ID,
+          userId: SERVER_USER_ID,
           type: "INIT",
-          recipientUserId: senderUserId,
           status: "OK",
-        });
+        } as OutcomeMessage);
 
         // NOTE: If you are curious why there is not test with boolean values and numbers
         // see: https://ajv.js.org/coercion.html
         client.write(
+          // @ts-ignore
           JSON.stringify({
             type: "TEXT",
-            senderUserId,
-            recipientUserId: secondSenderUserId,
+            userId: uuidv4(),
             content: [],
-          }),
+          } as IncomeMessage),
         );
 
         client.write(
+          // @ts-ignore
           JSON.stringify({
             type: "TEXT",
-            senderUserId,
-            recipientUserId: secondSenderUserId,
+            userId: uuidv4(),
             content: {},
-          }),
+          } as IncomeMessage),
         );
       } else {
         results.push(res);

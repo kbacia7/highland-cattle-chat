@@ -1,80 +1,27 @@
-import {
-  describe,
-  test,
-  expect,
-  beforeAll,
-  afterAll,
-  beforeEach,
-  afterEach,
-} from "@jest/globals";
-import { v4 as uuidv4 } from "uuid";
+import { describe, test, expect, afterAll, beforeAll } from "@jest/globals";
 
 import authorize from "@test/utils/authorize";
 import buildForTests from "@test/utils/buildForTests";
-
-import generateString from "@test/utils/randomString";
 
 import type { Prisma } from "@prisma/client";
 
 describe("REST API - /load-conversation", () => {
   const fastify = buildForTests();
-  let testUser: Prisma.UserUncheckedCreateInput;
-  let secondTestUser: Prisma.UserUncheckedCreateInput;
   let testConversation: any;
-
-  beforeAll(async () => {
-    buildForTests();
-  });
 
   afterAll(async () => {
     await fastify.close();
   });
 
-  beforeEach(async () => {
-    testUser = await fastify.prisma.user.create({
-      data: {
-        displayName: "John",
-        login: "john",
-      },
-    });
-
-    secondTestUser = await fastify.prisma.user.create({
-      data: {
-        displayName: "Mike",
-        login: "mike",
-      },
-    });
-
-    await fastify.prisma.user.create({
-      data: {
-        displayName: "Zapp",
-        login: "zapp",
-      },
-    });
-
-    testConversation = await fastify.prisma.conversation.create({
-      data: {
-        title: uuidv4(),
-        image: "https://picsum.photos/200",
+  beforeAll(async () => {
+    testConversation = await fastify.prisma.conversation.findFirstOrThrow({
+      where: {
         participants: {
-          create: [
-            {
-              userId: testUser.id ?? "",
-            },
-            {
-              userId: secondTestUser.id ?? "",
-            },
-          ],
-        },
-        messages: {
-          create: [...Array(10)].map(() => ({
-            content: generateString(Math.ceil(Math.random() * 5)),
+          some: {
             user: {
-              connect: {
-                id: Math.random() > 0.5 ? testUser.id : secondTestUser.id,
-              },
+              login: "john",
             },
-          })),
+          },
         },
       },
       include: {
@@ -85,20 +32,6 @@ describe("REST API - /load-conversation", () => {
           },
         },
       },
-    });
-  });
-
-  afterEach(async () => {
-    const res = await fastify.prisma.$runCommandRaw({
-      listCollections: 1,
-      nameOnly: true,
-    });
-
-    // @ts-ignore
-    res.cursor?.firstBatch?.forEach(async (collectionJson) => {
-      await fastify.prisma.$runCommandRaw({
-        drop: collectionJson.name,
-      });
     });
   });
 

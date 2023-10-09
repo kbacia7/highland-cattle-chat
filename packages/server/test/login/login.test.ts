@@ -1,12 +1,5 @@
 import jwt from "jsonwebtoken";
-import {
-  describe,
-  test,
-  expect,
-  afterAll,
-  beforeEach,
-  afterEach,
-} from "@jest/globals";
+import { describe, test, expect, afterAll, beforeAll } from "@jest/globals";
 import fastifyCookie from "@fastify/cookie";
 
 import buildForTests from "@test/utils/buildForTests";
@@ -23,26 +16,11 @@ describe("REST API - /login", () => {
     await fastify.close();
   });
 
-  beforeEach(async () => {
-    testUser = await fastify.prisma.user.create({
-      data: {
-        displayName: "John",
+  beforeAll(async () => {
+    testUser = await fastify.prisma.user.findFirstOrThrow({
+      where: {
         login: "john",
       },
-    });
-  });
-
-  afterEach(async () => {
-    const res = await fastify.prisma.$runCommandRaw({
-      listCollections: 1,
-      nameOnly: true,
-    });
-
-    // @ts-ignore
-    res.cursor?.firstBatch?.forEach(async (collectionJson) => {
-      await fastify.prisma.$runCommandRaw({
-        drop: collectionJson.name,
-      });
     });
   });
 

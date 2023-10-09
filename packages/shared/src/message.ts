@@ -17,8 +17,8 @@ export type MessageStatus =
 export type IncomeMessage = {
   type: MessageType;
   content?: string;
-  senderUserId: string;
-  recipientUserId?: string;
+  userId: string;
+  conversationId?: string;
 };
 
 export interface OutcomeMessage extends IncomeMessage {

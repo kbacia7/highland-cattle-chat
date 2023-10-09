@@ -10,7 +10,15 @@ import convertRawMessage from "./helpers/convertRawMessage";
 import validateIncomeMessage from "./helpers/validateIncomeMessage";
 import escapeHtml from "./helpers/escapeHtml";
 
-import type { OutcomeMessage } from "@highland-cattle-chat/shared";
+import safeWriteMessagesStack, {
+  addMessageToStack,
+} from "./helpers/messagesStack";
+
+import type {
+  IncomeMessage,
+  MessageType,
+  OutcomeMessage,
+} from "@highland-cattle-chat/shared";
 import type { FastifyInstance } from "fastify";
 
 type ConnectedClients = Record<
@@ -29,10 +37,10 @@ const getActiveSocketByUserId = (userId?: string) =>
     ? connectedClients[userId].socket
     : undefined;
 
-const respondWithUnknownError = (socket: WebSocket) => {
+const respondWithError = (type: MessageType, socket: WebSocket) => {
   const response: OutcomeMessage = {
-    senderUserId: SERVER_USER_ID,
-    type: MessageTypes.UNKNOWN_ERROR,
+    userId: SERVER_USER_ID,
+    type,
     status: MessageStatuses.ERROR,
   };
 
@@ -42,20 +50,20 @@ const respondWithUnknownError = (socket: WebSocket) => {
 const handleMessage = async (
   rawMessage: string,
   socket: WebSocket,
+  fastify: FastifyInstance,
 ): Promise<void> => {
   const message = convertRawMessage(rawMessage);
   if (!validateIncomeMessage(message)) {
-    respondWithUnknownError(socket);
+    respondWithError(MessageTypes.UNKNOWN_ERROR, socket);
     return;
   }
 
   switch (message.type) {
     case MessageTypes.INIT: {
-      if (getActiveSocketByUserId(message.senderUserId)) {
+      if (getActiveSocketByUserId(message.userId)) {
         const response: OutcomeMessage = {
           type: MessageTypes.INIT,
-          senderUserId: SERVER_USER_ID,
-          recipientUserId: message.senderUserId,
+          userId: SERVER_USER_ID,
           status: MessageStatuses.ERROR,
         };
 
@@ -63,13 +71,12 @@ const handleMessage = async (
         return;
       }
 
-      connectedClients[message.senderUserId] = {
+      connectedClients[message.userId] = {
         socket,
       };
 
       const response: OutcomeMessage = {
-        senderUserId: SERVER_USER_ID,
-        recipientUserId: message.senderUserId,
+        userId: SERVER_USER_ID,
         type: MessageTypes.INIT,
         status: MessageStatuses.OK,
       };
@@ -79,15 +86,35 @@ const handleMessage = async (
     }
 
     case MessageTypes.TEXT: {
-      if (!message.content || !message.recipientUserId) {
-        const response: OutcomeMessage = {
-          type: MessageTypes.TEXT,
-          senderUserId: SERVER_USER_ID,
-          recipientUserId: message.senderUserId,
-          status: MessageStatuses.ERROR,
-        };
+      if (!message.content || !message.conversationId) {
+        respondWithError(MessageTypes.TEXT, socket);
+        return;
+      }
 
-        socket.send(JSON.stringify(response));
+      // TODO: Check with .explain() how effency it's
+      const conversation = await fastify.prisma.conversation.findUnique({
+        where: {
+          id: message.conversationId,
+          participants: {
+            some: {
+              userId: message.userId,
+            },
+          },
+        },
+        cache: {
+          ttl: 86400,
+        },
+        include: {
+          participants: {
+            select: {
+              userId: true,
+            },
+          },
+        },
+      });
+
+      if (!conversation) {
+        respondWithError(MessageTypes.TEXT, socket);
         return;
       }
 
@@ -97,21 +124,20 @@ const handleMessage = async (
         status: MessageStatuses.OK,
       });
 
-      const recipientSocket = getActiveSocketByUserId(message.recipientUserId);
-      if (recipientSocket) {
-        recipientSocket.send(outcomeMessage);
-      }
+      conversation?.participants.forEach(({ userId }) => {
+        const recipientSocket = getActiveSocketByUserId(userId);
+        if (recipientSocket) {
+          recipientSocket.send(outcomeMessage);
+        }
+      });
 
-      const senderSocket = getActiveSocketByUserId(message.senderUserId);
-      if (senderSocket) {
-        senderSocket.send(outcomeMessage);
-      }
-
+      addMessageToStack(message as Required<IncomeMessage>, fastify);
+      safeWriteMessagesStack(fastify);
       break;
     }
 
     default: {
-      respondWithUnknownError(socket);
+      respondWithError(MessageTypes.UNKNOWN_ERROR, socket);
       break;
     }
   }
@@ -123,7 +149,7 @@ const realTimeRoute = async (fastify: FastifyInstance) => {
     { websocket: true, logLevel: "debug" },
     (connection) => {
       connection.socket.on("message", (data) => {
-        handleMessage(data.toString(), connection.socket);
+        handleMessage(data.toString(), connection.socket, fastify);
       });
     },
   );

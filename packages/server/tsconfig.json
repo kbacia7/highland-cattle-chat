@@ -23,6 +23,7 @@
     "test/**/*.ts",
     "test/**/*.test.ts",
     ".eslintrc.cjs",
-    "jest.config.cjs"
+    "jest.config.cjs",
+    "prisma/seeds/*.ts"
   ]
 }

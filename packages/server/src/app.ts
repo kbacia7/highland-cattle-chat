@@ -10,6 +10,8 @@ import loginUserRoute from "@routes/login";
 import createFakeUserRoute from "@routes/createFakeUser";
 
 import prismaConnector from "./prismaConnector";
+import cacheConnector from "./cacheConnector";
+import workersConnector from "./workersConnector";
 
 import type {
   FastifyHttpOptions,
@@ -36,6 +38,8 @@ const build = (
   });
   fastify.register(fastifyWebsocket);
   fastify.register(prismaConnector);
+  fastify.register(cacheConnector);
+  fastify.register(workersConnector);
   fastify.register(realTimeRoute);
   fastify.register(loginUserRoute);
   fastify.register(restrictedContext);

@@ -36,7 +36,7 @@ const initializeSocket = async () => {
   socket.addEventListener("open", async () => {
     const initMessage: IncomeMessage = {
       type: MessageTypes.INIT,
-      senderUserId: USER_ID,
+      userId: USER_ID,
     };
 
     socket.send(JSON.stringify(initMessage));

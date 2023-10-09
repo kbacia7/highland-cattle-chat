@@ -2,12 +2,13 @@ import Fastify from "fastify";
 import fastifyWebsocket from "@fastify/websocket";
 import fastifyCookie from "@fastify/cookie";
 
-import { PrismaClient } from "@prisma/client";
-
 import realTimeRoute from "@routes/realTime";
 import loginUserRoute from "@routes/login";
 
 import restrictedContext from "@contexts/restrictedContext";
+import { createPrismaClient } from "@/prismaConnector";
+import cacheConnector from "@/cacheConnector";
+import workersConnector from "@/workersConnector";
 
 import { FAKE_COOKIE_SECRET } from "./consts";
 
@@ -20,7 +21,9 @@ const buildForTests = () => {
   });
 
   fastify.register(fastifyWebsocket);
-  fastify.decorate("prisma", new PrismaClient());
+  fastify.register(cacheConnector);
+  fastify.decorate("prisma", createPrismaClient(fastify));
+  fastify.register(workersConnector);
   fastify.register(realTimeRoute);
   fastify.register(loginUserRoute);
   fastify.register(restrictedContext);

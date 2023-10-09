@@ -22,25 +22,18 @@ const transformOutcomeMessage = (message: OutcomeMessage) => {
     content: message.content ?? "",
     createdAt: new Date(),
     id: uuidv4(),
-    userId: message.senderUserId,
+    userId: message.userId,
   };
   return messageRecord;
 };
 
-const findRecipientId = (
-  userId: string,
-  participants?: LoadConversationResponse["participants"],
-) =>
-  participants?.find((participant) => participant.user.id !== userId)?.user.id;
-
 const ConversationRoute = () => {
-  const { id } = useParams();
+  const { id: conversationId } = useParams();
   const { userId } = useAppSelector((state) => state.loggedUser);
   const { currentData, isLoading } = useLoadConversationQuery({
-    id: id ?? "",
+    id: conversationId ?? "",
   });
 
-  const recipientUserId = findRecipientId(userId, currentData?.participants);
   const [messages, setMessages] = useState<
     LoadConversationResponse["messages"]
   >([]);
@@ -94,8 +87,8 @@ const ConversationRoute = () => {
         onSend={async (message: string) => {
           const channel = new BroadcastChannel("sended_messages");
           const msg: IncomeMessage = {
-            senderUserId: userId,
-            recipientUserId,
+            userId,
+            conversationId,
             type: MessageTypes.TEXT,
             content: message,
           };

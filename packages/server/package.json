@@ -7,7 +7,8 @@
   "type": "module",
   "scripts": {
     "build": "node esbuild.config.mjs",
-    "test": "yarn node --experimental-vm-modules $(yarn bin jest) --runInBand"
+    "test": "yarn run jest-seed; yarn node --experimental-vm-modules $(yarn bin jest) --testPathIgnorePatterns=test/login/",
+    "jest-seed": "tsx prisma/seeds/clear-collections.ts; prisma db push; tsx prisma/seeds/jest-tests.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^9.0.4",
@@ -17,16 +18,20 @@
     "@prisma/client": "^5.2.0",
     "@types/jest": "^29.5.3",
     "ajv": "8",
+    "bullmq": "^4.12.2",
+    "cache-manager": "^5.2.3",
     "esbuild": "^0.19.2",
     "fast-uri": "^2.2.0",
     "fastify": "^4.21.0",
     "fastify-plugin": "^4.5.1",
+    "ioredis": "^5.3.2",
     "jsonwebtoken": "^9.0.1",
     "prisma": "^5.2.0",
     "ts-jest": "^29.1.1",
     "tsc-alias": "^1.8.7",
     "uuid": "^9.0.0",
-    "ws": "^8.0.0"
+    "ws": "^8.0.0",
+    "xxh3-ts": "^1.0.6"
   },
   "devDependencies": {
     "@jest/globals": "^29.6.1",
@@ -47,6 +52,7 @@
     "prettier": "^2.8.8",
     "tsc-alias": "^1.8.7",
     "tslib": "^2.5.3",
+    "tsx": "^3.13.0",
     "typescript": "5.1.3"
   }
 }

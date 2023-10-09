@@ -9,7 +9,10 @@ import buildForTests from "@test/utils/buildForTests";
 import { FASTIFY_SERVER_PORT_BASE } from "@test/utils/consts";
 
 import type { FastifyInstance } from "fastify";
-import type { IncomeMessage } from "@highland-cattle-chat/shared";
+import type {
+  IncomeMessage,
+  OutcomeMessage,
+} from "@highland-cattle-chat/shared";
 
 describe("Websocket real-time route - Message type INIT", () => {
   const fastify: FastifyInstance = buildForTests();
@@ -26,35 +29,34 @@ describe("Websocket real-time route - Message type INIT", () => {
   test("should respond on init message type", (done) => {
     const ws = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
     const client = WebSocket.createWebSocketStream(ws);
-    const senderUserId = uuidv4();
+    const userId = uuidv4();
     const initMessage: IncomeMessage = {
       type: "INIT",
-      senderUserId,
+      userId,
     };
 
     client.write(JSON.stringify(initMessage));
     client.on("data", (chunk: Buffer) => {
       const res = JSON.parse(chunk.toString());
       expect(res).toStrictEqual({
-        senderUserId: SERVER_USER_ID,
+        userId: SERVER_USER_ID,
         type: "INIT",
-        recipientUserId: senderUserId,
         status: "OK",
-      });
+      } as OutcomeMessage);
 
       ws.close();
       done();
     });
   });
 
-  test("should respond with status ERROR on init message when connection to user with senderUserId is yet opened (one WS connection)", (done) => {
+  test("should respond with status ERROR on init message when connection to user with userId is yet opened (one WS connection)", (done) => {
     const ws = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
     const client = WebSocket.createWebSocketStream(ws);
     let secondCall = false;
-    const senderUserId = uuidv4();
+    const userId = uuidv4();
     const initMessage: IncomeMessage = {
       type: "INIT",
-      senderUserId,
+      userId,
     };
 
     client.write(JSON.stringify(initMessage));
@@ -62,21 +64,19 @@ describe("Websocket real-time route - Message type INIT", () => {
       const res = JSON.parse(chunk.toString());
       if (secondCall) {
         expect(res).toStrictEqual({
-          senderUserId: SERVER_USER_ID,
+          userId: SERVER_USER_ID,
           type: "INIT",
-          recipientUserId: senderUserId,
           status: "ERROR",
-        });
+        } as OutcomeMessage);
 
         ws.close();
         done();
       } else {
         expect(res).toStrictEqual({
-          senderUserId: SERVER_USER_ID,
+          userId: SERVER_USER_ID,
           type: "INIT",
-          recipientUserId: senderUserId,
           status: "OK",
-        });
+        } as OutcomeMessage);
 
         client.write(JSON.stringify(initMessage));
         secondCall = true;
@@ -84,26 +84,25 @@ describe("Websocket real-time route - Message type INIT", () => {
     });
   });
 
-  test("should respond with status ERROR on init message when connection to user with senderUserId is yet opened (two WS connections, one after each other)", (done) => {
+  test("should respond with status ERROR on init message when connection to user with userId is yet opened (two WS connections, one after each other)", (done) => {
     const firstWs = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
     const secondWs = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
     const firstClient = WebSocket.createWebSocketStream(firstWs);
     const secondClient = WebSocket.createWebSocketStream(secondWs);
-    const senderUserId = uuidv4();
+    const userId = uuidv4();
     const initMessage: IncomeMessage = {
       type: "INIT",
-      senderUserId,
+      userId,
     };
 
     firstClient.write(JSON.stringify(initMessage));
     firstClient.on("data", (chunk: Buffer) => {
       const res = JSON.parse(chunk.toString());
       expect(res).toStrictEqual({
-        senderUserId: SERVER_USER_ID,
+        userId: SERVER_USER_ID,
         type: "INIT",
-        recipientUserId: senderUserId,
         status: "OK",
-      });
+      } as OutcomeMessage);
 
       secondClient.write(JSON.stringify(initMessage));
     });
@@ -111,11 +110,10 @@ describe("Websocket real-time route - Message type INIT", () => {
     secondClient.on("data", (chunk: Buffer) => {
       const res = JSON.parse(chunk.toString());
       expect(res).toStrictEqual({
-        senderUserId: SERVER_USER_ID,
+        userId: SERVER_USER_ID,
         type: "INIT",
-        recipientUserId: senderUserId,
         status: "ERROR",
-      });
+      } as OutcomeMessage);
 
       firstWs.close();
       secondWs.close();
@@ -123,33 +121,31 @@ describe("Websocket real-time route - Message type INIT", () => {
     });
   });
 
-  test("should respond with status ERROR on init message when connection to user with senderUserId is yet opened (two WS connections, parallel)", (done) => {
+  test("should respond with status ERROR on init message when connection to user with userId is yet opened (two WS connections, parallel)", (done) => {
     const firstWs = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
     const secondWs = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
     const firstClient = WebSocket.createWebSocketStream(firstWs);
     const secondClient = WebSocket.createWebSocketStream(secondWs);
-    const senderUserId = uuidv4();
+    const userId = uuidv4();
     const initMessage: IncomeMessage = {
       type: "INIT",
-      senderUserId,
+      userId,
     };
 
     const results: IncomeMessage[] = [];
     const onEnd = () => {
       if (results.length === 2) {
         expect(results).toContainEqual({
-          senderUserId: SERVER_USER_ID,
+          userId: SERVER_USER_ID,
           type: "INIT",
-          recipientUserId: senderUserId,
           status: "OK",
-        });
+        } as OutcomeMessage);
 
         expect(results).toContainEqual({
-          senderUserId: SERVER_USER_ID,
+          userId: SERVER_USER_ID,
           type: "INIT",
-          recipientUserId: senderUserId,
           status: "ERROR",
-        });
+        } as OutcomeMessage);
 
         firstWs.close();
         secondWs.close();

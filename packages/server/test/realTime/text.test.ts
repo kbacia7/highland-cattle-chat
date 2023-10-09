@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "@jest/globals";
-import { v4 as uuidv4 } from "uuid";
 import WebSocket from "ws";
-
+import { v4 as uuidv4 } from "uuid";
 import { SERVER_USER_ID } from "@highland-cattle-chat/shared";
 
 import buildForTests from "@test/utils/buildForTests";
@@ -9,23 +8,58 @@ import buildForTests from "@test/utils/buildForTests";
 import { FASTIFY_SERVER_PORT_BASE } from "@test/utils/consts";
 
 import type { FastifyInstance } from "fastify";
-import type { OutcomeMessage } from "@highland-cattle-chat/shared";
+import type {
+  IncomeMessage,
+  OutcomeMessage,
+} from "@highland-cattle-chat/shared";
+import type { Prisma } from "@prisma/client";
 
 describe("Websocket real-time route - Message type TEXT", () => {
   const fastify: FastifyInstance = buildForTests();
   const SERVER_PORT = FASTIFY_SERVER_PORT_BASE + 3;
-  const senderUserId = uuidv4();
-  const secondSenderUserId = uuidv4();
+  let testUser: Prisma.UserUncheckedCreateInput;
+  let secondTestUser: Prisma.UserUncheckedCreateInput;
+  let testConversation: Prisma.ConversationGetPayload<{
+    include: {
+      participants: true;
+    };
+  }>;
 
   beforeAll(async () => {
     await fastify.listen({ port: SERVER_PORT });
+    testUser = await fastify.prisma.user.findFirstOrThrow({
+      where: {
+        login: "john",
+      },
+    });
+
+    secondTestUser = await fastify.prisma.user.findFirstOrThrow({
+      where: {
+        login: "mike",
+      },
+    });
+
+    testConversation = await fastify.prisma.conversation.findFirstOrThrow({
+      where: {
+        participants: {
+          some: {
+            user: {
+              login: "john",
+            },
+          },
+        },
+      },
+      include: {
+        participants: true,
+      },
+    });
   });
 
   afterAll(async () => {
     fastify.close();
   });
 
-  test("should send message to recipient and sender", (done) => {
+  test("should send message to both participants", (done) => {
     const senderWs = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
     const recipientWs = new WebSocket(
       `ws://localhost:${SERVER_PORT}/real-time`,
@@ -39,24 +73,24 @@ describe("Websocket real-time route - Message type TEXT", () => {
       senderClient.write(
         JSON.stringify({
           type: "TEXT",
-          senderUserId,
-          recipientUserId: secondSenderUserId,
+          userId: testUser.id,
+          conversationId: testConversation.id,
           content: "Message",
-        }),
+        } as IncomeMessage),
       );
 
     senderClient.write(
       JSON.stringify({
         type: "INIT",
-        senderUserId,
-      }),
+        userId: testUser.id,
+      } as IncomeMessage),
     );
 
     recipientClient.write(
       JSON.stringify({
         type: "INIT",
-        senderUserId: secondSenderUserId,
-      }),
+        userId: secondTestUser.id,
+      } as IncomeMessage),
     );
 
     const onEnd = () => {
@@ -72,22 +106,21 @@ describe("Websocket real-time route - Message type TEXT", () => {
       if (res.type === "INIT") {
         doneInitializations += 1;
         expect(res).toStrictEqual({
-          senderUserId: SERVER_USER_ID,
+          userId: SERVER_USER_ID,
           type: "INIT",
-          recipientUserId: senderUserId,
           status: "OK",
-        });
+        } as OutcomeMessage);
 
         onInit();
       } else {
         receivedText += 1;
         expect(res).toStrictEqual({
-          senderUserId,
+          userId: testUser.id,
           type: "TEXT",
-          recipientUserId: secondSenderUserId,
+          conversationId: testConversation.id,
           content: "Message",
           status: "OK",
-        });
+        } as OutcomeMessage);
 
         onEnd();
       }
@@ -98,22 +131,21 @@ describe("Websocket real-time route - Message type TEXT", () => {
       if (res.type === "INIT") {
         doneInitializations += 1;
         expect(res).toStrictEqual({
-          senderUserId: SERVER_USER_ID,
+          userId: SERVER_USER_ID,
           type: "INIT",
-          recipientUserId: secondSenderUserId,
           status: "OK",
-        });
+        } as OutcomeMessage);
 
         onInit();
       } else {
         receivedText += 1;
         expect(res).toStrictEqual({
-          senderUserId,
+          userId: testUser.id,
           type: "TEXT",
-          recipientUserId: secondSenderUserId,
+          conversationId: testConversation.id,
           content: "Message",
           status: "OK",
-        });
+        } as OutcomeMessage);
 
         onEnd();
       }
@@ -133,24 +165,24 @@ describe("Websocket real-time route - Message type TEXT", () => {
       senderClient.write(
         JSON.stringify({
           type: "TEXT",
-          senderUserId,
-          recipientUserId: secondSenderUserId,
+          userId: testUser.id,
+          conversationId: testConversation.id,
           content: "Message",
-        }),
+        } as IncomeMessage),
       );
 
     senderClient.write(
       JSON.stringify({
         type: "INIT",
-        senderUserId,
-      }),
+        userId: testUser.id,
+      } as IncomeMessage),
     );
 
     recipientClient.write(
       JSON.stringify({
         type: "INIT",
-        senderUserId: secondSenderUserId,
-      }),
+        userId: secondTestUser.id,
+      } as IncomeMessage),
     );
 
     senderClient.on("data", (chunk: Buffer) => {
@@ -158,21 +190,20 @@ describe("Websocket real-time route - Message type TEXT", () => {
       if (res.type === "INIT") {
         doneInitializations += 1;
         expect(res).toStrictEqual({
-          senderUserId: SERVER_USER_ID,
-          recipientUserId: senderUserId,
+          userId: SERVER_USER_ID,
           type: "INIT",
           status: "OK",
-        });
+        } as OutcomeMessage);
 
         onInit();
       } else {
         expect(res).toStrictEqual({
-          senderUserId,
+          userId: testUser.id,
           type: "TEXT",
-          recipientUserId: secondSenderUserId,
+          conversationId: testConversation.id,
           content: "Message",
           status: "OK",
-        });
+        } as OutcomeMessage);
 
         senderWs.close();
         done();
@@ -184,11 +215,10 @@ describe("Websocket real-time route - Message type TEXT", () => {
       if (res.type === "INIT") {
         doneInitializations += 1;
         expect(res).toStrictEqual({
-          senderUserId: SERVER_USER_ID,
+          userId: SERVER_USER_ID,
           type: "INIT",
-          recipientUserId: secondSenderUserId,
           status: "OK",
-        });
+        } as OutcomeMessage);
 
         onInit();
         recipientWs.close();
@@ -209,10 +239,10 @@ describe("Websocket real-time route - Message type TEXT", () => {
         senderClient.write(
           JSON.stringify({
             type: "TEXT",
-            senderUserId,
-            recipientUserId: secondSenderUserId,
+            userId: testUser.id,
+            conversationId: testConversation.id,
             content: "Message",
-          }),
+          } as IncomeMessage),
         );
 
         senderWs.close();
@@ -222,15 +252,15 @@ describe("Websocket real-time route - Message type TEXT", () => {
     senderClient.write(
       JSON.stringify({
         type: "INIT",
-        senderUserId,
-      }),
+        userId: testUser.id,
+      } as IncomeMessage),
     );
 
     recipientClient.write(
       JSON.stringify({
         type: "INIT",
-        senderUserId: secondSenderUserId,
-      }),
+        userId: secondTestUser.id,
+      } as IncomeMessage),
     );
 
     senderClient.on("data", (chunk: Buffer) => {
@@ -238,11 +268,10 @@ describe("Websocket real-time route - Message type TEXT", () => {
       if (res.type === "INIT") {
         doneInitializations += 1;
         expect(res).toStrictEqual({
-          senderUserId: SERVER_USER_ID,
-          recipientUserId: senderUserId,
+          userId: SERVER_USER_ID,
           type: "INIT",
           status: "OK",
-        });
+        } as OutcomeMessage);
 
         onInit();
       }
@@ -253,21 +282,20 @@ describe("Websocket real-time route - Message type TEXT", () => {
       if (res.type === "INIT") {
         doneInitializations += 1;
         expect(res).toStrictEqual({
-          senderUserId: SERVER_USER_ID,
-          recipientUserId: secondSenderUserId,
+          userId: SERVER_USER_ID,
           type: "INIT",
           status: "OK",
-        });
+        } as OutcomeMessage);
 
         onInit();
       } else {
         expect(res).toStrictEqual({
-          senderUserId,
-          recipientUserId: secondSenderUserId,
+          userId: testUser.id,
+          conversationId: testConversation.id,
           type: "TEXT",
           content: "Message",
           status: "OK",
-        });
+        } as OutcomeMessage);
 
         senderWs.close();
         recipientWs.close();
@@ -276,40 +304,38 @@ describe("Websocket real-time route - Message type TEXT", () => {
     });
   });
 
-  test("should respond message to sender with status ERROR if recipientUserId is not provided", (done) => {
+  test("should respond message to sender with status ERROR if conversationId is not provided", (done) => {
     const senderWs = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
     const senderClient = WebSocket.createWebSocketStream(senderWs);
     senderClient.write(
       JSON.stringify({
         type: "INIT",
-        senderUserId,
-      }),
+        userId: testUser.id,
+      } as IncomeMessage),
     );
 
     senderClient.on("data", (chunk: Buffer) => {
       const res = JSON.parse(chunk.toString()) as OutcomeMessage;
       if (res.type === "INIT") {
         expect(res).toStrictEqual({
-          senderUserId: SERVER_USER_ID,
-          recipientUserId: senderUserId,
+          userId: SERVER_USER_ID,
           type: "INIT",
           status: "OK",
-        });
+        } as OutcomeMessage);
 
         senderClient.write(
           JSON.stringify({
-            senderUserId,
+            userId: testUser.id,
             type: "TEXT",
             content: "Message",
-          }),
+          } as IncomeMessage),
         );
       } else {
         expect(res).toStrictEqual({
-          senderUserId: SERVER_USER_ID,
+          userId: SERVER_USER_ID,
           type: "TEXT",
-          recipientUserId: senderUserId,
           status: "ERROR",
-        });
+        } as OutcomeMessage);
 
         senderWs.close();
         done();
@@ -323,38 +349,82 @@ describe("Websocket real-time route - Message type TEXT", () => {
     senderClient.write(
       JSON.stringify({
         type: "INIT",
-        senderUserId,
-      }),
+        userId: testUser.id,
+      } as IncomeMessage),
     );
 
     senderClient.on("data", (chunk: Buffer) => {
       const res = JSON.parse(chunk.toString()) as OutcomeMessage;
       if (res.type === "INIT") {
         expect(res).toStrictEqual({
-          senderUserId: SERVER_USER_ID,
-          recipientUserId: senderUserId,
+          userId: SERVER_USER_ID,
           type: "INIT",
           status: "OK",
-        });
+        } as OutcomeMessage);
 
         senderClient.write(
           JSON.stringify({
             type: "TEXT",
-            senderUserId,
-            recipientUserId: secondSenderUserId,
-          }),
+            userId: testUser.id,
+            conversationId: testConversation.id,
+          } as IncomeMessage),
         );
       } else {
         expect(res).toStrictEqual({
-          senderUserId: SERVER_USER_ID,
+          userId: SERVER_USER_ID,
           type: "TEXT",
           status: "ERROR",
-          recipientUserId: senderUserId,
-        });
+        } as OutcomeMessage);
 
         senderWs.close();
         done();
       }
+    });
+  });
+
+  test("should write messages to database after 100 cached messages", (done) => {
+    fastify.cache.del("messages-stack").then(() => {
+      const senderWs = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
+      const senderClient = WebSocket.createWebSocketStream(senderWs);
+      senderClient.write(
+        JSON.stringify({
+          type: "INIT",
+          userId: testUser.id,
+        } as IncomeMessage),
+      );
+
+      const message = uuidv4();
+
+      fastify.messagesStackWorker.on("completed", () => {
+        fastify.prisma.message
+          .findMany({
+            where: {
+              conversationId: testConversation.id,
+              content: message,
+            },
+          })
+          .then((messages) => {
+            expect(messages).toHaveLength(100);
+            senderWs.close();
+            done();
+          });
+      });
+
+      senderClient.on("data", (chunk: Buffer) => {
+        const res = JSON.parse(chunk.toString()) as OutcomeMessage;
+        if (res.type === "INIT") {
+          for (let i = 1; i <= 100; i += 1) {
+            senderClient.write(
+              JSON.stringify({
+                type: "TEXT",
+                userId: testUser.id,
+                conversationId: testConversation.id,
+                content: message,
+              } as IncomeMessage),
+            );
+          }
+        }
+      });
     });
   });
 });
