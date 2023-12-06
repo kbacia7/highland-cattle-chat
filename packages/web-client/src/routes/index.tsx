@@ -11,15 +11,17 @@ import Nav from "../components/Nav";
 
 const RootRoute = () => {
   const webWorkerInitialized = useRef<boolean>(false);
+  const createFakeUserSendedYet = useRef<boolean>(false);
   const user = useAppSelector((state) => state.loggedUser);
   const [createFakeUser] = useCreateFakeUserMutation();
 
   useEffect(() => {
-    (async () => {
-      if (user.userId) {
-        return;
-      }
+    if (user.userId || createFakeUserSendedYet.current) {
+      return;
+    }
 
+    createFakeUserSendedYet.current = true;
+    (async () => {
       const newUser = await createFakeUser().unwrap();
       await set(USER_ID_KEY_ITEM_NAME, newUser.userId);
     })();
