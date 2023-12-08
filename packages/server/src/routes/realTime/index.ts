@@ -131,8 +131,8 @@ const handleMessage = async (
         }
       });
 
-      addMessageToStack(message as Required<IncomeMessage>, fastify);
-      safeWriteMessagesStack(fastify);
+      await addMessageToStack(message as Required<IncomeMessage>, fastify);
+      await safeWriteMessagesStack(fastify);
       break;
     }
 

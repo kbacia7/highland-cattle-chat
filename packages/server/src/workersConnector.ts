@@ -2,8 +2,9 @@ import fp from "fastify-plugin";
 
 import { Worker, Queue } from "bullmq";
 
-import type { IncomeMessage } from "@highland-cattle-chat/shared";
+import { getMessageStackStaleKey } from "@routes/realTime/helpers/messagesStack";
 
+import type { Message } from "@prisma/client";
 import type { FastifyPluginCallback } from "fastify";
 
 declare module "fastify" {
@@ -26,19 +27,17 @@ const workersConnector: FastifyPluginCallback = async (
     },
   });
 
-  const messagesStackWorker = new Worker<string[]>(
+  const messagesStackWorker = new Worker<string>(
     "messages-stack",
     async (job) => {
+      const key = job.data;
       await fastify.prisma.message.createMany({
-        data: job.data.map((msgStr) => {
-          const msg: Required<IncomeMessage> = JSON.parse(msgStr);
-          return {
-            userId: msg.userId,
-            content: msg.content,
-            conversationId: msg.conversationId,
-          };
-        }),
+        data: (
+          await fastify.cache.lrange(getMessageStackStaleKey(key), 0, -1)
+        ).map((msg) => JSON.parse(msg) as Message),
       });
+
+      fastify.cache.del(getMessageStackStaleKey(key));
     },
 
     {

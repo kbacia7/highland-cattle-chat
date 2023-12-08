@@ -58,8 +58,9 @@ describe("REST API - /load-conversation", () => {
           displayName: participant.user.displayName,
         },
       })),
-      messages: testConversation.messages.map(
-        (message: Prisma.MessageUncheckedCreateInput) => ({
+      messages: testConversation.messages
+        .slice(0, 100)
+        .map((message: Prisma.MessageUncheckedCreateInput) => ({
           id: message.id,
           userId: message.userId,
           content: message.content,
@@ -67,8 +68,7 @@ describe("REST API - /load-conversation", () => {
             message.createdAt instanceof Date
               ? message.createdAt.toISOString()
               : message.createdAt,
-        }),
-      ),
+        })),
     });
   });
 
@@ -96,8 +96,9 @@ describe("REST API - /load-conversation", () => {
           displayName: participant.user.displayName,
         },
       })),
-      messages: testConversation.messages.map(
-        (message: Prisma.MessageUncheckedCreateInput) => ({
+      messages: testConversation.messages
+        .slice(0, 10)
+        .map((message: Prisma.MessageUncheckedCreateInput) => ({
           id: message.id,
           userId: message.userId,
           content: message.content,
@@ -105,8 +106,7 @@ describe("REST API - /load-conversation", () => {
             message.createdAt instanceof Date
               ? message.createdAt.toISOString()
               : message.createdAt,
-        }),
-      ),
+        })),
     });
   });
 

@@ -23,7 +23,7 @@ describe("Websocket real-time route - Message type INIT", () => {
   });
 
   afterAll(async () => {
-    fastify.close();
+    await fastify.close();
   });
 
   test("should respond on init message type", (done) => {

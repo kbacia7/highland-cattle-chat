@@ -1,3 +1,6 @@
+import { MESSAGES_STACK_KEY_PREFIX } from "@routes/realTime/helpers/messagesStack";
+
+import type { Message } from "@prisma/client";
 import type { FastifyInstance } from "fastify";
 import type { LoadConversationResponse } from "@highland-cattle-chat/shared";
 
@@ -30,6 +33,14 @@ const loadConversationRoute = async (fastify: FastifyInstance) => {
 
       if (!user) return reply.send(400);
 
+      const incomeMessagesAsJson = await fastify.cache.lrange(
+        `${MESSAGES_STACK_KEY_PREFIX}-${req.query.id}`,
+        0,
+        -1,
+      );
+
+      const { limit } = req.query;
+      const restLimit = limit - incomeMessagesAsJson.length;
       const conversation = await fastify.prisma.conversation.findUnique({
         where: {
           participants: {
@@ -41,15 +52,19 @@ const loadConversationRoute = async (fastify: FastifyInstance) => {
         },
         select: {
           image: true,
-          messages: {
-            select: {
-              id: true,
-              userId: true,
-              createdAt: true,
-              content: true,
-            },
-            take: req.query.limit,
-          },
+          ...(restLimit > 0
+            ? {
+                messages: {
+                  select: {
+                    id: true,
+                    userId: true,
+                    createdAt: true,
+                    content: true,
+                  },
+                  take: restLimit,
+                },
+              }
+            : {}),
           participants: {
             select: {
               user: {
@@ -66,7 +81,11 @@ const loadConversationRoute = async (fastify: FastifyInstance) => {
       if (!conversation) return reply.code(403).send();
 
       return {
-        messages: conversation.messages,
+        messages: (conversation?.messages || []).concat(
+          incomeMessagesAsJson.map(
+            (incomeMesage) => JSON.parse(incomeMesage) as Message,
+          ),
+        ),
         participants: conversation.participants,
         image: conversation.image,
       } as LoadConversationResponse;

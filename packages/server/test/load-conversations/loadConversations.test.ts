@@ -12,7 +12,17 @@ describe("REST API - /load-conversations", () => {
   let testConversations: Prisma.ConversationUncheckedCreateInput[] = [];
 
   beforeAll(async () => {
-    testConversations = await fastify.prisma.conversation.findMany();
+    testConversations = await fastify.prisma.conversation.findMany({
+      where: {
+        participants: {
+          some: {
+            user: {
+              login: "john",
+            },
+          },
+        },
+      },
+    });
   });
 
   afterAll(async () => {
@@ -32,7 +42,7 @@ describe("REST API - /load-conversations", () => {
     const body = response.json();
     expect(response.statusCode).toBe(200);
     expect(testConversations.length).toBeGreaterThan(0);
-    testConversations.forEach(async (conversation) => {
+    testConversations.forEach((conversation) => {
       expect(body).toContainEqual({
         id: conversation.id,
         image: conversation.image,
