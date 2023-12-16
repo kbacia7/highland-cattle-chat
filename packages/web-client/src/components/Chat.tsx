@@ -18,7 +18,7 @@ const ParticipantMessage = ({
       <ProfileImage className="inline" size={50} src={image} />
     </div>
     <div className="ml-2 p-4 w-[85%] lg:w-1/3 bg-blue-300 rounded-2xl inline-block text-blue-900">
-      <p className="text-lg">{content}</p>
+      <p className="text-lg break-words">{content}</p>
     </div>
   </div>
 );
@@ -32,7 +32,7 @@ const LoggedUserMessage = ({
       <ProfileImage className="inline" size={50} src={image} />
     </div>
     <div className="ml-2 p-4 w-[85%] lg:w-1/3 bg-blue-100 rounded-2xl inline-block text-blue-900">
-      <p className="text-lg">{content}</p>
+      <p className="text-lg break-words">{content}</p>
     </div>
   </div>
 );
