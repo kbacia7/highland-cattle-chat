@@ -1,5 +1,7 @@
 import { useAppSelector } from "~/slices/hooks";
 
+import ProfileImage from "./ProfileImage";
+
 import type { LoadConversationResponse } from "@highland-cattle-chat/shared";
 
 type Props = {
@@ -11,28 +13,26 @@ const ParticipantMessage = ({
   content,
   image,
 }: LoadConversationResponse["messages"][0] & { image: string }) => (
-  <div className="mb-3 flex items-center">
+  <div className="mb-3 flex items-start lg:items-center">
     <div className="inline-block">
-      <img
-        className="rounded-full object-cover aspect-square inline"
-        width="50"
-        height="50"
-        src={image}
-      />
+      <ProfileImage className="inline" size={50} src={image} />
     </div>
-    <div className="ml-2 p-3 pl-3 w-1/3 bg-slate-300 rounded-lg inline-block">
-      <p>{content}</p>
+    <div className="ml-2 p-4 w-[85%] lg:w-1/3 bg-blue-300 rounded-2xl inline-block text-blue-900">
+      <p className="text-lg">{content}</p>
     </div>
   </div>
 );
 
 const LoggedUserMessage = ({
   content,
-  id,
-}: LoadConversationResponse["messages"][0]) => (
-  <div className="mb-3 flex items-center justify-end" key={id}>
-    <div className="ml-2 p-3 pl-3 w-1/3 bg-slate-300 rounded-lg inline-block">
-      <p>{content}</p>
+  image,
+}: LoadConversationResponse["messages"][0] & { image: string }) => (
+  <div className="mb-3 flex items-start lg:items-center lg:justify-end">
+    <div className="inline-block">
+      <ProfileImage className="inline" size={50} src={image} />
+    </div>
+    <div className="ml-2 p-4 w-[85%] lg:w-1/3 bg-blue-100 rounded-2xl inline-block text-blue-900">
+      <p className="text-lg">{content}</p>
     </div>
   </div>
 );
@@ -40,7 +40,7 @@ const LoggedUserMessage = ({
 const Chat = ({ messages, image }: Props) => {
   const loggedUserId = useAppSelector((state) => state.loggedUser.userId);
   return (
-    <div className="p-5 overflow-y-auto h-full">
+    <div className="p-5 overflow-y-auto">
       {messages && messages?.length > 0
         ? messages.map((message) => {
             if (message.userId !== loggedUserId)
@@ -51,7 +51,14 @@ const Chat = ({ messages, image }: Props) => {
                   key={message.id}
                 />
               );
-            else return <LoggedUserMessage {...message} key={message.id} />;
+            else
+              return (
+                <LoggedUserMessage
+                  {...message}
+                  image={image}
+                  key={message.id}
+                />
+              );
           })
         : ""}
     </div>

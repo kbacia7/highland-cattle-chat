@@ -10,7 +10,7 @@ const Input = ({ onSend, ...props }: Props) => {
     <input
       ref={inputRef}
       type="text"
-      className="p-5 block my-0 mx-auto rounded-full border-blue-200 border-2 h-11 w-1/2 decoration-slate-700 outline-none focus:drop-shadow-md focus:border-blue-300 focus:ring-1"
+      className="p-5 rounded-full bg-blue-100 placeholder:text-gray-500 border-gray-100 focus:border-blue-200 border-2 h-11 w-full outline-none focus:drop-shadow-md focus:ring-1"
       onKeyDown={(event) => {
         if (event.keyCode === 13 && inputRef.current) {
           onSend(inputRef.current?.value);

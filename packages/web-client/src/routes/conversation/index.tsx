@@ -11,6 +11,8 @@ import { InternalMessageTypes } from "~/consts/broadcast";
 import { useLoadConversationQuery } from "~/slices/conversationsSlice";
 import { useAppSelector } from "~/slices/hooks";
 
+import SendMessageIcon from "~/components/icons/Send";
+
 import type {
   IncomeMessage,
   LoadConversationResponse,
@@ -75,28 +77,35 @@ const ConversationRoute = () => {
 
   return (
     <main className="w-full">
-      <ConversationHeader
-        image={currentData.image}
-        participant={currentData.participants[0]}
-      />
-      {/*TODO: Move it to CSS */}
-      <div style={{ height: "calc(100% - 44px - 74px)" }}>
-        <Chat messages={messages} image={currentData.image} />
-      </div>
-      <Input
-        onSend={async (message: string) => {
-          const channel = new BroadcastChannel("sended_messages");
-          const msg: IncomeMessage = {
-            userId,
-            conversationId,
-            type: MessageTypes.TEXT,
-            content: message,
-          };
+      <div className="flex flex-col h-full">
+        <ConversationHeader
+          image={currentData.image}
+          participant={currentData.participants[0]}
+        />
 
-          channel.postMessage(msg);
-        }}
-        placeholder={"Message..."}
-      />
+        <Chat messages={messages} image={currentData.image} />
+
+        <div className="p-2 flex items-center">
+          <Input
+            onSend={async (message: string) => {
+              const channel = new BroadcastChannel("sended_messages");
+              const msg: IncomeMessage = {
+                userId,
+                conversationId,
+                type: MessageTypes.TEXT,
+                content: message,
+              };
+
+              channel.postMessage(msg);
+            }}
+            placeholder={"Message..."}
+          />
+
+          <button className="px-2 text-blue-900">
+            <SendMessageIcon size={36} />
+          </button>
+        </div>
+      </div>
     </main>
   );
 };

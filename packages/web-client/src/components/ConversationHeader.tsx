@@ -7,9 +7,13 @@ type Props = {
   participant: LoadConversationResponse["participants"][0];
 };
 const ConversationHeader = ({ image, participant }: Props) => (
-  <div className="w-full h-[74px] bg-white py-3 px-5 drop-shadow-lg">
+  <div className="w-full h-[74px] bg-blue-100 py-3 px-5 flex items-center">
     <ProfileImage src={image} size={50} />
-    <h2 className="inline ml-5 font-bold">{participant.user.displayName}</h2>
+    <div className="truncate">
+      <h2 className="text-xl inline ml-5 font-bold text-blue-900">
+        {participant.user.displayName}
+      </h2>
+    </div>
   </div>
 );
 

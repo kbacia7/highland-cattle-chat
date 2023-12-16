@@ -39,7 +39,9 @@ const RootRoute = () => {
   return (
     <>
       <div className="flex h-full">
-        <Nav />
+        <div className="hidden lg:block">
+          <Nav />
+        </div>
         <Outlet />
       </div>
     </>
