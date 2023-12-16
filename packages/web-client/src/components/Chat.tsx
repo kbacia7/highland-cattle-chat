@@ -1,3 +1,5 @@
+import { cx } from "class-variance-authority";
+
 import { useAppSelector } from "~/slices/hooks";
 
 import ProfileImage from "./ProfileImage";
@@ -9,25 +11,19 @@ type Props = {
   image: string;
 };
 
-const ParticipantMessage = ({
+const ChatMessage = ({
   content,
   image,
-}: LoadConversationResponse["messages"][0] & { image: string }) => (
-  <div className="mb-3 flex items-start lg:items-center">
-    <div className="inline-block">
-      <ProfileImage className="inline" size={50} src={image} />
-    </div>
-    <div className="ml-2 p-4 w-[85%] lg:w-1/3 bg-blue-300 rounded-2xl inline-block text-blue-900">
-      <p className="text-lg break-words">{content}</p>
-    </div>
-  </div>
-);
-
-const LoggedUserMessage = ({
-  content,
-  image,
-}: LoadConversationResponse["messages"][0] & { image: string }) => (
-  <div className="mb-3 flex items-start lg:items-center lg:justify-end">
+  floatRight,
+}: LoadConversationResponse["messages"][0] & {
+  image: string;
+  floatRight: boolean;
+}) => (
+  <div
+    className={cx("mb-3 flex items-start lg:items-center", {
+      "lg:justify-end": floatRight,
+    })}
+  >
     <div className="inline-block">
       <ProfileImage className="inline" size={50} src={image} />
     </div>
@@ -42,24 +38,14 @@ const Chat = ({ messages, image }: Props) => {
   return (
     <div className="p-5 overflow-y-auto">
       {messages && messages?.length > 0
-        ? messages.map((message) => {
-            if (message.userId !== loggedUserId)
-              return (
-                <ParticipantMessage
-                  {...message}
-                  image={image}
-                  key={message.id}
-                />
-              );
-            else
-              return (
-                <LoggedUserMessage
-                  {...message}
-                  image={image}
-                  key={message.id}
-                />
-              );
-          })
+        ? messages.map((message) => (
+            <ChatMessage
+              {...message}
+              image={image}
+              key={message.id}
+              floatRight={message.userId === loggedUserId}
+            />
+          ))
         : ""}
     </div>
   );
