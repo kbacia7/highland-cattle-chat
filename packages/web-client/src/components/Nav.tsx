@@ -32,13 +32,12 @@ const Nav = () => {
         {!isLoading &&
           !isError &&
           currentData?.map(({ id, image, title }) => (
-            <Link to={`conversation/${id}`} className="w-full">
+            <Link to={`conversation/${id}`} className="w-full" key={id}>
               <Conversation
                 lastMessage="text"
                 status={USER_STATUS.ONLINE}
                 title={title}
                 image={image}
-                key={id}
               />
             </Link>
           ))}
