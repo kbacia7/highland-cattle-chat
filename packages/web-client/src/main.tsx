@@ -8,6 +8,7 @@ import ConversationRoute from "./routes/conversation";
 import { store } from "./slices/store";
 
 import "./index.css";
+import HomeRoute from "./routes/home";
 
 const router = createBrowserRouter([
   {
@@ -19,6 +20,10 @@ const router = createBrowserRouter([
         element: <ConversationRoute />,
       },
     ],
+  },
+  {
+    path: "/home",
+    element: <HomeRoute />,
   },
 ]);
 
