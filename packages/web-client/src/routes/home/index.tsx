@@ -2,6 +2,9 @@ import fakeChat from "~/assets/fake-chat.png";
 import github from "~/assets/github.png";
 
 import Button from "~/components/Button";
+import Modal from "~/components/Modal";
+
+import RegisterForm from "~/routes/home/containers/RegisterForm";
 
 import MessageBox from "./components/MessageBox";
 import RoundedVectorLine from "./components/RoundedVectorLine";
@@ -9,6 +12,11 @@ import StraightVectorLine from "./components/StraightVectorLine";
 
 const HomeRoute = () => (
   <>
+    <Modal title="We are happy that you are here!" open>
+      {({ toastPlacementRef }) => (
+        <RegisterForm toastPlacementRef={toastPlacementRef} />
+      )}
+    </Modal>
     <div className="pt-5 pl-8">
       <a
         href="https://github.com/kbacia7/highland-cattle-chat"
