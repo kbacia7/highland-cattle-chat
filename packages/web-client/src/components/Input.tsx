@@ -1,25 +1,25 @@
-import { useRef } from "react";
+import { cx } from "class-variance-authority";
+import { forwardRef } from "react";
 
-interface Props extends React.ComponentPropsWithoutRef<"input"> {
-  onSend: (message: string) => void;
+interface Props extends React.ComponentPropsWithRef<"input"> {
+  error?: boolean;
 }
 
-const Input = ({ onSend, ...props }: Props) => {
-  const inputRef = useRef<HTMLInputElement>(null);
-  return (
+const TextInput = forwardRef<HTMLInputElement, Props>(
+  ({ error, ...props }, inputRef) => (
     <input
       ref={inputRef}
       type="text"
-      className="p-5 rounded-full bg-blue-100 placeholder:text-gray-500 border-gray-100 focus:border-blue-200 border-2 h-11 w-full outline-none focus:drop-shadow-md focus:ring-1"
-      onKeyDown={(event) => {
-        if (event.keyCode === 13 && inputRef.current) {
-          onSend(inputRef.current?.value);
-          inputRef.current.value = "";
-        }
-      }}
+      className={cx(
+        "p-5 rounded-full bg-blue-100 placeholder:text-gray-500 border-gray-100 focus:border-blue-200 border-2 h-11 w-full outline-none focus:drop-shadow-md focus:ring-1",
+        {
+          "border-red-300 bg-red-100 font-bold text-red-700 placeholder:text-red-500":
+            error,
+        },
+      )}
       {...props}
     />
-  );
-};
+  ),
+);
 
-export default Input;
+export default TextInput;
