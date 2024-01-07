@@ -34,8 +34,8 @@ const HomeRoute = () => (
           </ul>
         </div>
         <div className="flex flex-col md:flex-row justify-center md:gap-5 mt-9">
-          <Button type="primary">Get started</Button>
-          <Button type="secondary">I have account</Button>
+          <Button color="primary">Get started</Button>
+          <Button color="secondary">I have account</Button>
         </div>
       </div>
       <div className="hidden md:flex md:flex-row md:items-center">

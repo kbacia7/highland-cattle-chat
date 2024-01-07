@@ -1,21 +1,23 @@
 import { cx } from "class-variance-authority";
+import React from "react";
 
-type Props = {
-  type: "primary" | "secondary";
+interface Props extends React.ComponentPropsWithoutRef<"button"> {
+  color: "primary" | "secondary";
   children: React.ReactNode;
   className?: string;
-};
+}
 
-const Button = ({ type, children, className }: Props) => (
+const Button = ({ color, children, className, ...props }: Props) => (
   <button
     className={cx(
       "md:rounded-md text-center py-4 min-w-[150px] transition-colors",
       className,
       {
-        "bg-blue-500 text-white hover:bg-blue-400": type === "primary",
-        "bg-blue-300 text-blue-900 hover:bg-blue-200": type === "secondary",
+        "bg-blue-500 text-white hover:bg-blue-400": color === "primary",
+        "bg-blue-300 text-blue-900 hover:bg-blue-200": color === "secondary",
       },
     )}
+    {...props}
   >
     {children}
   </button>
