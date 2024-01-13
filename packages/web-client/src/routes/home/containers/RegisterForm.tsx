@@ -46,6 +46,14 @@ const RegisterForm = ({
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="first:pt-4 pb-4">
           <Input
+            placeholder="Display name"
+            {...register("displayName")}
+            error={!!errors.displayName}
+          />
+        </div>
+
+        <div className="first:pt-4 pb-4">
+          <Input
             placeholder="E-mail"
             {...register("email")}
             error={!!errors.email}
