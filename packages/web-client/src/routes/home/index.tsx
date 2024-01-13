@@ -4,7 +4,8 @@ import github from "~/assets/github.png";
 import Button from "~/components/Button";
 import Modal from "~/components/Modal";
 
-import RegisterForm from "~/routes/home/containers/RegisterForm";
+import RegisterForm from "./containers/RegisterForm";
+import LoginForm from "./containers/LoginForm";
 
 import MessageBox from "./components/MessageBox";
 import RoundedVectorLine from "./components/RoundedVectorLine";
@@ -48,7 +49,16 @@ const HomeRoute = () => (
             <RegisterForm />
           </Modal>
 
-          <Button color="secondary">I have account</Button>
+          <Modal
+            title="We are happy that you are back!"
+            toggleRenderFn={({ openModal }) => (
+              <Button onClick={openModal} color="secondary">
+                I have account
+              </Button>
+            )}
+          >
+            <LoginForm />
+          </Modal>
         </div>
       </div>
       <div className="hidden md:flex md:flex-row md:items-center">

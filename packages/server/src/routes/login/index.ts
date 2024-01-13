@@ -56,10 +56,11 @@ const loginUserRoute = async (fastify: FastifyInstance) => {
         user?.password || "",
       );
 
-      if (!user || !isValidPassword) return reply.code(403).send();
+      if (!user || !isValidPassword)
+        return reply.code(403).send({ error: "Incorrect email or password" });
 
       const token = await createSession(user.id, fastify.prisma);
-      return setSessionCookie(token, user.id, reply).send(user);
+      return setSessionCookie(token, user.id, reply).send({ userId: user.id });
     },
   );
 };

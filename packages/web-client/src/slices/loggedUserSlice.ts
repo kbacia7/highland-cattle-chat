@@ -5,8 +5,21 @@ import { USER_ID_KEY_ITEM_NAME } from "~/utils/localStorage";
 
 import { apiSlice } from "./apiSlice";
 
+import type { z } from "zod";
+import type { loginSchema, registerSchema } from "@highland-cattle-chat/shared";
+
 type CreateFakeUserResponse = {
   userId: string;
+};
+
+type RegisterResponse = {
+  userId?: string;
+  error?: string;
+};
+
+type LoginResponse = {
+  userId?: string;
+  error?: string;
 };
 
 const initialState = {
@@ -26,9 +39,32 @@ export const extendedApiSlice = apiSlice.injectEndpoints({
         url: "/create-fake-user",
       }),
     }),
+
+    register: builder.mutation<
+      RegisterResponse,
+      z.infer<typeof registerSchema>
+    >({
+      query: (body) => ({
+        url: "/register",
+        method: "POST",
+        body,
+      }),
+    }),
+
+    login: builder.mutation<LoginResponse, z.infer<typeof loginSchema>>({
+      query: (body) => ({
+        url: "/login",
+        method: "POST",
+        body,
+      }),
+    }),
   }),
 });
 
-export const { useCreateFakeUserMutation } = extendedApiSlice;
+export const {
+  useCreateFakeUserMutation,
+  useRegisterMutation,
+  useLoginMutation,
+} = extendedApiSlice;
 
 export default loggedUserSlice.reducer;
