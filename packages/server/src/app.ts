@@ -14,15 +14,15 @@ import prismaConnector from "./prismaConnector";
 import cacheConnector from "./cacheConnector";
 import workersConnector from "./workersConnector";
 
+import type { Server } from "https";
 import type {
-  FastifyHttpOptions,
-  RawServerDefault,
+  FastifyHttpsOptions,
   FastifyBaseLogger,
   FastifyInstance,
 } from "fastify";
 
 const build = (
-  opts?: FastifyHttpOptions<RawServerDefault, FastifyBaseLogger> | undefined,
+  opts?: FastifyHttpsOptions<Server, FastifyBaseLogger> | undefined,
 ) => {
   const fastify: FastifyInstance = Fastify(opts);
   fastify.register(cors, {
