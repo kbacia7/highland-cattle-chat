@@ -1,48 +1,74 @@
-import { createPortal } from "react-dom";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema } from "@highland-cattle-chat/shared";
 
+import { useEffect } from "react";
+
 import Input from "~/components/Input";
 import Button from "~/components/Button";
-import ErrorsToast from "~/components/ErrorsToast";
+
+import { useRegisterMutation } from "~/slices/loggedUserSlice";
+import isKnownServerSideError from "~/utils/isKnownServerSideError";
+
+import { useToast } from "~/contexts/ToastMessagesContext";
 
 import type { z } from "zod";
 
 type Inputs = z.infer<typeof registerSchema>;
 
-const RegisterForm = ({
-  toastPlacementRef,
-}: {
-  toastPlacementRef: React.RefObject<HTMLDivElement>;
-}) => {
+const RegisterForm = () => {
+  const [registerUser] = useRegisterMutation();
+  const { setToasts, addToast } = useToast();
+
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    setError,
+    reset,
+    formState: { isSubmitSuccessful, errors, submitCount },
   } = useForm<Inputs>({
     resolver: zodResolver(registerSchema),
     shouldFocusError: false,
     reValidateMode: "onSubmit",
   });
 
-  // eslint-disable-next-line no-console
-  const onSubmit: SubmitHandler<Inputs> = (data) => console.log(data);
+  useEffect(() => {
+    if (isSubmitSuccessful) {
+      reset();
+    }
+  }, [isSubmitSuccessful, reset, addToast]);
+
+  useEffect(() => {
+    const messages = Object.values(errors);
+    if (messages?.length) {
+      setToasts(
+        messages.map((v) => ({
+          type: "error",
+          message: v.message || "Something gone wrong",
+        })),
+      );
+    }
+  }, [errors, setToasts, submitCount]);
+
+  const onSubmit: SubmitHandler<Inputs> = async (data) => {
+    try {
+      await registerUser(data).unwrap();
+      addToast({
+        type: "success",
+        message: "You have successfully registered",
+        timeout: 5000,
+      });
+    } catch (error) {
+      if (isKnownServerSideError(error)) {
+        setError("root", {
+          message: error.data.error,
+        });
+      }
+    }
+  };
 
   return (
     <>
-      {toastPlacementRef.current &&
-        createPortal(
-          <ErrorsToast
-            errors={
-              Object.values(errors)
-                .map((v) => v.message)
-                .filter(Boolean) as string[]
-            }
-          />,
-          toastPlacementRef.current,
-        )}
-
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="first:pt-4 pb-4">
           <Input
@@ -76,7 +102,7 @@ const RegisterForm = ({
           />
         </div>
 
-        <div className="first:pt-4 pb-4">
+        <div className="pt-3 pb-4 text-center">
           <Button type="submit" color="primary">
             Register
           </Button>

@@ -32,9 +32,12 @@ const registerRoute = async (fastify: FastifyInstance) => {
         },
       });
 
-      if (userExists) return reply.code(403).send();
+      if (userExists)
+        return reply.code(403).send({
+          error: "User with given e-mail already exists",
+        });
 
-      await fastify.prisma.user.create({
+      const user = await fastify.prisma.user.create({
         data: {
           displayName: req.body.displayName,
           password: await bcrypt.hash(req.body.password, 10),
@@ -42,7 +45,7 @@ const registerRoute = async (fastify: FastifyInstance) => {
         },
       });
 
-      return reply.send();
+      return reply.send({ userId: user.id });
     },
   );
 };
