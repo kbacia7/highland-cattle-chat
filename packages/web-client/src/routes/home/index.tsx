@@ -13,9 +13,7 @@ import StraightVectorLine from "./components/StraightVectorLine";
 const HomeRoute = () => (
   <>
     <Modal title="We are happy that you are here!" open>
-      {({ toastPlacementRef }) => (
-        <RegisterForm toastPlacementRef={toastPlacementRef} />
-      )}
+      <RegisterForm />
     </Modal>
     <div className="pt-5 pl-8">
       <a
