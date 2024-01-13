@@ -147,8 +147,10 @@ function cachingExtension(fastify: LegalFastifyInstance) {
   );
 }
 
-export const createPrismaClient = (fastify: LegalFastifyInstance) =>
-  new PrismaClient().$extends(cachingExtension(fastify));
+export const createPrismaClient = (
+  fastify: LegalFastifyInstance,
+  options?: ConstructorParameters<typeof PrismaClient>[0],
+) => new PrismaClient(options).$extends(cachingExtension(fastify));
 
 const prismaConnector: FastifyPluginCallback = async (
   fastify,
