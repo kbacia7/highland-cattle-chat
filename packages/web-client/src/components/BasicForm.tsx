@@ -15,7 +15,7 @@ const BasicForm = <TFieldValues extends FieldValues = FieldValues>({
   control,
   ...props
 }: Props<TFieldValues>) => {
-  const { setToasts } = useToast();
+  const { addToast } = useToast();
   const { errors, isSubmitSuccessful, submitCount } =
     useFormState<TFieldValues>({ control });
 
@@ -28,7 +28,7 @@ const BasicForm = <TFieldValues extends FieldValues = FieldValues>({
   useEffect(() => {
     const messages = Object.values(errors);
     if (messages?.length) {
-      setToasts(
+      addToast(
         messages.map((v) => ({
           type: "error",
           message:
@@ -36,7 +36,8 @@ const BasicForm = <TFieldValues extends FieldValues = FieldValues>({
         })),
       );
     }
-  }, [errors, setToasts, submitCount]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [errors, submitCount]);
 
   return <form {...props} />;
 };

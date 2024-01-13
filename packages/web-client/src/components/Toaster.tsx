@@ -1,26 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { cx } from "class-variance-authority";
 
 import CloseIcon from "./icons/Close";
 
-export type ToastProps = {
-  timeout?: number;
-  message: string;
-  type: "success" | "error";
-};
+import type { Toast, ToastOptions } from "~/contexts/ToastMessagesContext";
 
-const Toast = ({ timeout, message, type }: ToastProps) => {
+const ToastMessage = ({ message, type }: Omit<ToastOptions, "timeout">) => {
   const [visible, setVisible] = useState<boolean>(true);
-  useEffect(() => {
-    if (visible)
-      setTimeout(() => {
-        setVisible(false);
-      }, timeout);
-  }, [visible, timeout]);
 
   if (!visible) return null;
-
   return (
     <div
       className={cx(
@@ -40,22 +29,16 @@ const Toast = ({ timeout, message, type }: ToastProps) => {
     </div>
   );
 };
-
-type Props = {
-  toasts: ToastProps[];
+type ToasterProps = {
+  toasts: Toast[];
 };
 
-const Toaster = ({ toasts }: Props) => {
+const Toaster = ({ toasts }: ToasterProps) => {
   if (!toasts?.length) return null;
   return (
     <div className="absolute top-0 left-0 w-full">
-      {toasts.map(({ message, timeout, type }, index) => (
-        <Toast
-          key={`${toasts.length}-${message.length}`}
-          timeout={timeout || 5000 + index * 1000}
-          type={type}
-          message={message}
-        />
+      {toasts.map(({ message, type, id }) => (
+        <ToastMessage key={id} type={type} message={message} />
       ))}
     </div>
   );
