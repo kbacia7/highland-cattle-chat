@@ -7,6 +7,7 @@
   "type": "module",
   "scripts": {
     "build": "node esbuild.config.mjs",
+    "lint": "eslint src; tsc --noEmit",
     "test": "yarn run jest-seed; yarn node --experimental-vm-modules $(yarn bin jest) --testPathIgnorePatterns=test/realTime/text.test.ts --testPathIgnorePatterns=test/login/ --testPathIgnorePatterns=test/load-conversation/ --forceExit; yarn run jest-seed; yarn node --experimental-vm-modules $(yarn bin jest) test/load-conversation/ --forceExit; yarn node --experimental-vm-modules $(yarn bin jest) test/realTime/text.test.ts --forceExit; yarn run jest-seed; yarn node --experimental-vm-modules $(yarn bin jest) test/login/login.test.ts --forceExit",
     "jest-seed": "tsx prisma/seeds/clear-collections.ts; prisma db push; tsx prisma/seeds/jest-tests.ts"
   },
