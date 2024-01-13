@@ -1,5 +1,4 @@
 import type { FastifyInstance } from "fastify";
-import type { LoadConversationsResponse } from "@highland-cattle-chat/shared";
 
 const loadConversationsRoute = async (fastify: FastifyInstance) => {
   fastify.get(
@@ -21,9 +20,7 @@ const loadConversationsRoute = async (fastify: FastifyInstance) => {
 
       if (!user) return reply.send(400);
 
-      return user.participates.map(
-        (participate) => participate.conversation,
-      ) as LoadConversationsResponse;
+      return user.participates.map((participate) => participate.conversation);
     },
   );
 };
