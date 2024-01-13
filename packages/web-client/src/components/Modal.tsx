@@ -49,7 +49,7 @@ const Modal = ({
       {toggled && (
         <dialog
           onClose={() => setToggled(false)}
-          className="backdrop:bg-black backdrop:opacity-50 w-96 p-4 focus:outline-none rounded-md shadow-[0_4px_4px_rgba(0,0,0,0.2)]"
+          className="backdrop:bg-black backdrop:opacity-50 w-full m-0 min-w-full min-h-full lg:w-96 lg:h-fit lg:min-h-0 lg:min-w-0 lg:m-auto p-4 focus:outline-none rounded-md shadow-[0_4px_4px_rgba(0,0,0,0.2)]"
           ref={ref}
         >
           <ToastMessagesProvider>
