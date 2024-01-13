@@ -2,10 +2,9 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema } from "@highland-cattle-chat/shared";
 
-import { useEffect } from "react";
-
 import Input from "~/components/Input";
 import Button from "~/components/Button";
+import BasicForm from "~/components/BasicForm";
 
 import { useRegisterMutation } from "~/slices/loggedUserSlice";
 import isKnownServerSideError from "~/utils/isKnownServerSideError";
@@ -18,37 +17,19 @@ type Inputs = z.infer<typeof registerSchema>;
 
 const RegisterForm = () => {
   const [registerUser] = useRegisterMutation();
-  const { setToasts, addToast } = useToast();
+  const { addToast } = useToast();
 
   const {
     register,
     handleSubmit,
     setError,
-    reset,
-    formState: { isSubmitSuccessful, errors, submitCount },
+    control,
+    formState: { errors },
   } = useForm<Inputs>({
     resolver: zodResolver(registerSchema),
     shouldFocusError: false,
     reValidateMode: "onSubmit",
   });
-
-  useEffect(() => {
-    if (isSubmitSuccessful) {
-      reset();
-    }
-  }, [isSubmitSuccessful, reset, addToast]);
-
-  useEffect(() => {
-    const messages = Object.values(errors);
-    if (messages?.length) {
-      setToasts(
-        messages.map((v) => ({
-          type: "error",
-          message: v.message || "Something gone wrong",
-        })),
-      );
-    }
-  }, [errors, setToasts, submitCount]);
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     try {
@@ -69,7 +50,12 @@ const RegisterForm = () => {
 
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <p className="text-base">
+        You are only moments away from experience of next-generation
+        communication
+      </p>
+
+      <BasicForm<Inputs> control={control} onSubmit={handleSubmit(onSubmit)}>
         <div className="first:pt-4 pb-4">
           <Input
             placeholder="Display name"
@@ -107,7 +93,7 @@ const RegisterForm = () => {
             Register
           </Button>
         </div>
-      </form>
+      </BasicForm>
     </>
   );
 };
