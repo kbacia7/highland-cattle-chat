@@ -12,9 +12,6 @@ import StraightVectorLine from "./components/StraightVectorLine";
 
 const HomeRoute = () => (
   <>
-    <Modal title="We are happy that you are here!" open>
-      <RegisterForm />
-    </Modal>
     <div className="pt-5 pl-8">
       <a
         href="https://github.com/kbacia7/highland-cattle-chat"
@@ -40,7 +37,17 @@ const HomeRoute = () => (
           </ul>
         </div>
         <div className="flex flex-col md:flex-row justify-center md:gap-5 mt-9">
-          <Button color="primary">Get started</Button>
+          <Modal
+            title="We are happy that you are here!"
+            toggleRenderFn={({ openModal }) => (
+              <Button onClick={openModal} color="primary">
+                Get started
+              </Button>
+            )}
+          >
+            <RegisterForm />
+          </Modal>
+
           <Button color="secondary">I have account</Button>
         </div>
       </div>
