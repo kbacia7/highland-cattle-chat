@@ -77,6 +77,7 @@ const RegisterForm = () => {
             placeholder="Password"
             {...register("password")}
             error={!!errors.password}
+            type="password"
           />
         </div>
 
@@ -85,6 +86,7 @@ const RegisterForm = () => {
             placeholder="Repeat password"
             {...register("repeatPassword")}
             error={!!errors.repeatPassword}
+            type="password"
           />
         </div>
 
