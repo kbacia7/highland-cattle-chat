@@ -6,6 +6,7 @@ import cors from "@fastify/cors";
 import restrictedContext from "@contexts/restrictedContext";
 
 import realTimeRoute from "@routes/realTime";
+import registerUserRoute from "@routes/register";
 import loginUserRoute from "@routes/login";
 import createFakeUserRoute from "@routes/createFakeUser";
 
@@ -41,6 +42,7 @@ const build = (
   fastify.register(cacheConnector);
   fastify.register(workersConnector);
   fastify.register(realTimeRoute);
+  fastify.register(registerUserRoute);
   fastify.register(loginUserRoute);
   fastify.register(restrictedContext);
   if (process.env.NODE_ENV === "development")

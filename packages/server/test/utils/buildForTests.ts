@@ -3,6 +3,7 @@ import fastifyWebsocket from "@fastify/websocket";
 import fastifyCookie from "@fastify/cookie";
 
 import realTimeRoute from "@routes/realTime";
+import registerUserRoute from "@routes/register";
 import loginUserRoute from "@routes/login";
 
 import restrictedContext from "@contexts/restrictedContext";
@@ -22,9 +23,15 @@ const buildForTests = () => {
 
   fastify.register(fastifyWebsocket);
   fastify.register(cacheConnector);
-  fastify.decorate("prisma", createPrismaClient(fastify));
+  fastify.decorate(
+    "prisma",
+    createPrismaClient(fastify, {
+      datasourceUrl: process.env.JEST_TESTS_DATABASE_URL,
+    }),
+  );
   fastify.register(workersConnector);
   fastify.register(realTimeRoute);
+  fastify.register(registerUserRoute);
   fastify.register(loginUserRoute);
   fastify.register(restrictedContext);
 

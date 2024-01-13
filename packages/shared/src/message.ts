@@ -36,7 +36,7 @@ export type MessageRecord = {
 export type UserRecord = {
   id?: string;
   displayName: string;
-  login: string;
+  email: string;
   createdAt?: string;
 };
 

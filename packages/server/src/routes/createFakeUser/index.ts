@@ -14,12 +14,15 @@ let toggleSecondRes: boolean = false;
 
 const createFakeUser = async (fastify: FastifyInstance) => {
   const displayName = `User ${uuidv4()}`;
-  const login = displayName.toLowerCase().replace(" ", "-");
+  const email = `${displayName.toLowerCase().replace(" ", "-")}@example.com`;
+  const password = `password-${email}`;
+
   return {
     user: await fastify.prisma.user.create({
       data: {
         displayName,
-        login,
+        email,
+        password,
       },
     }),
   };

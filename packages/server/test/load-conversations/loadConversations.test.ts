@@ -17,7 +17,7 @@ describe("REST API - /load-conversations", () => {
         participants: {
           some: {
             user: {
-              login: "john",
+              email: "john@example.com",
             },
           },
         },
@@ -30,7 +30,12 @@ describe("REST API - /load-conversations", () => {
   });
 
   test("should respond with status 200 and user conversations", async () => {
-    const authHeader = await authorize("john", fastify);
+    const authHeader = await authorize(
+      "john@example.com",
+      "password-john",
+      fastify,
+    );
+
     const response = await fastify.inject({
       method: "GET",
       url: "/load-conversations",

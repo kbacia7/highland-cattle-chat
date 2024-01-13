@@ -29,13 +29,13 @@ describe("Websocket real-time route - Message type TEXT", () => {
     await fastify.listen({ port: SERVER_PORT });
     testUser = await fastify.prisma.user.findFirstOrThrow({
       where: {
-        login: "john",
+        email: "john@example.com",
       },
     });
 
     secondTestUser = await fastify.prisma.user.findFirstOrThrow({
       where: {
-        login: "mike",
+        email: "mike@example.com",
       },
     });
 
@@ -44,7 +44,7 @@ describe("Websocket real-time route - Message type TEXT", () => {
         participants: {
           some: {
             user: {
-              login: "john",
+              email: "john@example.com",
             },
           },
         },

@@ -7,7 +7,7 @@
   "type": "module",
   "scripts": {
     "build": "node esbuild.config.mjs",
-    "test": "yarn run jest-seed; yarn node --experimental-vm-modules $(yarn bin jest) --testPathIgnorePatterns=test/realTime/text.test.ts --testPathIgnorePatterns=test/login/ --testPathIgnorePatterns=test/load-conversation/ --forceExit; yarn run jest-seed; yarn node --experimental-vm-modules $(yarn bin jest) test/load-conversation/ --forceExit; yarn node --experimental-vm-modules $(yarn bin jest) test/realTime/text.test.ts --forceExit",
+    "test": "yarn run jest-seed; yarn node --experimental-vm-modules $(yarn bin jest) --testPathIgnorePatterns=test/realTime/text.test.ts --testPathIgnorePatterns=test/login/ --testPathIgnorePatterns=test/load-conversation/ --forceExit; yarn run jest-seed; yarn node --experimental-vm-modules $(yarn bin jest) test/load-conversation/ --forceExit; yarn node --experimental-vm-modules $(yarn bin jest) test/realTime/text.test.ts --forceExit; yarn run jest-seed; yarn node --experimental-vm-modules $(yarn bin jest) test/login/login.test.ts --forceExit",
     "jest-seed": "tsx prisma/seeds/clear-collections.ts; prisma db push; tsx prisma/seeds/jest-tests.ts"
   },
   "dependencies": {
@@ -16,8 +16,10 @@
     "@fastify/websocket": "^8.2.0",
     "@highland-cattle-chat/shared": "0.0.0",
     "@prisma/client": "^5.2.0",
+    "@types/bcrypt": "^5.0.2",
     "@types/jest": "^29.5.3",
     "ajv": "8",
+    "bcrypt": "^5.1.1",
     "bson": "^6.2.0",
     "bullmq": "^4.12.2",
     "cache-manager": "^5.2.3",

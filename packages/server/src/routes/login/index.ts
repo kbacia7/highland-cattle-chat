@@ -1,13 +1,16 @@
+import bcrypt from "bcrypt";
+import {
+  serializerCompiler,
+  validatorCompiler,
+} from "fastify-type-provider-zod";
+
+import { loginSchema } from "@highland-cattle-chat/shared";
+
 import { SESSION_AGE_IN_MS, createSession } from "@helpers/sessions";
 
+import type { ZodTypeProvider } from "fastify-type-provider-zod";
+import type { FastifyInstance, FastifyReply } from "fastify";
 import type { SessionCookie } from "@highland-cattle-chat/shared";
-import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-
-type LoginStringRequest = FastifyRequest<{
-  Body: {
-    alias: string;
-  };
-}>;
 
 export const setSessionCookie = (
   token: string,
@@ -30,30 +33,30 @@ export const setSessionCookie = (
 };
 
 const loginUserRoute = async (fastify: FastifyInstance) => {
-  fastify.post(
+  fastify.setValidatorCompiler(validatorCompiler);
+  fastify.setSerializerCompiler(serializerCompiler);
+
+  fastify.withTypeProvider<ZodTypeProvider>().post(
     "/login",
     {
       logLevel: "debug",
       schema: {
-        body: {
-          type: "object",
-          required: ["alias"],
-          properties: {
-            alias: { type: "string" },
-          },
-        },
+        body: loginSchema,
       },
     },
-    async (req: LoginStringRequest, reply) => {
+    async (req, reply) => {
       const user = await fastify.prisma.user.findUnique({
         where: {
-          login: req.body.alias,
+          email: req.body.email,
         },
       });
 
-      if (!user) return reply.code(403).send();
+      const isValidPassword = await bcrypt.compare(
+        req.body.password,
+        user?.password || "",
+      );
 
-      // TODO: Create new login route after remove openpgp idea
+      if (!user || !isValidPassword) return reply.code(403).send();
 
       const token = await createSession(user.id, fastify.prisma);
       return setSessionCookie(token, user.id, reply).send(user);

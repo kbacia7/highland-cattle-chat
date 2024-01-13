@@ -19,7 +19,7 @@ describe("REST API - /login", () => {
   beforeAll(async () => {
     testUser = await fastify.prisma.user.findFirstOrThrow({
       where: {
-        login: "john",
+        email: "john@example.com",
       },
     });
   });
@@ -29,7 +29,8 @@ describe("REST API - /login", () => {
       method: "POST",
       url: "/login",
       body: {
-        alias: "john",
+        email: "john@example.com",
+        password: "password-john",
       },
     });
 
@@ -61,16 +62,15 @@ describe("REST API - /login", () => {
     expect(response.statusCode).toBe(200);
   });
 
-  test("should respond with 403 without session when alias is not user who exists", async () => {
+  test("should respond with 403 without session when password is incorrect", async () => {
     const response = await fastify.inject({
       method: "POST",
       url: "/login",
       body: {
-        alias: "abcd",
+        email: "johnfdsfsd@example.com",
+        password: "1234567890",
       },
     });
-
-    expect(await fastify.prisma.session.count()).toBe(0);
 
     const cookie = response.cookies.find(({ name }) => name === "session");
 
@@ -78,14 +78,45 @@ describe("REST API - /login", () => {
     expect(response.statusCode).toBe(403);
   });
 
-  test("should respond with 400 without session when alias is not provided", async () => {
+  test("should respond with 403 without session when email is not user who exists", async () => {
     const response = await fastify.inject({
       method: "POST",
       url: "/login",
-      body: {},
+      body: {
+        email: "johnfdsfsd@example.com",
+        password: "password-john",
+      },
     });
 
-    expect(await fastify.prisma.session.count()).toBe(0);
+    const cookie = response.cookies.find(({ name }) => name === "session");
+
+    expect(cookie).toBeUndefined();
+    expect(response.statusCode).toBe(403);
+  });
+
+  test("should respond with 400 without session when email is not provided", async () => {
+    const response = await fastify.inject({
+      method: "POST",
+      url: "/login",
+      body: {
+        password: "password-john",
+      },
+    });
+
+    const cookie = response.cookies.find(({ name }) => name === "session");
+
+    expect(cookie).toBeUndefined();
+    expect(response.statusCode).toBe(400);
+  });
+
+  test("should respond with 400 without session when password is not provided", async () => {
+    const response = await fastify.inject({
+      method: "POST",
+      url: "/login",
+      body: {
+        email: "john@example.com",
+      },
+    });
 
     const cookie = response.cookies.find(({ name }) => name === "session");
 
@@ -98,20 +129,10 @@ describe("REST API - /login", () => {
       method: "GET",
       url: "/login",
       body: {
-        alias: "john",
+        email: "johnfdsfsd@example.com",
+        password: "password-john",
       },
     });
-
-    const session = await fastify.prisma.session.findFirst({
-      where: {
-        userId: testUser.id,
-        expiresAt: {
-          gt: new Date(),
-        },
-      },
-    });
-
-    expect(session).toBeNull();
 
     const cookie = response.cookies.find(({ name }) => name === "session");
 

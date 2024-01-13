@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import { PrismaClient } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
 import { Redis } from "ioredis";
@@ -15,21 +16,24 @@ async function main() {
   const john = await prisma.user.create({
     data: {
       displayName: "John",
-      login: "john",
+      email: "john@example.com",
+      password: bcrypt.hashSync("password-john", 1),
     },
   });
 
   const mike = await prisma.user.create({
     data: {
       displayName: "Mike",
-      login: "mike",
+      email: "mike@example.com",
+      password: bcrypt.hashSync("password-mike", 1),
     },
   });
 
   await prisma.user.create({
     data: {
       displayName: "Zapp",
-      login: "zapp",
+      email: "zapp@example.com",
+      password: bcrypt.hashSync("password-zapp", 1),
     },
   });
 

@@ -1,11 +1,16 @@
 import type { FastifyInstance } from "fastify";
 
-const authorize = async (alias: string, fastify: FastifyInstance) => {
+const authorize = async (
+  email: string,
+  password: string,
+  fastify: FastifyInstance,
+) => {
   const response = await fastify.inject({
     method: "POST",
     url: "/login",
     body: {
-      alias,
+      email,
+      password,
     },
   });
 

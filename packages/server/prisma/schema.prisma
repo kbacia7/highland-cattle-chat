@@ -10,7 +10,8 @@ generator client {
 model User {
   id           String                    @id @default(auto()) @map("_id") @db.ObjectId
   displayName  String
-  login        String                    @unique
+  email        String                    @unique
+  password     String
   sessions     Session[]
   messages     Message[]
   createdAt    DateTime                  @default(now())
