@@ -57,7 +57,7 @@ const ChatMessage = ({
 const Chat = ({ messages, image }: Props) => {
   const loggedUserId = useAppSelector((state) => state.loggedUser.userId);
   return (
-    <div className="p-5 overflow-y-auto">
+    <div className="p-5 overflow-y-auto flex-grow">
       {messages && messages?.length > 0
         ? messages.map((message) => (
             <ChatMessage
