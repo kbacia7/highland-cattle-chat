@@ -1,31 +1,21 @@
 import { useEffect, useRef } from "react";
-import { Outlet } from "react-router-dom";
-import { set } from "idb-keyval";
+import { Outlet, useLoaderData } from "react-router-dom";
 
 import { useAppSelector } from "~/slices/hooks";
-import { useCreateFakeUserMutation } from "~/slices/loggedUserSlice";
-
-import { USER_ID_KEY_ITEM_NAME } from "~/utils/localStorage";
 
 import Nav from "../components/Nav";
 
+import type { LoaderData } from "~/types/LoaderData";
+
+import type { conversationsLoader } from "~/main";
+
 const RootRoute = () => {
+  const conversations = useLoaderData() as LoaderData<
+    typeof conversationsLoader
+  >;
+
   const webWorkerInitialized = useRef<boolean>(false);
-  const createFakeUserSendedYet = useRef<boolean>(false);
   const user = useAppSelector((state) => state.loggedUser);
-  const [createFakeUser] = useCreateFakeUserMutation();
-
-  useEffect(() => {
-    if (user.userId || createFakeUserSendedYet.current) {
-      return;
-    }
-
-    createFakeUserSendedYet.current = true;
-    (async () => {
-      const newUser = await createFakeUser().unwrap();
-      await set(USER_ID_KEY_ITEM_NAME, newUser.userId);
-    })();
-  }, [createFakeUser, user]);
 
   useEffect(() => {
     if (user.userId && !webWorkerInitialized.current) {
@@ -40,7 +30,7 @@ const RootRoute = () => {
     <>
       <div className="flex h-full">
         <div className="hidden lg:block">
-          <Nav />
+          <Nav conversations={conversations} />
         </div>
         <Outlet />
       </div>
