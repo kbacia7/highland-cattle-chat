@@ -11,6 +11,8 @@ import { createPrismaClient } from "@/prismaConnector";
 import cacheConnector from "@/cacheConnector";
 import workersConnector from "@/workersConnector";
 
+import createGuideUser from "@/createGuideUser";
+
 import { FAKE_COOKIE_SECRET } from "./consts";
 
 import type { FastifyInstance } from "fastify";
@@ -34,6 +36,7 @@ const buildForTests = () => {
   fastify.register(registerUserRoute);
   fastify.register(loginUserRoute);
   fastify.register(restrictedContext);
+  fastify.register(createGuideUser);
 
   return fastify;
 };

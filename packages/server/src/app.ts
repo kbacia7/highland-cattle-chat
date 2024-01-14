@@ -14,6 +14,8 @@ import prismaConnector from "./prismaConnector";
 import cacheConnector from "./cacheConnector";
 import workersConnector from "./workersConnector";
 
+import createGuideUser from "./createGuideUser";
+
 import type { Server } from "https";
 import type {
   FastifyHttpsOptions,
@@ -45,6 +47,7 @@ const build = (
   fastify.register(registerUserRoute);
   fastify.register(loginUserRoute);
   fastify.register(restrictedContext);
+  fastify.register(createGuideUser);
   if (process.env.NODE_ENV === "development")
     fastify.register(createFakeUserRoute);
 

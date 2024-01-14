@@ -6,6 +6,8 @@ import {
 
 import { registerSchema } from "@highland-cattle-chat/shared";
 
+import sendWelcomeMessages from "@helpers/sendWelcomeMessages";
+
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 
@@ -45,6 +47,7 @@ const registerRoute = async (fastify: FastifyInstance) => {
         },
       });
 
+      sendWelcomeMessages(fastify, user.id);
       return reply.send({ userId: user.id });
     },
   );
