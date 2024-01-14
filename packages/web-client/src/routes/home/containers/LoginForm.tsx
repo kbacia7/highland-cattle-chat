@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -7,7 +8,9 @@ import Input from "~/components/Input";
 import Button from "~/components/Button";
 import BasicForm from "~/components/BasicForm";
 
-import { useLoginMutation } from "~/slices/loggedUserSlice";
+import { saveUserIdToIDB, useLoginMutation } from "~/slices/loggedUserSlice";
+import { useAppDispatch } from "~/slices/hooks";
+
 import isKnownServerSideError from "~/utils/isKnownServerSideError";
 
 import type { z } from "zod";
@@ -16,7 +19,8 @@ type Inputs = z.infer<typeof loginSchema>;
 
 const LoginForm = () => {
   const [loginUser] = useLoginMutation();
-
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const {
     register,
     handleSubmit,
@@ -31,7 +35,11 @@ const LoginForm = () => {
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     try {
-      await loginUser(data).unwrap();
+      const res = await loginUser(data).unwrap();
+      if (res.userId) {
+        dispatch(saveUserIdToIDB(res.userId));
+        navigate("/");
+      }
     } catch (error) {
       if (isKnownServerSideError(error)) {
         setError("root", {

@@ -1,5 +1,5 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { get } from "idb-keyval";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { get, set } from "idb-keyval";
 
 import { USER_ID_KEY_ITEM_NAME } from "~/utils/localStorage";
 
@@ -26,10 +26,32 @@ const initialState = {
   userId: await get(USER_ID_KEY_ITEM_NAME),
 };
 
+export const loadUserIdFromIDB = createAsyncThunk(
+  "loggedUser/loadUserIdFromIDB",
+  async () => await get(USER_ID_KEY_ITEM_NAME),
+);
+
+export const saveUserIdToIDB = createAsyncThunk(
+  "loggedUser/saveUserIdToIDB",
+  async (userId: string) => {
+    await set(USER_ID_KEY_ITEM_NAME, userId);
+    return userId;
+  },
+);
+
 const loggedUserSlice = createSlice({
   name: "loggedUser",
   initialState,
   reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(loadUserIdFromIDB.fulfilled, (state, action) => {
+        state.userId = action.payload;
+      })
+      .addCase(saveUserIdToIDB.fulfilled, (state, action) => {
+        state.userId = action.payload;
+      });
+  },
 });
 
 export const extendedApiSlice = apiSlice.injectEndpoints({
