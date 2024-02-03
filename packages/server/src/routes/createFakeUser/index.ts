@@ -20,6 +20,7 @@ const createFakeUser = async (fastify: FastifyInstance) => {
   return {
     user: await fastify.prisma.user.create({
       data: {
+        image: "https://picsum.photos/200",
         displayName,
         email,
         password,
@@ -38,7 +39,6 @@ const createFakeUserRoute = async (fastify: FastifyInstance) => {
       const fakeConversation = await fastify.prisma.conversation.create({
         data: {
           title: uuidv4(),
-          image: "https://picsum.photos/200",
           participants: {
             create: [{ userId: user.id }, { userId: secondUser.id }],
           },

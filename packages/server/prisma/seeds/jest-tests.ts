@@ -18,6 +18,7 @@ async function main() {
       displayName: "John",
       email: "john@example.com",
       password: bcrypt.hashSync("password-john", 1),
+      image: "https://picsum.photos/200",
     },
   });
 
@@ -26,6 +27,7 @@ async function main() {
       displayName: "Mike",
       email: "mike@example.com",
       password: bcrypt.hashSync("password-mike", 1),
+      image: "https://picsum.photos/200",
     },
   });
 
@@ -34,6 +36,7 @@ async function main() {
       displayName: "Zapp",
       email: "zapp@example.com",
       password: bcrypt.hashSync("password-zapp", 1),
+      image: "https://picsum.photos/200",
     },
   });
 
@@ -42,7 +45,6 @@ async function main() {
     await prisma.conversation.create({
       data: {
         title: uuidv4(),
-        image: "https://picsum.photos/200",
         participants: {
           create: [
             {

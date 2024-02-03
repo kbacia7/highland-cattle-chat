@@ -16,6 +16,7 @@ model User {
   messages     Message[]
   createdAt    DateTime                  @default(now())
   participates ConversationParticipant[]
+  image        String
 
   @@map("users")
 }
@@ -34,7 +35,6 @@ model Session {
 model Conversation {
   id           String                    @id @default(auto()) @map("_id") @db.ObjectId
   title        String
-  image        String
   messages     Message[]
   createdAt    DateTime                  @default(now())
   participants ConversationParticipant[]

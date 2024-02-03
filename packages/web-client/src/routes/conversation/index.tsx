@@ -27,6 +27,7 @@ const transformOutcomeMessage = (message: OutcomeMessage) => {
     id: uuidv4(),
     userId: message.userId,
   };
+
   return messageRecord;
 };
 
@@ -74,17 +75,20 @@ const ConversationRoute = () => {
     setMessages(currentData?.messages ?? []);
   }, [currentData]);
 
-  if (!currentData?.messages) return null; //TODO: Error and loading handle
+  const chatImage = currentData?.participants.find((p) => p.user.id !== userId)
+    ?.user.image;
+
+  if (!currentData?.messages || !chatImage) return null; //TODO: Error and loading handle
 
   return (
     <main className="w-full">
       <div className="flex flex-col h-full">
         <ConversationHeader
-          image={currentData.image}
+          image={chatImage}
           participant={currentData.participants[0]}
         />
 
-        <Chat messages={messages} image={currentData.image} />
+        <Chat messages={messages} image={chatImage} />
 
         <div className="p-2 flex items-center">
           <SendInput

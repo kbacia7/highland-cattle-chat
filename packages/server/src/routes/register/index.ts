@@ -44,6 +44,7 @@ const registerRoute = async (fastify: FastifyInstance) => {
           displayName: req.body.displayName,
           password: await bcrypt.hash(req.body.password, 10),
           email: req.body.email,
+          image: "https://picsum.photos/200",
         },
       });
 

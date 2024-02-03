@@ -24,6 +24,7 @@ const createGuideUser: FastifyPluginCallback = async (
   if (!guideUser) {
     guideUser = await fastify.prisma.user.create({
       data: {
+        image: "https://picsum.photos/200",
         displayName: "Mrs. Guide",
         email: "fake-incorrect-email",
         password: "fake-incorrect-password",

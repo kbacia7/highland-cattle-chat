@@ -4,11 +4,9 @@ const sendWelcomeMessages = async (
   fastify: FastifyInstance,
   recipientId: string,
 ) => {
-  console.log("xd", fastify.guideUser, recipientId);
   await fastify.prisma.conversation.create({
     data: {
       title: "Mrs. Guide",
-      image: "https://picsum.photos/200",
       participants: {
         create: [
           {

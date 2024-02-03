@@ -6,6 +6,7 @@ type Props = {
   image: string;
   participant: LoadConversationResponse["participants"][0];
 };
+
 const ConversationHeader = ({ image, participant }: Props) => (
   <div className="w-full h-[74px] bg-blue-100 py-3 px-5 flex items-center">
     <ProfileImage src={image} size={50} />

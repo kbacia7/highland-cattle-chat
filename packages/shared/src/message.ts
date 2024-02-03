@@ -1,3 +1,11 @@
+import { Prisma } from "@prisma/client";
+export {
+  type Message,
+  type User,
+  type Conversation,
+  type ConversationParticipant,
+} from "@prisma/client";
+
 export const SERVER_USER_ID = `SERVER`;
 
 export const MessageTypes = {
@@ -25,44 +33,39 @@ export interface OutcomeMessage extends IncomeMessage {
   status: MessageStatus;
 }
 
-export type MessageRecord = {
-  id: string;
-  content: string;
-  userId: string;
-  conversationId: string;
-  createdAt: Date;
-};
-
-export type UserRecord = {
-  id?: string;
-  displayName: string;
-  email: string;
-  createdAt?: string;
-};
-
-export type ConversationRecord = {
-  id: string;
-  title: string;
-  image: string;
-  createdAt?: string;
-};
-
-export type ConversationParticipant<T = UserRecord> = {
-  id?: string;
-  userId: string;
-  conversationId: string;
-  createdAt?: string;
-  user: T;
-};
-
 export type LoadConversationResponse = {
-  messages: Pick<
-    Required<MessageRecord>,
-    "id" | "createdAt" | "content" | "userId"
-  >[];
-  participants: Pick<
-    Required<ConversationParticipant<Pick<UserRecord, "displayName" | "id">>>,
-    "user"
-  >[];
-  image: string;
+  messages: Prisma.MessageGetPayload<{
+    select: {
+      id: true;
+      userId: true;
+      createdAt: true;
+      content: true;
+    };
+  }>[];
+  participants: Prisma.ConversationParticipantGetPayload<{
+    select: {
+      user: {
+        select: {
+          id: true;
+          displayName: true;
+          image: true;
+        };
+      };
+    };
+  }>[];
 };
+
+export type LoadConversationsResponse = Prisma.ConversationGetPayload<{
+  include: {
+    participants: {
+      select: {
+        user: {
+          select: {
+            id: true;
+            image: true;
+          };
+        };
+      };
+    };
+  };
+}>[];

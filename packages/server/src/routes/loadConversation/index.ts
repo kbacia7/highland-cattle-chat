@@ -51,7 +51,6 @@ const loadConversationRoute = async (fastify: FastifyInstance) => {
           id: req.query.id,
         },
         select: {
-          image: true,
           ...(restLimit > 0
             ? {
                 messages: {
@@ -71,6 +70,7 @@ const loadConversationRoute = async (fastify: FastifyInstance) => {
                 select: {
                   id: true,
                   displayName: true,
+                  image: true,
                 },
               },
             },
@@ -87,7 +87,6 @@ const loadConversationRoute = async (fastify: FastifyInstance) => {
           ),
         ),
         participants: conversation.participants,
-        image: conversation.image,
       } as LoadConversationResponse;
     },
   );

@@ -9,10 +9,25 @@ import type { Prisma } from "@prisma/client";
 describe("REST API - /load-conversations", () => {
   const fastify: FastifyInstance = buildForTests();
 
-  let testConversations: Prisma.ConversationUncheckedCreateInput[] = [];
+  let testConversations: Prisma.ConversationGetPayload<{
+    include: {
+      participants: {
+        include: {
+          user: true;
+        };
+      };
+    };
+  }>[] = [];
 
   beforeAll(async () => {
     testConversations = await fastify.prisma.conversation.findMany({
+      include: {
+        participants: {
+          include: {
+            user: true,
+          },
+        },
+      },
       where: {
         participants: {
           some: {
@@ -50,7 +65,12 @@ describe("REST API - /load-conversations", () => {
     testConversations.forEach((conversation) => {
       expect(body).toContainEqual({
         id: conversation.id,
-        image: conversation.image,
+        participants: conversation.participants.map((p) => ({
+          user: {
+            id: p.user.id,
+            image: p.user.image,
+          },
+        })),
         title: conversation.title,
         createdAt:
           conversation.createdAt instanceof Date

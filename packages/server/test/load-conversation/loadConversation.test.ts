@@ -7,7 +7,16 @@ import type { Prisma } from "@prisma/client";
 
 describe("REST API - /load-conversation", () => {
   const fastify = buildForTests();
-  let testConversation: any;
+  let testConversation: Prisma.ConversationGetPayload<{
+    include: {
+      messages: true;
+      participants: {
+        include: {
+          user: true;
+        };
+      };
+    };
+  }>;
 
   afterAll(async () => {
     await fastify.close();
@@ -56,11 +65,11 @@ describe("REST API - /load-conversation", () => {
     const body = response.json();
     expect(response.statusCode).toBe(200);
     expect(body).toEqual({
-      image: testConversation.image,
       participants: testConversation.participants.map((participant: any) => ({
         user: {
           id: participant.user.id,
           displayName: participant.user.displayName,
+          image: participant.user.image,
         },
       })),
       messages: testConversation.messages
@@ -99,11 +108,11 @@ describe("REST API - /load-conversation", () => {
     const body = response.json();
     expect(response.statusCode).toBe(200);
     expect(body).toEqual({
-      image: testConversation.image,
       participants: testConversation.participants.map((participant: any) => ({
         user: {
           id: participant.user.id,
           displayName: participant.user.displayName,
+          image: participant.user.image,
         },
       })),
       messages: testConversation.messages
