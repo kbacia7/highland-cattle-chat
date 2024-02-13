@@ -7,12 +7,18 @@ import {
 import { apiSlice } from "./apiSlice";
 
 import type {
-  ConversationRecord,
+  searchUserSchema,
+  Conversation,
+  SearchUserResponse,
+  CreateConversationResponse,
   LoadConversationResponse,
   LoadConversationsResponse,
+  createConversationSchema,
 } from "@highland-cattle-chat/shared";
 
-const conversationsAdapter = createEntityAdapter<ConversationRecord>();
+import type { z } from "zod";
+
+const conversationsAdapter = createEntityAdapter<Conversation>();
 
 const initialState = conversationsAdapter.getInitialState({
   status: "idle",
@@ -28,25 +34,57 @@ const conversationsSlice = createSlice({
   reducers: {},
 });
 
-export const extendedApiSlice = apiSlice.injectEndpoints({
-  endpoints: (builder) => ({
-    loadConversations: builder.query<LoadConversationsResponse, void>({
-      query: () => "/load-conversations",
-    }),
-    loadConversation: builder.query<
-      LoadConversationResponse,
-      { id: string; limit?: number }
-    >({
-      query: ({ id, limit }) => ({
-        url: "/load-conversation",
-        params: { id, limit },
+export const extendedApiSlice = apiSlice
+  .enhanceEndpoints({ addTagTypes: ["Conversation", "User"] })
+  .injectEndpoints({
+    endpoints: (builder) => ({
+      loadConversations: builder.query<LoadConversationsResponse, void>({
+        query: () => "/load-conversations",
+        providesTags: ["Conversation"],
+      }),
+
+      loadConversation: builder.query<
+        LoadConversationResponse,
+        { id: string; limit?: number }
+      >({
+        query: ({ id, limit }) => ({
+          url: "/load-conversation",
+          params: { id, limit },
+        }),
+      }),
+
+      createConversation: builder.mutation<
+        CreateConversationResponse,
+        z.infer<typeof createConversationSchema>
+      >({
+        query: (body) => ({
+          url: "/create-conversation",
+          method: "POST",
+          body,
+        }),
+        invalidatesTags: ["Conversation", "User"],
+      }),
+
+      searchUser: builder.query<
+        SearchUserResponse,
+        z.infer<typeof searchUserSchema>
+      >({
+        query: (params) => ({
+          url: "/search-user",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["User"],
       }),
     }),
-  }),
-});
+  });
 
-export const { useLoadConversationsQuery, useLoadConversationQuery } =
-  extendedApiSlice;
+export const {
+  useLoadConversationsQuery,
+  useLoadConversationQuery,
+  useCreateConversationMutation,
+  useSearchUserQuery,
+} = extendedApiSlice;
 
 export const selectConversationsResult =
   extendedApiSlice.endpoints.loadConversations.select();
