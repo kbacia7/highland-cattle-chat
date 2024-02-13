@@ -1,19 +1,14 @@
 import { useEffect, useRef } from "react";
-import { Outlet, useLoaderData } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 
 import { useAppSelector } from "~/slices/hooks";
 
+import { useLoadConversationsQuery } from "~/slices/conversationsSlice";
+
 import Nav from "../components/Nav";
 
-import type { LoaderData } from "~/types/LoaderData";
-
-import type { conversationsLoader } from "~/main";
-
 const RootRoute = () => {
-  const conversations = useLoaderData() as LoaderData<
-    typeof conversationsLoader
-  >;
-
+  const { currentData: conversations } = useLoadConversationsQuery();
   const webWorkerInitialized = useRef<boolean>(false);
   const user = useAppSelector((state) => state.loggedUser);
 
@@ -27,10 +22,25 @@ const RootRoute = () => {
   }, [user]);
 
   return (
+    //TODO: spinner
     <>
       <div className="flex h-full">
         <div className="hidden lg:block">
-          <Nav conversations={conversations} />
+          <Nav
+            conversations={(conversations || []).map(
+              ({ id, title, participants }) => {
+                const image =
+                  participants.find((p) => p.user.id != user.userId)?.user
+                    .image || "";
+
+                return {
+                  id,
+                  displayName: title,
+                  image,
+                };
+              },
+            )}
+          />
         </div>
         <Outlet />
       </div>
