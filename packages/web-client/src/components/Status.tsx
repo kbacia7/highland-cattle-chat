@@ -13,6 +13,7 @@ const Status = ({ status }: StatusProps) => (
     className={cx("text-lg", {
       "text-green-900": status === USER_STATUS.ONLINE,
       "text-red-900": status === USER_STATUS.OFFLINE,
+      "text-gray-700": status === USER_STATUS.UNKNOWN,
     })}
   >
     {status}
