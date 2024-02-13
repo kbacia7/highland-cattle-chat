@@ -1,8 +1,8 @@
 import { useState } from "react";
 
-import { cx } from "class-variance-authority";
-
 import CloseIcon from "./icons/Close";
+
+import { Alert } from "./Alert";
 
 import type { Toast, ToastOptions } from "~/contexts/ToastMessagesContext";
 
@@ -11,24 +11,17 @@ const ToastMessage = ({ message, type }: Omit<ToastOptions, "timeout">) => {
 
   if (!visible) return null;
   return (
-    <div
-      className={cx(
-        "z-50 w-full border-2 border-inset font-bold text-lg p-2 first:mt-0 mb-2 shadow-[0_4px_4px_rgba(0,0,0,0.2)]",
-        {
-          "bg-green-100 border-green-300 text-green-900": type === "success",
-          "bg-red-100 border-red-300 text-red-900": type === "error",
-        },
-      )}
-    >
+    <Alert type={type} className="shadow-[0_4px_4px_rgba(0,0,0,0.2)]">
       <div className="flex flex-row justify-between">
         {message}
         <button onClick={() => setVisible(false)}>
           <CloseIcon />
         </button>
       </div>
-    </div>
+    </Alert>
   );
 };
+
 type ToasterProps = {
   toasts: Toast[];
 };
