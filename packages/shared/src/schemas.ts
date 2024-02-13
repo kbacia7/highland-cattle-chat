@@ -4,11 +4,15 @@ export const searchUserSchema = z.object({
   phrase: z
     .string()
     .refine(
-      (value) => value.trim().length > 3 && value.match(/^[a-zA-Z0-9_@ -.]+$/),
+      (value) => value.trim().length >= 3 && value.match(/^[a-zA-Z0-9_@ -.]+$/),
       {
         message: "Phrase must be at least 3 characters",
       }
     ),
+});
+
+export const createConversationSchema = z.object({
+  id: z.string(),
 });
 
 export const loginSchema = z.object({
@@ -23,7 +27,8 @@ export const registerSchema = z
     displayName: z
       .string()
       .refine(
-        (value) => value.trim().length > 3 && value.match(/^[a-zA-Z0-9_@ -]+$/),
+        (value) =>
+          value.trim().length >= 3 && value.match(/^[a-zA-Z0-9_@ -]+$/),
         {
           message:
             "Display name must be at least 3 characters, can contains only letters, numbers, space, and _@-",

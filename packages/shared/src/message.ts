@@ -69,3 +69,17 @@ export type LoadConversationsResponse = Prisma.ConversationGetPayload<{
     };
   };
 }>[];
+
+export type SearchUserResponse = Prisma.UserGetPayload<{
+  select: {
+    id: true;
+    image: true;
+    displayName: true;
+  };
+}>[];
+
+export type CreateConversationResponse = Prisma.ConversationGetPayload<{
+  select: {
+    id: true;
+  };
+}>;
