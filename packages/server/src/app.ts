@@ -1,5 +1,6 @@
 import Fastify from "fastify";
 import fastifyWebsocket from "@fastify/websocket";
+import fastifyMultipart from "@fastify/multipart";
 import fastifyCookie from "@fastify/cookie";
 import cors from "@fastify/cors";
 
@@ -40,6 +41,17 @@ const build = (
     secret: process.env.COOKIE_SECRET,
   });
   fastify.register(fastifyWebsocket);
+  fastify.register(fastifyMultipart, {
+    attachFieldsToBody: "keyValues",
+    limits: {
+      fieldNameSize: 100,
+      fieldSize: 100,
+      fileSize: 5000000,
+      files: 1,
+      headerPairs: 2000,
+      parts: 10,
+    },
+  });
   fastify.register(prismaConnector);
   fastify.register(cacheConnector);
   fastify.register(workersConnector);

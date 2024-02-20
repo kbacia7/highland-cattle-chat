@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import fastifyWebsocket from "@fastify/websocket";
 import fastifyCookie from "@fastify/cookie";
+import fastifyMultipart from "@fastify/multipart";
 
 import realTimeRoute from "@routes/realTime";
 import registerUserRoute from "@routes/register";
@@ -24,6 +25,17 @@ const buildForTests = () => {
   });
 
   fastify.register(fastifyWebsocket);
+  fastify.register(fastifyMultipart, {
+    attachFieldsToBody: "keyValues",
+    limits: {
+      fieldNameSize: 100,
+      fieldSize: 100,
+      fileSize: 5000000,
+      files: 1,
+      headerPairs: 2000,
+      parts: 10,
+    },
+  });
   fastify.register(cacheConnector);
   fastify.decorate(
     "prisma",
