@@ -13,12 +13,13 @@ const redis = new Redis();
 
 async function main() {
   await redis.flushall();
+  const image = process.env.USER_PROFILE_PICTURE_PLACEHOLDER_URL || "";
   const john = await prisma.user.create({
     data: {
       displayName: "John",
       email: "john@example.com",
       password: bcrypt.hashSync("password-john", 1),
-      image: "https://picsum.photos/200",
+      image,
     },
   });
 
@@ -27,7 +28,7 @@ async function main() {
       displayName: "Mike",
       email: "mike@example.com",
       password: bcrypt.hashSync("password-mike", 1),
-      image: "https://picsum.photos/200",
+      image,
     },
   });
 
@@ -36,7 +37,7 @@ async function main() {
       displayName: "Zapp",
       email: "zapp@example.com",
       password: bcrypt.hashSync("password-zapp", 1),
-      image: "https://picsum.photos/200",
+      image,
     },
   });
 
