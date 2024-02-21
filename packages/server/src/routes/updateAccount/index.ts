@@ -1,3 +1,5 @@
+import path from "path";
+
 import { v4 as uuidv4 } from "uuid";
 import { fileTypeFromBuffer } from "file-type";
 import {
@@ -60,10 +62,26 @@ const updateAccountRoute = async (fastify: FastifyInstance) => {
           error: "User with given e-mail already exists",
         });
 
+      const loggedUser = await fastify.prisma.user.findUniqueOrThrow({
+        select: {
+          image: true,
+        },
+        where: {
+          id: req.loggedUserId,
+        },
+      });
+
       const imageId = uuidv4();
       const storage = new Storage();
+      const bucketName = process.env.GOOGLE_STORAGE_BUCKET_NAME || "";
+
+      await storage
+        .bucket(bucketName)
+        .file(path.basename(loggedUser.image))
+        .delete();
+
       const file = storage
-        .bucket(process.env.GOOGLE_STORAGE_BUCKET_NAME || "")
+        .bucket(bucketName)
         .file(`${imageId}.${fileType.ext}`);
 
       await file.save(req.body.profilePicture);
