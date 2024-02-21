@@ -19,10 +19,6 @@ import type {
   registerSchema,
 } from "@highland-cattle-chat/shared";
 
-type CreateFakeUserResponse = {
-  userId: string;
-};
-
 type LoggedUserState = {
   userId?: string;
   displayName?: string;
@@ -75,12 +71,6 @@ const loggedUserSlice = createSlice({
 
 export const extendedApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    createFakeUser: builder.mutation<CreateFakeUserResponse, void>({
-      query: () => ({
-        url: "/create-fake-user",
-      }),
-    }),
-
     register: builder.mutation<
       RegisterResponse,
       z.infer<typeof registerSchema>
@@ -112,7 +102,6 @@ export const extendedApiSlice = apiSlice.injectEndpoints({
 });
 
 export const {
-  useCreateFakeUserMutation,
   useUpdateAccountMutation,
   useRegisterMutation,
   useLoginMutation,

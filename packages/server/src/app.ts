@@ -9,7 +9,6 @@ import restrictedContext from "@contexts/restrictedContext";
 import realTimeRoute from "@routes/realTime";
 import registerUserRoute from "@routes/register";
 import loginUserRoute from "@routes/login";
-import createFakeUserRoute from "@routes/createFakeUser";
 
 import prismaConnector from "./prismaConnector";
 import cacheConnector from "./cacheConnector";
@@ -60,8 +59,6 @@ const build = (
   fastify.register(loginUserRoute);
   fastify.register(restrictedContext);
   fastify.register(createGuideUser);
-  if (process.env.NODE_ENV === "development")
-    fastify.register(createFakeUserRoute);
 
   return fastify;
 };
