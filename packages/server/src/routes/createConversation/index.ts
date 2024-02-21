@@ -17,7 +17,6 @@ const createConversationRoute = async (fastify: FastifyInstance) => {
   fastify.withTypeProvider<ZodTypeProvider>().post(
     "/create-conversation",
     {
-      logLevel: "debug",
       schema: {
         body: createConversationSchema,
       },

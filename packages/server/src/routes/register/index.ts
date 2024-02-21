@@ -18,7 +18,6 @@ const registerRoute = async (fastify: FastifyInstance) => {
   fastify.withTypeProvider<ZodTypeProvider>().post(
     "/register",
     {
-      logLevel: "debug",
       schema: {
         body: registerSchema,
       },

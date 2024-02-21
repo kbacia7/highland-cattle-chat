@@ -19,7 +19,6 @@ const loadConversationRoute = async (fastify: FastifyInstance) => {
   }>(
     "/load-conversation",
     {
-      logLevel: "debug",
       schema: {
         querystring: queryStringJsonSchema,
       },

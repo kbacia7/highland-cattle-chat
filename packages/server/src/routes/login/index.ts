@@ -42,7 +42,6 @@ const loginUserRoute = async (fastify: FastifyInstance) => {
   fastify.withTypeProvider<ZodTypeProvider>().post(
     "/login",
     {
-      logLevel: "debug",
       schema: {
         body: loginSchema,
       },

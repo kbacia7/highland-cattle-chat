@@ -144,15 +144,11 @@ const handleMessage = async (
 };
 
 const realTimeRoute = async (fastify: FastifyInstance) => {
-  fastify.get(
-    "/real-time",
-    { websocket: true, logLevel: "debug" },
-    (connection) => {
-      connection.socket.on("message", (data) => {
-        handleMessage(data.toString(), connection.socket, fastify);
-      });
-    },
-  );
+  fastify.get("/real-time", { websocket: true }, (connection) => {
+    connection.socket.on("message", (data) => {
+      handleMessage(data.toString(), connection.socket, fastify);
+    });
+  });
 };
 
 export default realTimeRoute;

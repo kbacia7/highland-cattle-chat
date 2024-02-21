@@ -5,6 +5,7 @@ import build from "./app";
 
 const LOGGER_OPTIONS = {
   development: {
+    level: "debug",
     transport: {
       target: "pino-pretty",
       options: {

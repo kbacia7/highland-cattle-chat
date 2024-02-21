@@ -34,7 +34,6 @@ const updateAccountRoute = async (fastify: FastifyInstance) => {
   fastify.withTypeProvider<ZodTypeProvider>().post(
     "/update-account",
     {
-      logLevel: "debug",
       schema: {
         body: updateAccountSchema,
       },

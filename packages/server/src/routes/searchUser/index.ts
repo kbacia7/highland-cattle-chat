@@ -16,7 +16,6 @@ const searchUserRoute = async (fastify: FastifyInstance) => {
   fastify.withTypeProvider<ZodTypeProvider>().get(
     "/search-user",
     {
-      logLevel: "debug",
       schema: {
         querystring: searchUserSchema,
       },

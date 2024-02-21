@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 import type { LoadConversationsResponse } from "@highland-cattle-chat/shared";
 
 const loadConversationsRoute = async (fastify: FastifyInstance) => {
-  fastify.get("/load-conversations", { logLevel: "debug" }, async (req) => {
+  fastify.get("/load-conversations", async (req) => {
     const conversations = await fastify.prisma.conversation.findMany({
       where: {
         participants: {
