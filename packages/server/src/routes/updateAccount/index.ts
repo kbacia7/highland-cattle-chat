@@ -43,6 +43,9 @@ const updateAccountRoute = async (fastify: FastifyInstance) => {
       const userExists = await fastify.prisma.user.findFirst({
         where: {
           email: req.body.email,
+          id: {
+            not: req.loggedUserId,
+          },
         },
       });
 
@@ -66,7 +69,7 @@ const updateAccountRoute = async (fastify: FastifyInstance) => {
 
       await file.save(req.body.profilePicture);
 
-      await fastify.prisma.user.update({
+      const updatedUser = await fastify.prisma.user.update({
         where: {
           id: req.loggedUserId,
         },
@@ -78,7 +81,10 @@ const updateAccountRoute = async (fastify: FastifyInstance) => {
         },
       });
 
-      return reply.send();
+      return reply.send({
+        ...updatedUser,
+        password: undefined,
+      });
     },
   );
 };

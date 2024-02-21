@@ -1,4 +1,6 @@
 import { Prisma } from "@prisma/client";
+import { User } from "@prisma/client";
+
 export {
   type Message,
   type User,
@@ -83,3 +85,11 @@ export type CreateConversationResponse = Prisma.ConversationGetPayload<{
     id: true;
   };
 }>;
+
+export type RegisterResponse = {
+  userId?: string;
+  error?: string;
+};
+
+export type LoginResponse = Omit<User, "password">;
+export type UpdateAccountResponse = Omit<User, "password">;

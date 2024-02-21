@@ -14,16 +14,18 @@ import ConversationRoute from "./routes/conversation";
 
 import { store } from "./slices/store";
 import { extendedApiSlice } from "./slices/conversationsSlice";
-import { loadUserIdFromIDB } from "./slices/loggedUserSlice";
+import { loadUserAccountSettingsFromIDB } from "./slices/loggedUserSlice";
 
 import type { LoaderFunction } from "react-router-dom";
 
 import "./index.css";
 
 export const conversationsLoader = (async () => {
-  await store.dispatch(loadUserIdFromIDB());
+  const { userId } = await store
+    .dispatch(loadUserAccountSettingsFromIDB())
+    .unwrap();
 
-  if (!store.getState().loggedUser.userId) return redirect("/home");
+  if (!userId) return redirect("/home");
   const req = store.dispatch(
     extendedApiSlice.endpoints.loadConversations.initiate(),
   );
@@ -54,8 +56,11 @@ const router = createBrowserRouter([
   {
     path: "/home",
     loader: async () => {
-      await store.dispatch(loadUserIdFromIDB());
-      if (store.getState().loggedUser.userId) return redirect("/");
+      const { userId } = await store
+        .dispatch(loadUserAccountSettingsFromIDB())
+        .unwrap();
+
+      if (userId) return redirect("/");
       return null;
     },
     element: <HomeRoute />,

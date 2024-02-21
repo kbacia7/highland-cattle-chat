@@ -10,7 +10,10 @@ import { SESSION_AGE_IN_MS, createSession } from "@helpers/sessions";
 
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import type { FastifyInstance, FastifyReply } from "fastify";
-import type { SessionCookie } from "@highland-cattle-chat/shared";
+import type {
+  LoginResponse,
+  SessionCookie,
+} from "@highland-cattle-chat/shared";
 
 export const setSessionCookie = (
   token: string,
@@ -60,7 +63,10 @@ const loginUserRoute = async (fastify: FastifyInstance) => {
         return reply.code(403).send({ error: "Incorrect email or password" });
 
       const token = await createSession(user.id, fastify.prisma);
-      return setSessionCookie(token, user.id, reply).send({ userId: user.id });
+      return setSessionCookie(token, user.id, reply).send({
+        ...user,
+        password: undefined,
+      } as LoginResponse);
     },
   );
 };

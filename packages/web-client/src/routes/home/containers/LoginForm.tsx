@@ -8,7 +8,10 @@ import Input from "~/components/Input";
 import Button from "~/components/Button";
 import BasicForm from "~/components/BasicForm";
 
-import { saveUserIdToIDB, useLoginMutation } from "~/slices/loggedUserSlice";
+import {
+  saveUserAccountSettingsToIDB,
+  useLoginMutation,
+} from "~/slices/loggedUserSlice";
 import { useAppDispatch } from "~/slices/hooks";
 
 import isKnownServerSideError from "~/utils/isKnownServerSideError";
@@ -21,6 +24,7 @@ const LoginForm = () => {
   const [loginUser] = useLoginMutation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+
   const {
     register,
     handleSubmit,
@@ -36,8 +40,16 @@ const LoginForm = () => {
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     try {
       const res = await loginUser(data).unwrap();
-      if (res.userId) {
-        dispatch(saveUserIdToIDB(res.userId));
+      if (res.id) {
+        await dispatch(
+          saveUserAccountSettingsToIDB({
+            userId: res.id,
+            displayName: res.displayName,
+            email: res.email,
+            profilePicture: res.image,
+          }),
+        ).unwrap();
+
         navigate("/");
       }
     } catch (error) {

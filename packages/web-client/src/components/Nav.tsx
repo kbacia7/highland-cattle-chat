@@ -10,12 +10,15 @@ import {
   useSearchUserQuery,
 } from "~/slices/conversationsSlice";
 
+import UpdateAccountForm from "~/containers/UpdateAccountForm";
+
 import Conversation from "./Conversation";
 import SettingsIcon from "./icons/Settings";
 
 import Input from "./Input";
 
 import { Alert } from "./Alert";
+import Modal from "./Modal";
 
 import type { InputProps } from "./Input";
 
@@ -120,9 +123,16 @@ const Nav = ({ conversations }: Props) => {
           <h2 className="text-3xl font-bold text-blue-900 inline">
             Conversations
           </h2>
-          <button>
-            <SettingsIcon className="inline ml-3" size={36} />
-          </button>
+          <Modal
+            title="Update your account"
+            toggleRenderFn={({ openModal }) => (
+              <button onClick={openModal} color="secondary">
+                <SettingsIcon className="inline ml-3" size={36} />
+              </button>
+            )}
+          >
+            <UpdateAccountForm />
+          </Modal>
         </div>
 
         <SearchInput color="white" onSearch={onSearch} />

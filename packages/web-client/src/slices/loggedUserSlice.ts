@@ -1,41 +1,58 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { get, set } from "idb-keyval";
 
-import { USER_ID_KEY_ITEM_NAME } from "~/utils/localStorage";
+import {
+  USER_ID_KEY_ITEM_NAME,
+  DISPLAY_NAME_KEY_ITEM_NAME,
+  EMAIL_KEY_ITEM_NAME,
+  PROFILE_PICTURE_KEY_ITEM_NAME,
+} from "~/utils/localStorage";
 
 import { apiSlice } from "./apiSlice";
 
 import type { z } from "zod";
-import type { loginSchema, registerSchema } from "@highland-cattle-chat/shared";
+import type {
+  LoginResponse,
+  RegisterResponse,
+  UpdateAccountResponse,
+  loginSchema,
+  registerSchema,
+} from "@highland-cattle-chat/shared";
 
 type CreateFakeUserResponse = {
   userId: string;
 };
 
-type RegisterResponse = {
+type LoggedUserState = {
   userId?: string;
-  error?: string;
+  displayName?: string;
+  email?: string;
+  profilePicture?: string;
 };
 
-type LoginResponse = {
-  userId?: string;
-  error?: string;
-};
-
-const initialState = {
+const loadUserState = async () => ({
   userId: await get(USER_ID_KEY_ITEM_NAME),
-};
+  displayName: await get(DISPLAY_NAME_KEY_ITEM_NAME),
+  email: await get(EMAIL_KEY_ITEM_NAME),
+  profilePicture: await get(PROFILE_PICTURE_KEY_ITEM_NAME),
+});
 
-export const loadUserIdFromIDB = createAsyncThunk(
+const initialState: LoggedUserState = await loadUserState();
+
+export const loadUserAccountSettingsFromIDB = createAsyncThunk(
   "loggedUser/loadUserIdFromIDB",
-  async () => await get(USER_ID_KEY_ITEM_NAME),
+  async () => loadUserState(),
 );
 
-export const saveUserIdToIDB = createAsyncThunk(
+export const saveUserAccountSettingsToIDB = createAsyncThunk(
   "loggedUser/saveUserIdToIDB",
-  async (userId: string) => {
-    await set(USER_ID_KEY_ITEM_NAME, userId);
-    return userId;
+  async (state: LoggedUserState) => {
+    await set(USER_ID_KEY_ITEM_NAME, state.userId);
+    await set(DISPLAY_NAME_KEY_ITEM_NAME, state.displayName);
+    await set(EMAIL_KEY_ITEM_NAME, state.email);
+    await set(PROFILE_PICTURE_KEY_ITEM_NAME, state.profilePicture);
+
+    return state;
   },
 );
 
@@ -45,12 +62,14 @@ const loggedUserSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(loadUserIdFromIDB.fulfilled, (state, action) => {
-        state.userId = action.payload;
-      })
-      .addCase(saveUserIdToIDB.fulfilled, (state, action) => {
-        state.userId = action.payload;
-      });
+      .addCase(
+        loadUserAccountSettingsFromIDB.fulfilled,
+        (state, action) => action.payload,
+      )
+      .addCase(
+        saveUserAccountSettingsToIDB.fulfilled,
+        (state, action) => action.payload,
+      );
   },
 });
 
@@ -80,11 +99,21 @@ export const extendedApiSlice = apiSlice.injectEndpoints({
         body,
       }),
     }),
+
+    updateAccount: builder.mutation<UpdateAccountResponse, FormData>({
+      query: (body) => ({
+        url: "/update-account",
+        method: "POST",
+        body,
+        formData: true,
+      }),
+    }),
   }),
 });
 
 export const {
   useCreateFakeUserMutation,
+  useUpdateAccountMutation,
   useRegisterMutation,
   useLoginMutation,
 } = extendedApiSlice;
