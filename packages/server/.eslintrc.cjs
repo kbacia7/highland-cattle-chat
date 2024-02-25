@@ -16,6 +16,7 @@ module.exports = {
     tsconfigRootDir: __dirname,
   },
   rules: {
+    "import/no-extraneous-dependencies": ["error", { devDependencies: true }],
     "@typescript-eslint/consistent-type-imports": [
       "error",
       {
