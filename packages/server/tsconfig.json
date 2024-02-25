@@ -1,5 +1,8 @@
 {
   "compilerOptions": {
+    "target": "ESNext",
+    "module": "esnext",
+    "moduleResolution": "node",
     "noImplicitAny": true,
     "removeComments": true,
     "preserveConstEnums": true,
@@ -21,7 +24,7 @@
   "include": [
     "src/**/*.ts",
     "esbuild.config.mjs",
-    "vitest.config.mjs",
+    "vite.config.mjs",
     "test/**/*.ts",
     "test/**/*.test.ts",
     ".eslintrc.cjs",
