@@ -1,9 +1,15 @@
-import { describe, test, expect, afterAll } from "@jest/globals";
+import { beforeAll, describe, test, expect, afterAll } from "vitest";
 
 import buildForTests from "@test/utils/buildForTests";
 
+import type { FastifyInstance } from "fastify";
+
 describe("REST API - /register", () => {
-  const fastify = buildForTests();
+  let fastify: FastifyInstance;
+
+  beforeAll(async () => {
+    fastify = await buildForTests();
+  });
 
   afterAll(async () => {
     await fastify.close();

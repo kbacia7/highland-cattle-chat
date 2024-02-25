@@ -11,6 +11,7 @@ import registerUserRoute from "@routes/register";
 import loginUserRoute from "@routes/login";
 
 import prismaConnector from "./prismaConnector";
+import googleStorageConnector from "./googleStorageConnector";
 import cacheConnector from "./cacheConnector";
 import workersConnector from "./workersConnector";
 
@@ -23,7 +24,7 @@ import type {
   FastifyInstance,
 } from "fastify";
 
-const build = (
+const build = async (
   opts?: FastifyHttpsOptions<Server, FastifyBaseLogger> | undefined,
 ) => {
   const fastify: FastifyInstance = Fastify(opts);
@@ -39,6 +40,7 @@ const build = (
   fastify.register(fastifyCookie, {
     secret: process.env.COOKIE_SECRET,
   });
+
   fastify.register(fastifyWebsocket);
   fastify.register(fastifyMultipart, {
     attachFieldsToBody: "keyValues",
@@ -51,15 +53,16 @@ const build = (
       parts: 10,
     },
   });
-  fastify.register(prismaConnector);
-  fastify.register(cacheConnector);
+
+  await fastify.register(prismaConnector);
+  await fastify.register(googleStorageConnector);
+  await fastify.register(cacheConnector);
   fastify.register(workersConnector);
   fastify.register(realTimeRoute);
   fastify.register(registerUserRoute);
   fastify.register(loginUserRoute);
   fastify.register(restrictedContext);
-  fastify.register(createGuideUser);
-
+  await fastify.register(createGuideUser);
   return fastify;
 };
 

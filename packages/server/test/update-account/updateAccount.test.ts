@@ -1,11 +1,13 @@
 import crypto from "crypto";
 
 import formAutoContent from "form-auto-content";
-import { describe, test, expect, afterAll } from "@jest/globals";
+import { describe, test, expect, afterAll, beforeAll } from "vitest";
 
 import authorize from "@test/utils/authorize";
 
 import buildForTests from "@test/utils/buildForTests";
+
+import type { FastifyInstance } from "fastify";
 
 const downloadImageFromUrl = async (url: string) => {
   const res = await fetch(url);
@@ -15,10 +17,11 @@ const downloadImageFromUrl = async (url: string) => {
 };
 
 describe("REST API - /update-account", () => {
-  const fastify = buildForTests();
+  let fastify: FastifyInstance;
   let randomImageBuff: Buffer;
 
   beforeAll(async () => {
+    fastify = await buildForTests();
     randomImageBuff = await downloadImageFromUrl("https://picsum.photos/200");
   });
 

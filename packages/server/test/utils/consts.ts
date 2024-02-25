@@ -1,4 +1,2 @@
-import { v4 as uuidv4 } from "uuid";
-
+// eslint-disable-next-line import/prefer-default-export
 export const FASTIFY_SERVER_PORT_BASE = 7970;
-export const FAKE_COOKIE_SECRET = uuidv4();

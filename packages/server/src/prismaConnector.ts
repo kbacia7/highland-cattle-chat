@@ -152,17 +152,13 @@ export const createPrismaClient = (
   options?: ConstructorParameters<typeof PrismaClient>[0],
 ) => new PrismaClient(options).$extends(cachingExtension(fastify));
 
-const prismaConnector: FastifyPluginCallback = async (
-  fastify,
-  options,
-  done,
-) => {
-  const prisma = createPrismaClient(fastify);
+const prismaConnector: FastifyPluginCallback = async (fastify, options) => {
+  const prisma = createPrismaClient(fastify, options);
+
+  fastify.decorate("prisma", prisma);
   if (!fastify.prisma) {
     fastify.decorate("prisma", prisma);
   }
-
-  done();
 };
 
 export default fp(prismaConnector, { name: "fastify-prisma" });

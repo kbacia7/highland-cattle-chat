@@ -9,8 +9,6 @@ import {
 
 import { updateAccountSchema } from "@highland-cattle-chat/shared";
 
-import { Storage } from "@google-cloud/storage";
-
 import hashPassword from "@helpers/hashPassword";
 
 import type { FastifyInstance } from "fastify";
@@ -72,18 +70,13 @@ const updateAccountRoute = async (fastify: FastifyInstance) => {
       });
 
       const imageId = uuidv4();
-      const storage = new Storage();
-      const bucketName = process.env.GOOGLE_STORAGE_BUCKET_NAME || "";
 
-      await storage
-        .bucket(bucketName)
-        .file(path.basename(loggedUser.image))
-        .delete();
+      if (loggedUser.image !== process.env.USER_PROFILE_PICTURE_PLACEHOLDER_URL)
+        await fastify.storageBucket
+          .file(path.basename(loggedUser.image))
+          .delete();
 
-      const file = storage
-        .bucket(bucketName)
-        .file(`${imageId}.${fileType.ext}`);
-
+      const file = fastify.storageBucket.file(`${imageId}.${fileType.ext}`);
       await file.save(req.body.profilePicture);
 
       const updatedUser = await fastify.prisma.user.update({

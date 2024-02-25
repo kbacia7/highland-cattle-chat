@@ -1,27 +1,28 @@
 import jwt from "jsonwebtoken";
-import { describe, test, expect, afterAll, beforeAll } from "@jest/globals";
+import { describe, test, expect, afterAll, beforeAll } from "vitest";
 import fastifyCookie from "@fastify/cookie";
 
 import buildForTests from "@test/utils/buildForTests";
-import { FAKE_COOKIE_SECRET } from "@test/utils/consts";
 
+import type { FastifyInstance } from "fastify";
 import type { Prisma } from "@prisma/client";
 import type { JwtPayload } from "jsonwebtoken";
 
 describe("REST API - /login", () => {
-  const fastify = buildForTests();
+  let fastify: FastifyInstance;
   let testUser: Prisma.UserUncheckedCreateInput;
 
-  afterAll(async () => {
-    await fastify.close();
-  });
-
   beforeAll(async () => {
+    fastify = await buildForTests();
     testUser = await fastify.prisma.user.findFirstOrThrow({
       where: {
         email: "john@example.com",
       },
     });
+  });
+
+  afterAll(async () => {
+    await fastify.close();
   });
 
   test("should respond cookie with JWT token", async () => {
@@ -49,7 +50,8 @@ describe("REST API - /login", () => {
     expect(cookie?.value).toBeTruthy();
 
     const cookieValue = JSON.parse(
-      fastifyCookie.unsign(cookie?.value ?? "", FAKE_COOKIE_SECRET).value ?? "",
+      fastifyCookie.unsign(cookie?.value ?? "", process.env.COOKIE_SECRET || "")
+        .value ?? "",
     );
 
     const jwtPayload = jwt.verify(

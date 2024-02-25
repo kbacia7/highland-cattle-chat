@@ -1,18 +1,12 @@
 import bcrypt from "bcrypt";
-import { PrismaClient } from "@prisma/client";
+
 import { v4 as uuidv4 } from "uuid";
-import { Redis } from "ioredis";
 
 import generateString from "@test/utils/randomString";
 
-const prisma = new PrismaClient({
-  datasourceUrl: process.env.JEST_TESTS_DATABASE_URL,
-});
+import type { PrismaClient } from "@prisma/client";
 
-const redis = new Redis();
-
-async function main() {
-  await redis.flushall();
+export default async (prisma: PrismaClient) => {
   const image = process.env.USER_PROFILE_PICTURE_PLACEHOLDER_URL || "";
   const john = await prisma.user.create({
     data: {
@@ -69,16 +63,4 @@ async function main() {
       },
     });
   }
-}
-main()
-  .then(async () => {
-    await prisma.$disconnect();
-    await redis.disconnect();
-    process.exit();
-  })
-  .catch(async (e) => {
-    console.error(e);
-    await prisma.$disconnect();
-    await redis.disconnect();
-    process.exit(1);
-  });
+};

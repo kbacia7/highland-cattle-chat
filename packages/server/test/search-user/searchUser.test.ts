@@ -1,12 +1,13 @@
-import { describe, test, expect, afterAll, beforeAll } from "@jest/globals";
+import { describe, test, expect, afterAll, beforeAll } from "vitest";
 
 import authorize from "@test/utils/authorize";
 import buildForTests from "@test/utils/buildForTests";
 
+import type { FastifyInstance } from "fastify";
 import type { User } from "@prisma/client";
 
 describe("REST API - /search-user", () => {
-  const fastify = buildForTests();
+  let fastify: FastifyInstance;
   let testUser: User;
 
   afterAll(async () => {
@@ -14,6 +15,7 @@ describe("REST API - /search-user", () => {
   });
 
   beforeAll(async () => {
+    fastify = await buildForTests();
     testUser = await fastify.prisma.user.findFirstOrThrow({
       where: {
         email: "zapp@example.com",

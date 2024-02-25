@@ -1,12 +1,13 @@
-import { describe, test, expect, afterAll, beforeAll } from "@jest/globals";
+import { describe, test, expect, afterAll, beforeAll } from "vitest";
 
 import authorize from "@test/utils/authorize";
 import buildForTests from "@test/utils/buildForTests";
 
+import type { FastifyInstance } from "fastify";
 import type { Prisma } from "@prisma/client";
 
 describe("REST API - /load-conversation", () => {
-  const fastify = buildForTests();
+  let fastify: FastifyInstance;
   let testConversation: Prisma.ConversationGetPayload<{
     include: {
       messages: true;
@@ -23,6 +24,7 @@ describe("REST API - /load-conversation", () => {
   });
 
   beforeAll(async () => {
+    fastify = await buildForTests();
     testConversation = await fastify.prisma.conversation.findFirstOrThrow({
       where: {
         participants: {
