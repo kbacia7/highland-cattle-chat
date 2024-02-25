@@ -8,7 +8,7 @@
   "scripts": {
     "build": "node esbuild.config.mjs",
     "lint": "eslint src; tsc --noEmit",
-    "test": "vitest"
+    "test": "npx dotenv -c .env.test vitest"
   },
   "dependencies": {
     "@fastify/cookie": "^9.0.4",
