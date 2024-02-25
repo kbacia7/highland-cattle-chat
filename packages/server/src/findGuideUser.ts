@@ -10,7 +10,7 @@ declare module "fastify" {
   }
 }
 
-const createGuideUser: FastifyPluginCallback = async (fastify) => {
+const findGuideUser: FastifyPluginCallback = async (fastify) => {
   const guideUser = await fastify.prisma.user.findFirst({
     where: {
       displayName: "Mrs. Guide",
@@ -25,6 +25,6 @@ const createGuideUser: FastifyPluginCallback = async (fastify) => {
     fastify.decorate("guideUser", guideUser);
 };
 
-export default fp(createGuideUser, {
-  name: "createGuideUser",
+export default fp(findGuideUser, {
+  name: "findGuideUser",
 });

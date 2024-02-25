@@ -15,7 +15,7 @@ import googleStorageConnector from "./googleStorageConnector";
 import cacheConnector from "./cacheConnector";
 import workersConnector from "./workersConnector";
 
-import createGuideUser from "./createGuideUser";
+import findGuideUser from "./findGuideUser";
 
 import type { Server } from "https";
 import type {
@@ -62,7 +62,7 @@ const build = async (
   fastify.register(registerUserRoute);
   fastify.register(loginUserRoute);
   fastify.register(restrictedContext);
-  await fastify.register(createGuideUser);
+  await fastify.register(findGuideUser);
   return fastify;
 };
 
