@@ -1,6 +1,4 @@
-import { randomBytes } from "crypto";
-
-import { v4 as uuidv4 } from "uuid";
+import { nanoid } from "nanoid";
 import jwt from "jsonwebtoken";
 
 import type { ExtendedPrismaClient } from "@/types/prismaConnector";
@@ -15,9 +13,7 @@ export const createSession = async (
   prisma: ExtendedPrismaClient,
 ) => {
   const expiresAt = new Date(new Date().valueOf() + SESSION_AGE_IN_MS);
-  const secret = uuidv4({
-    random: randomBytes(16),
-  });
+  const secret = nanoid(16);
 
   await prisma.session.create({
     data: {

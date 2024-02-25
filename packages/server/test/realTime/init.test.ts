@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import WebSocket from "ws";
-import { v4 as uuidv4 } from "uuid";
+import { nanoid } from "nanoid";
 
 import { SERVER_USER_ID } from "@highland-cattle-chat/shared";
 
@@ -31,7 +31,7 @@ describe("Websocket real-time route - Message type INIT", () => {
     new Promise<void>((done) => {
       const ws = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
       const client = WebSocket.createWebSocketStream(ws);
-      const userId = uuidv4();
+      const userId = nanoid();
       const initMessage: IncomeMessage = {
         type: "INIT",
         userId,
@@ -56,7 +56,7 @@ describe("Websocket real-time route - Message type INIT", () => {
       const ws = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
       const client = WebSocket.createWebSocketStream(ws);
       let secondCall = false;
-      const userId = uuidv4();
+      const userId = nanoid();
       const initMessage: IncomeMessage = {
         type: "INIT",
         userId,
@@ -93,7 +93,7 @@ describe("Websocket real-time route - Message type INIT", () => {
       const secondWs = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
       const firstClient = WebSocket.createWebSocketStream(firstWs);
       const secondClient = WebSocket.createWebSocketStream(secondWs);
-      const userId = uuidv4();
+      const userId = nanoid();
       const initMessage: IncomeMessage = {
         type: "INIT",
         userId,
@@ -131,7 +131,7 @@ describe("Websocket real-time route - Message type INIT", () => {
       const secondWs = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
       const firstClient = WebSocket.createWebSocketStream(firstWs);
       const secondClient = WebSocket.createWebSocketStream(secondWs);
-      const userId = uuidv4();
+      const userId = nanoid();
       const initMessage: IncomeMessage = {
         type: "INIT",
         userId,

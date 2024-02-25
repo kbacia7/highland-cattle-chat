@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { v4 as uuidv4 } from "uuid";
+import { nanoid } from "nanoid";
 import WebSocket from "ws";
 
 import { SERVER_USER_ID } from "@highland-cattle-chat/shared";
@@ -57,7 +57,7 @@ describe("Websocket real-time route - Message type UNKNOWN_ERROR", () => {
       const message: IncomeMessage = {
         // @ts-ignore
         type: "anything",
-        userId: uuidv4(),
+        userId: nanoid(),
       };
 
       client.write(JSON.stringify(message));
@@ -81,7 +81,7 @@ describe("Websocket real-time route - Message type UNKNOWN_ERROR", () => {
       client.write(
         JSON.stringify({
           type: "INIT",
-          userId: uuidv4(),
+          userId: nanoid(),
         } as IncomeMessage),
       );
 
@@ -119,7 +119,7 @@ describe("Websocket real-time route - Message type UNKNOWN_ERROR", () => {
             // @ts-ignore
             JSON.stringify({
               type: "TEXT",
-              userId: uuidv4(),
+              userId: nanoid(),
               content: [],
             } as IncomeMessage),
           );
@@ -128,7 +128,7 @@ describe("Websocket real-time route - Message type UNKNOWN_ERROR", () => {
             // @ts-ignore
             JSON.stringify({
               type: "TEXT",
-              userId: uuidv4(),
+              userId: nanoid(),
               content: {},
             } as IncomeMessage),
           );

@@ -8,7 +8,7 @@ import {
   beforeEach,
 } from "vitest";
 import WebSocket from "ws";
-import { v4 as uuidv4 } from "uuid";
+import { nanoid } from "nanoid";
 import { SERVER_USER_ID } from "@highland-cattle-chat/shared";
 
 import build from "@/app";
@@ -422,7 +422,7 @@ describe("Websocket real-time route - Message type TEXT", () => {
             } as IncomeMessage),
           );
 
-          const message = uuidv4();
+          const message = nanoid(500);
 
           fastify.messagesStackWorker.on("completed", () => {
             fastify.prisma.message

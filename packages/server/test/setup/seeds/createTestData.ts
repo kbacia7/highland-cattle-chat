@@ -1,8 +1,6 @@
 import bcrypt from "bcrypt";
 
-import { v4 as uuidv4 } from "uuid";
-
-import generateString from "@test/utils/randomString";
+import { nanoid } from "nanoid";
 
 import type { PrismaClient } from "@prisma/client";
 
@@ -39,7 +37,7 @@ export default async (prisma: PrismaClient) => {
     // eslint-disable-next-line no-await-in-loop
     await prisma.conversation.create({
       data: {
-        title: uuidv4(),
+        title: nanoid(50),
         participants: {
           create: [
             {
@@ -52,7 +50,7 @@ export default async (prisma: PrismaClient) => {
         },
         messages: {
           create: [...Array(10)].map(() => ({
-            content: generateString(Math.ceil(Math.random() * 5)),
+            content: nanoid(Math.ceil(Math.random() * 1000)),
             user: {
               connect: {
                 id: Math.random() > 0.5 ? john.id : mike.id,

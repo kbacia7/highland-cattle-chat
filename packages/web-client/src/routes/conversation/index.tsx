@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
+import { nanoid } from "@reduxjs/toolkit";
 import { useParams } from "react-router-dom";
 
 import { MessageTypes } from "@highland-cattle-chat/shared";
@@ -24,7 +24,7 @@ const transformOutcomeMessage = (message: OutcomeMessage) => {
   const messageRecord: LoadConversationResponse["messages"][0] = {
     content: message.content ?? "",
     createdAt: new Date(),
-    id: uuidv4(),
+    id: nanoid(),
     userId: message.userId,
   };
 

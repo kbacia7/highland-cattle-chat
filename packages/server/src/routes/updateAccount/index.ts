@@ -1,6 +1,6 @@
 import path from "path";
 
-import { v4 as uuidv4 } from "uuid";
+import { nanoid } from "nanoid";
 import { fileTypeFromBuffer } from "file-type";
 import {
   serializerCompiler,
@@ -69,7 +69,7 @@ const updateAccountRoute = async (fastify: FastifyInstance) => {
         },
       });
 
-      const imageId = uuidv4();
+      const imageId = nanoid(8);
 
       if (loggedUser.image !== process.env.USER_PROFILE_PICTURE_PLACEHOLDER_URL)
         await fastify.storageBucket
