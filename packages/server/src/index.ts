@@ -18,7 +18,7 @@ const LOGGER_OPTIONS = {
   test: false,
 };
 
-const fastify = build({
+const fastify = await build({
   logger: LOGGER_OPTIONS[process.env.NODE_ENV],
   https: {
     key: fs.readFileSync(path.join("./https", "localhost-key.pem")),
