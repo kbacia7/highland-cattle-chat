@@ -8,7 +8,7 @@
   "scripts": {
     "build": "npx vite-node src/index.ts",
     "lint": "eslint src; tsc --noEmit",
-    "test": "npx dotenv -c .env.test vitest"
+    "test": "npx dotenv -e .env.test -- vitest"
   },
   "dependencies": {
     "@fastify/cookie": "^9.0.4",
