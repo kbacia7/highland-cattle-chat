@@ -1,7 +1,7 @@
 import { describe, test, expect, afterAll, beforeAll } from "vitest";
 
+import build from "@/app";
 import authorize from "@test/utils/authorize";
-import buildForTests from "@test/utils/buildForTests";
 
 import type { FastifyInstance } from "fastify";
 import type { Prisma } from "@prisma/client";
@@ -24,7 +24,7 @@ describe("REST API - /load-conversation", () => {
   });
 
   beforeAll(async () => {
-    fastify = await buildForTests();
+    fastify = await build();
     testConversation = await fastify.prisma.conversation.findFirstOrThrow({
       where: {
         participants: {

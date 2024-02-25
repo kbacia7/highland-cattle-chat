@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import { describe, test, expect, afterAll, beforeAll } from "vitest";
 import fastifyCookie from "@fastify/cookie";
 
-import buildForTests from "@test/utils/buildForTests";
+import build from "@/app";
 
 import type { FastifyInstance } from "fastify";
 import type { Prisma } from "@prisma/client";
@@ -13,7 +13,7 @@ describe("REST API - /login", () => {
   let testUser: Prisma.UserUncheckedCreateInput;
 
   beforeAll(async () => {
-    fastify = await buildForTests();
+    fastify = await build();
     testUser = await fastify.prisma.user.findFirstOrThrow({
       where: {
         email: "john@example.com",

@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 
 import { SERVER_USER_ID } from "@highland-cattle-chat/shared";
 
-import buildForTests from "@test/utils/buildForTests";
+import build from "@/app";
 
 import { FASTIFY_SERVER_PORT_BASE } from "@test/utils/consts";
 
@@ -19,7 +19,7 @@ describe("Websocket real-time route - Message type INIT", () => {
   const SERVER_PORT = FASTIFY_SERVER_PORT_BASE + 1;
 
   beforeEach(async () => {
-    fastify = await buildForTests();
+    fastify = await build();
     await fastify.listen({ port: SERVER_PORT });
   });
 

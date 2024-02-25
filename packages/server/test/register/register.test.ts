@@ -1,6 +1,6 @@
 import { beforeAll, describe, test, expect, afterAll } from "vitest";
 
-import buildForTests from "@test/utils/buildForTests";
+import build from "@/app";
 
 import type { FastifyInstance } from "fastify";
 
@@ -8,7 +8,7 @@ describe("REST API - /register", () => {
   let fastify: FastifyInstance;
 
   beforeAll(async () => {
-    fastify = await buildForTests();
+    fastify = await build();
   });
 
   afterAll(async () => {

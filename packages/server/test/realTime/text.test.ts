@@ -11,7 +11,7 @@ import WebSocket from "ws";
 import { v4 as uuidv4 } from "uuid";
 import { SERVER_USER_ID } from "@highland-cattle-chat/shared";
 
-import buildForTests from "@test/utils/buildForTests";
+import build from "@/app";
 
 import { FASTIFY_SERVER_PORT_BASE } from "@test/utils/consts";
 
@@ -34,7 +34,7 @@ describe("Websocket real-time route - Message type TEXT", () => {
   }>;
 
   beforeEach(async () => {
-    fastify = await buildForTests();
+    fastify = await build();
     await fastify.listen({ port: SERVER_PORT });
   });
 
@@ -43,7 +43,7 @@ describe("Websocket real-time route - Message type TEXT", () => {
   });
 
   beforeAll(async () => {
-    fastify = await buildForTests();
+    fastify = await build();
     testUser = await fastify.prisma.user.findFirstOrThrow({
       where: {
         email: "john@example.com",
