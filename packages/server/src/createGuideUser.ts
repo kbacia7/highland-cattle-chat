@@ -10,31 +10,19 @@ declare module "fastify" {
   }
 }
 
-const createGuideUser: FastifyPluginCallback = async (
-  fastify,
-  options,
-  done,
-) => {
-  let guideUser = await fastify.prisma.user.findFirst({
+const createGuideUser: FastifyPluginCallback = async (fastify) => {
+  const guideUser = await fastify.prisma.user.findFirst({
     where: {
       displayName: "Mrs. Guide",
     },
   });
 
   if (!guideUser) {
-    guideUser = await fastify.prisma.user.create({
-      data: {
-        image: process.env.MRS_GUIDE_PROFILE_PICTURE_PLACEHOLDER_URL || "",
-        displayName: "Mrs. Guide",
-        email: "fake-incorrect-email",
-        password: "fake-incorrect-password",
-      },
-    });
+    throw new Error("Guide user not found");
   }
 
   if (!fastify.hasDecorator("guideUser"))
     fastify.decorate("guideUser", guideUser);
-  done();
 };
 
 export default fp(createGuideUser, {
