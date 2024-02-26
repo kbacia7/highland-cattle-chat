@@ -19,11 +19,13 @@ const workersConnector: FastifyPluginCallback = async (
   options,
   done,
 ) => {
-  // TODO: Move to env
+  const host = process.env.REDIS_HOST || "localhost";
+  const port = parseInt(process.env.REDIS_PORT || "6379", 10);
+
   const messagesStackQueue = new Queue("messages-stack", {
     connection: {
-      host: "localhost",
-      port: 6379,
+      host,
+      port,
     },
   });
 
@@ -39,11 +41,10 @@ const workersConnector: FastifyPluginCallback = async (
 
       fastify.cache.del(getMessageStackStaleKey(key));
     },
-
     {
       connection: {
-        host: "localhost",
-        port: 6379,
+        host,
+        port,
       },
     },
   );
