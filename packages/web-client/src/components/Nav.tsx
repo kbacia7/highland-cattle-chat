@@ -117,7 +117,7 @@ const Nav = ({ conversations }: Props) => {
   };
 
   return (
-    <nav className="h-full bg-blue-100 min-w-[400px] max-w-[400px]">
+    <nav className="h-full bg-blue-100 overflow-auto lg:min-w-[400px] lg:max-w-[400px]">
       <div className="mx-4">
         <div className="flex flex-row align-baseline py-2">
           <h2 className="text-3xl font-bold text-blue-900 inline">

@@ -81,7 +81,7 @@ const ConversationRoute = () => {
   if (!currentData?.messages || !chatImage) return null; //TODO: Error and loading handle
 
   return (
-    <main className="w-full">
+    <main className="w-full absolute bg-white lg:relative">
       <div className="flex flex-col h-full">
         <ConversationHeader
           image={chatImage}

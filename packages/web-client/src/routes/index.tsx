@@ -24,8 +24,8 @@ const RootRoute = () => {
   return (
     //TODO: spinner
     <>
-      <div className="flex h-full">
-        <div className="hidden lg:block">
+      <div className="flex h-full w-full lg:w-auto">
+        <div className="lg:block w-full lg:w-auto">
           <Nav
             conversations={(conversations || []).map(
               ({ id, title, participants }) => {
