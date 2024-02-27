@@ -406,58 +406,59 @@ describe("Websocket real-time route - Message type TEXT", () => {
       });
     }));
 
-  test("should write messages to database after 100 cached messages", () =>
-    new Promise<void>((done) => {
-      fastify.cache.keys("messages-stack*").then((keys) => {
-        fastify.cache.del(...(keys.length ? keys : [""])).then(() => {
-          const senderWs = new WebSocket(
-            `ws://localhost:${SERVER_PORT}/real-time`,
-          );
+  test(
+    "should write messages to database after 100 cached messages",
+    () =>
+      new Promise<void>((done) => {
+        fastify.cache.keys("messages-stack*").then((keys) => {
+          fastify.cache.del(...(keys.length ? keys : [""])).then(() => {
+            const senderWs = new WebSocket(
+              `ws://localhost:${SERVER_PORT}/real-time`,
+            );
 
-          const senderClient = WebSocket.createWebSocketStream(senderWs);
-          senderClient.write(
-            JSON.stringify({
-              type: "INIT",
-              userId: testUser.id,
-            } as IncomeMessage),
-          );
+            const senderClient = WebSocket.createWebSocketStream(senderWs);
+            senderClient.write(
+              JSON.stringify({
+                type: "INIT",
+                userId: testUser.id,
+              } as IncomeMessage),
+            );
 
-          const message = nanoid(500);
+            const message = nanoid(500);
+            senderClient.on("data", async (chunk: Buffer) => {
+              const res = JSON.parse(chunk.toString()) as OutcomeMessage;
+              if (res.type === "INIT") {
+                for (let i = 1; i <= 100; i += 1) {
+                  senderClient.write(
+                    JSON.stringify({
+                      type: "TEXT",
+                      userId: testUser.id,
+                      conversationId: testConversation.id,
+                      content: message,
+                    } as IncomeMessage),
+                  );
 
-          fastify.messagesStackWorker.on("completed", () => {
-            fastify.prisma.message
-              .findMany({
-                where: {
-                  conversationId: testConversation.id,
-                  content: message,
-                },
-              })
-              .then((messages) => {
-                expect(messages).toHaveLength(100);
-                senderWs.close();
-                done();
-              });
-          });
+                  // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
+                  await new Promise((r) => setTimeout(r, 100));
+                }
 
-          senderClient.on("data", async (chunk: Buffer) => {
-            const res = JSON.parse(chunk.toString()) as OutcomeMessage;
-            if (res.type === "INIT") {
-              for (let i = 1; i <= 100; i += 1) {
-                senderClient.write(
-                  JSON.stringify({
-                    type: "TEXT",
-                    userId: testUser.id,
-                    conversationId: testConversation.id,
-                    content: message,
-                  } as IncomeMessage),
-                );
-
-                // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
-                await new Promise((r) => setTimeout(r, 100));
+                fastify.prisma.message
+                  .findMany({
+                    where: {
+                      conversationId: testConversation.id,
+                      content: message,
+                    },
+                  })
+                  .then((messages) => {
+                    expect(messages).toHaveLength(100);
+                    senderWs.close();
+                    done();
+                  });
               }
-            }
+            });
           });
         });
-      });
-    }));
+      }),
+    12000,
+  );
 });
