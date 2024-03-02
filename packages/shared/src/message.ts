@@ -57,6 +57,7 @@ export type LoadConversationResponse = {
       };
     };
   }>[];
+  count: number;
 };
 
 export type LoadConversationsResponse = Prisma.ConversationGetPayload<{

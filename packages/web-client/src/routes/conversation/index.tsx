@@ -8,7 +8,10 @@ import Chat from "~/components/Chat";
 import ConversationHeader from "~/components/ConversationHeader";
 
 import { InternalMessageTypes } from "~/consts/broadcast";
-import { useLoadConversationQuery } from "~/slices/conversationsSlice";
+import {
+  useLazyLoadConversationQuery,
+  useLoadConversationQuery,
+} from "~/slices/conversationsSlice";
 import { useAppSelector } from "~/slices/hooks";
 
 import SendInput from "./SendInput";
@@ -34,7 +37,9 @@ const transformOutcomeMessage = (message: OutcomeMessage) => {
 const ConversationRoute = () => {
   const { id: conversationId } = useParams();
   const navigate = useNavigate();
+
   const { userId } = useAppSelector((state) => state.loggedUser);
+  const [lazyLoadConversation] = useLazyLoadConversationQuery();
   const { currentData, isLoading } = useLoadConversationQuery({
     id: conversationId ?? "",
   });
@@ -83,6 +88,16 @@ const ConversationRoute = () => {
 
   if (!currentData?.messages || !chatImage) return null; //TODO: Error and loading handle
 
+  const onLoadMore = async () => {
+    const { messages: newMessages } = await lazyLoadConversation({
+      id: conversationId ?? "",
+      limit: 20,
+      last: messages[0].id,
+    }).unwrap();
+
+    setMessages(newMessages.concat(messages));
+  };
+
   return (
     <main className="w-full absolute bg-white lg:relative">
       <div className="flex flex-col h-full">
@@ -91,7 +106,13 @@ const ConversationRoute = () => {
           participant={currentData.participants[0]}
         />
 
-        <Chat messages={messages} image={chatImage} />
+        <Chat
+          messages={messages}
+          image={chatImage}
+          onLoadMore={
+            currentData.count > messages.length ? onLoadMore : undefined
+          }
+        />
 
         <SendInput
           onSend={async ({ message, attachment }) => {

@@ -4,11 +4,14 @@ import { useAppSelector } from "~/slices/hooks";
 
 import ProfileImage from "./ProfileImage";
 
+import ArrowBackIcon from "./icons/ArrowBack";
+
 import type { LoadConversationResponse } from "@highland-cattle-chat/shared";
 
 type Props = {
   messages?: LoadConversationResponse["messages"];
   image: string;
+  onLoadMore?: () => void;
 };
 
 const ChatMessage = ({
@@ -63,10 +66,24 @@ const ChatMessage = ({
   </div>
 );
 
-const Chat = ({ messages, image }: Props) => {
+const Chat = ({ messages, image, onLoadMore }: Props) => {
   const loggedUserId = useAppSelector((state) => state.loggedUser.userId);
+
   return (
     <div className="p-5 overflow-y-auto flex-grow">
+      {onLoadMore && (
+        <div className="w-full text-center">
+          <button
+            className="bg-blue-200 rounded-full hover:bg-blue-400 transition-colors"
+            onClick={onLoadMore}
+          >
+            <ArrowBackIcon
+              size={36}
+              className="rotate-90 text-blue-500 hover:text-blue-200"
+            />
+          </button>
+        </div>
+      )}
       {messages && messages?.length > 0
         ? messages.map((message) => (
             <ChatMessage

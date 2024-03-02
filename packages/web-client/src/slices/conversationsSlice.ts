@@ -46,11 +46,11 @@ export const extendedApiSlice = apiSlice
 
       loadConversation: builder.query<
         LoadConversationResponse,
-        { id: string; limit?: number }
+        { id: string; limit?: number; last?: string }
       >({
-        query: ({ id, limit }) => ({
+        query: (params) => ({
           url: "/load-conversation",
-          params: { id, limit },
+          params,
         }),
       }),
 
@@ -92,6 +92,7 @@ export const extendedApiSlice = apiSlice
 export const {
   useLoadConversationsQuery,
   useLoadConversationQuery,
+  useLazyLoadConversationQuery,
   useCreateConversationMutation,
   useSearchUserQuery,
   useUploadAttachmentMutation,

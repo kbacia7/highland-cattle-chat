@@ -49,8 +49,11 @@ export default async (prisma: PrismaClient) => {
           ],
         },
         messages: {
-          create: [...Array(10)].map(() => ({
+          create: [...Array(10)].map((value, index) => ({
             content: nanoid(Math.ceil(Math.random() * 1000)),
+            createdAt: new Date(
+              new Date().valueOf() - (20 - index) * 1000 * 60 * 60,
+            ),
             user: {
               connect: {
                 id: Math.random() > 0.5 ? john.id : mike.id,

@@ -65,8 +65,15 @@ describe("REST API - /load-conversation", () => {
     });
 
     const body = response.json();
+    const count = await fastify.prisma.message.count({
+      where: {
+        conversationId: testConversation.id ?? "",
+      },
+    });
+
     expect(response.statusCode).toBe(200);
     expect(body).toEqual({
+      count,
       participants: testConversation.participants.map((participant: any) => ({
         user: {
           id: participant.user.id,
@@ -76,9 +83,11 @@ describe("REST API - /load-conversation", () => {
       })),
       messages: testConversation.messages
         .slice(0, 100)
+        .reverse()
         .map((message: Prisma.MessageUncheckedCreateInput) => ({
           id: message.id,
           userId: message.userId,
+          attachment: message.attachment,
           content: message.content,
           createdAt:
             message.createdAt instanceof Date
@@ -108,8 +117,15 @@ describe("REST API - /load-conversation", () => {
     });
 
     const body = response.json();
+    const count = await fastify.prisma.message.count({
+      where: {
+        conversationId: testConversation.id ?? "",
+      },
+    });
+
     expect(response.statusCode).toBe(200);
     expect(body).toEqual({
+      count,
       participants: testConversation.participants.map((participant: any) => ({
         user: {
           id: participant.user.id,
@@ -119,7 +135,9 @@ describe("REST API - /load-conversation", () => {
       })),
       messages: testConversation.messages
         .slice(0, 10)
+        .reverse()
         .map((message: Prisma.MessageUncheckedCreateInput) => ({
+          attachment: message.attachment,
           id: message.id,
           userId: message.userId,
           content: message.content,
