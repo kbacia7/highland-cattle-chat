@@ -66,8 +66,10 @@ const ChatMessage = ({
   </div>
 );
 
+const SHOW_TIMEMARK_AFTER = 1000 * 60 * 30;
 const Chat = ({ messages, image, onLoadMore }: Props) => {
   const loggedUserId = useAppSelector((state) => state.loggedUser.userId);
+  let previousMessageDate: number;
 
   return (
     <div className="p-5 overflow-y-auto flex-grow">
@@ -85,14 +87,32 @@ const Chat = ({ messages, image, onLoadMore }: Props) => {
         </div>
       )}
       {messages && messages?.length > 0
-        ? messages.map((message) => (
-            <ChatMessage
-              {...message}
-              image={image}
-              key={message.id}
-              floatRight={message.userId === loggedUserId}
-            />
-          ))
+        ? messages.map((message) => {
+            const createdAt = new Date(message.createdAt).valueOf();
+
+            const diff = createdAt - previousMessageDate;
+            previousMessageDate = createdAt;
+            return (
+              <div key={message.id}>
+                {diff > SHOW_TIMEMARK_AFTER && (
+                  <p className="text-center mt-4 text-blue-600">
+                    {new Date(message.createdAt).toLocaleDateString("en-US", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                )}
+                <ChatMessage
+                  {...message}
+                  image={image}
+                  floatRight={message.userId === loggedUserId}
+                />
+              </div>
+            );
+          })
         : ""}
     </div>
   );
