@@ -14,6 +14,7 @@ type Props = {
 const ChatMessage = ({
   content,
   image,
+  attachment,
   createdAt,
   floatRight,
 }: LoadConversationResponse["messages"][0] & {
@@ -38,6 +39,14 @@ const ChatMessage = ({
       )}
     >
       <p className="text-lg break-words">{content}</p>
+      {attachment && (
+        <img
+          src={`${
+            import.meta.env.VITE_GOOGLE_STORAGE_BUCKET_PUBLIC_URL
+          }/${attachment}`}
+          className="w-full"
+        />
+      )}
       <p
         className={cx("text-sm text-right mt-1", {
           "text-blue-600": floatRight,

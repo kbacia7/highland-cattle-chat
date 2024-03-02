@@ -14,6 +14,7 @@ import type {
   LoadConversationResponse,
   LoadConversationsResponse,
   createConversationSchema,
+  UploadAttachmentResponse,
 } from "@highland-cattle-chat/shared";
 
 import type { z } from "zod";
@@ -76,6 +77,15 @@ export const extendedApiSlice = apiSlice
         }),
         providesTags: ["User"],
       }),
+
+      uploadAttachment: builder.mutation<UploadAttachmentResponse, FormData>({
+        query: (body) => ({
+          url: "/upload-attachment",
+          method: "POST",
+          body,
+          formData: true,
+        }),
+      }),
     }),
   });
 
@@ -84,6 +94,7 @@ export const {
   useLoadConversationQuery,
   useCreateConversationMutation,
   useSearchUserQuery,
+  useUploadAttachmentMutation,
 } = extendedApiSlice;
 
 export const selectConversationsResult =

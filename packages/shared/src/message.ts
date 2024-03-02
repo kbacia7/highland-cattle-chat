@@ -27,6 +27,7 @@ export type MessageStatus =
 export type IncomeMessage = {
   type: MessageType;
   content?: string;
+  attachment?: string;
   userId: string;
   conversationId?: string;
 };
@@ -39,6 +40,7 @@ export type LoadConversationResponse = {
   messages: Prisma.MessageGetPayload<{
     select: {
       id: true;
+      attachment: true;
       userId: true;
       createdAt: true;
       content: true;
@@ -93,3 +95,6 @@ export type RegisterResponse = {
 
 export type LoginResponse = Omit<User, "password">;
 export type UpdateAccountResponse = Omit<User, "password">;
+export type UploadAttachmentResponse = {
+  attachment: string;
+};

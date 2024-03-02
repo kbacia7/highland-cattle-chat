@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { zfd } from "zod-form-data";
 
+export const uploadAttachmentSchema = zfd.formData({
+  image: z.any(),
+});
+
 export const updateAccountSchema = zfd.formData({
   displayName: z
     .string()

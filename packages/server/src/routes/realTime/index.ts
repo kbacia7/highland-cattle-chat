@@ -1,3 +1,5 @@
+import path from "path";
+
 import { WebSocket } from "ws";
 
 import {
@@ -86,7 +88,10 @@ const handleMessage = async (
     }
 
     case MessageTypes.TEXT: {
-      if (!message.content || !message.conversationId) {
+      if (
+        (!message.content && !message.attachment) ||
+        !message.conversationId
+      ) {
         respondWithError(MessageTypes.TEXT, socket);
         return;
       }
@@ -118,7 +123,19 @@ const handleMessage = async (
         return;
       }
 
-      message.content = escapeHtml(message.content);
+      if (message.attachment?.length && message.attachment.length < 20) {
+        const filename = message.attachment.replace(
+          path.basename(message.attachment),
+          "",
+        );
+
+        if (filename.match(/[^A-Za-z0-9_-]/)) {
+          respondWithError(MessageTypes.TEXT, socket);
+          return;
+        }
+      }
+
+      if (message.content) message.content = escapeHtml(message.content);
       const outcomeMessage = JSON.stringify({
         ...message,
         status: MessageStatuses.OK,

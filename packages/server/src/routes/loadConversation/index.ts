@@ -56,6 +56,7 @@ const loadConversationRoute = async (fastify: FastifyInstance) => {
                   select: {
                     id: true,
                     userId: true,
+                    attachment: true,
                     createdAt: true,
                     content: true,
                   },

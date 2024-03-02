@@ -47,7 +47,7 @@ sendedChannel.addEventListener("message", async (event) => {
   if (!socket) return;
 
   const message: IncomeMessage = event.data;
-  if (!message.content) return;
+  if (!message.content && !message.attachment) return;
 
   socket.send(JSON.stringify(message));
 });

@@ -5,6 +5,7 @@ import loadConversationRoute from "@routes/loadConversation";
 import searchUserRoute from "@routes/searchUser";
 import createConversationRoute from "@routes/createConversation";
 import updateAccountRoute from "@routes/updateAccount";
+import uploadAttachmentRoute from "@routes/uploadAttachment";
 
 import type { FastifyInstance } from "fastify";
 import type { SessionCookie } from "@highland-cattle-chat/shared";
@@ -43,6 +44,7 @@ const restrictedContext = async (fastify: FastifyInstance) => {
     childContext.register(searchUserRoute);
     childContext.register(updateAccountRoute);
     childContext.register(createConversationRoute);
+    childContext.register(uploadAttachmentRoute);
   });
 };
 

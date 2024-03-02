@@ -29,6 +29,7 @@ export const addMessageToStack = async (
         id: new ObjectId().toString(),
         createdAt: new Date(),
         content: message.content,
+        attachment: message.attachment,
         conversationId: message.conversationId,
         userId: message.userId,
       }),
