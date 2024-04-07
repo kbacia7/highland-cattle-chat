@@ -14,7 +14,10 @@ const cacheConnector: FastifyPluginCallback = async (
   options,
   done,
 ) => {
-  const redis = new Redis();
+  const redis = new Redis({
+    host: process.env.REDIS_HOST || "localhost",
+    port: parseInt(process.env.REDIS_PORT || "6379", 10),
+  });
   if (!fastify.cache) {
     fastify.decorate("cache", redis);
   }
