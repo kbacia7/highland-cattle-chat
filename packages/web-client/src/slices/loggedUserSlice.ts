@@ -60,11 +60,11 @@ const loggedUserSlice = createSlice({
     builder
       .addCase(
         loadUserAccountSettingsFromIDB.fulfilled,
-        (state, action) => action.payload,
+        (_state, action) => action.payload,
       )
       .addCase(
         saveUserAccountSettingsToIDB.fulfilled,
-        (state, action) => action.payload,
+        (_state, action) => action.payload,
       );
   },
 });
