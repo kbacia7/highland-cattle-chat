@@ -6,6 +6,12 @@ import type { PrismaClient } from "@prisma/client";
 import type { Bucket } from "@google-cloud/storage";
 
 export default async (prisma: PrismaClient, bucket: Bucket) => {
+  const mrGuideExists = await prisma.user.count({
+    where: {
+      displayName: "Mrs. Guide",
+    },
+  });
+
   const blankImage = fs.readFileSync(
     path.resolve(__dirname, "assets", "blank.png"),
   );
@@ -25,6 +31,8 @@ export default async (prisma: PrismaClient, bucket: Bucket) => {
       ),
     )
     .save(mrsGuideImage);
+
+  if (mrGuideExists) return;
 
   await prisma.user.create({
     data: {

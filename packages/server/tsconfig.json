@@ -22,6 +22,7 @@
     "typeRoots": ["../../node_modules/@types"]
   },
   "include": [
+    "prisma/seed.ts",
     "src/**/*.ts",
     "esbuild.config.mjs",
     "vite.config.mjs",
