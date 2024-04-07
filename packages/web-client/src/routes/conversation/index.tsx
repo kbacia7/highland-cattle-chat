@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { nanoid } from "@reduxjs/toolkit";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 import { MessageTypes } from "@highland-cattle-chat/shared";
 
@@ -36,7 +36,6 @@ const transformOutcomeMessage = (message: OutcomeMessage) => {
 
 const ConversationRoute = () => {
   const { id: conversationId } = useParams();
-  const navigate = useNavigate();
 
   const { userId } = useAppSelector((state) => state.loggedUser);
   const [lazyLoadConversation] = useLazyLoadConversationQuery();
@@ -81,8 +80,6 @@ const ConversationRoute = () => {
     setMessages(currentData?.messages ?? []);
   }, [currentData]);
 
-  if (!userId) return navigate("/home");
-
   const chatImage = currentData?.participants.find((p) => p.user.id !== userId)
     ?.user.image;
 
@@ -118,7 +115,7 @@ const ConversationRoute = () => {
           onSend={async ({ message, attachment }) => {
             const channel = new BroadcastChannel("sended_messages");
             const msg: IncomeMessage = {
-              userId,
+              userId: userId as string,
               conversationId,
               type: MessageTypes.TEXT,
               content: message,
