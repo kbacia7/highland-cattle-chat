@@ -1,0 +1,85 @@
+# This file is example how to deploy app backend on k8s. Before that you have to deploy redis and mongodb (see other files in this same directory)
+# Keep in mind that this file is just example, you probably want to alter this file according to your needs
+# Because application uses google cloud storage to host images, to authorize to Google Cloud Storage API you have to configure workload identity federation
+# https://cloud.google.com/iam/docs/workload-identity-federation-with-kubernetes
+# Tested on self-hosted k8s cluster
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-app-backend
+  labels:
+    app: chat-app-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chat-app-backend
+  template:
+    metadata:
+      labels:
+        app: chat-app-backend
+    spec:
+      containers:
+      - name: chat-app-backend
+        image: node:20
+        workingDir: /home/node/app
+        command: ["/bin/sh"]
+        args: ['-c', '--', 'cd ./highland-cattle-chat/packages/server && yarn run seed && yarn run start']
+        env:
+          - name: NODE_ENV
+            value: "production"
+          - name: REDIS_HOST
+            value: "redis"
+          - name: REDIS_PORT
+            value: "6379"
+          - name: PORT
+            value: "3000"
+          - name: GOOGLE_APPLICATION_CREDENTIALS 
+            value: "/etc/workload-identity/credential-configuration.json"
+        ports:
+        - name: chat-app
+          containerPort: 80
+        resources:
+          limits:
+            memory: "256Mi"
+        volumeMounts:
+        - name: chat-app-backend
+          mountPath: /home/node/app
+        - name: token
+          mountPath: "/var/run/service-account"
+          readOnly: true
+        - name: workload-identity-credential-configuration
+          mountPath: "/etc/workload-identity"
+          readOnly: true
+      serviceAccountName: chat-app-service-account
+      volumes:
+        - name: chat-app-backend
+          persistentVolumeClaim:
+            claimName: chat-app-backend-pvc
+        # Configure your workload identity
+        # https://cloud.google.com/iam/docs/workload-identity-federation-with-kubernetes#deploy 
+        # - name: token
+        #   projected:
+        #     sources:
+        #     - serviceAccountToken:
+        #         audience: https://iam.googleapis.com/projects/...
+        #         expirationSeconds: 3600
+        #         path: token
+        # - name: workload-identity-credential-configuration
+        #   configMap:
+        #     name: google-cloud-credential
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chat-app-backend
+  labels:
+    app: chat-app-backend
+spec:
+  ports:
+    - protocol: TCP
+      name: http
+      port: 3000
+      targetPort: 3000
+  selector:
+    app: chat-app-backend

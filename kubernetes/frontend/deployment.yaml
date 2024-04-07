@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-app-front
+  labels:
+    app: chat-app-front
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chat-app-front
+  template:
+    metadata:
+      labels:
+        app: chat-app-front
+    spec:
+      containers:
+      - name: chat-app-front
+        image: nginx:stable-alpine3.17
+        ports:
+        - name: chat-app
+          containerPort: 80
+        resources:
+          limits:
+            memory: "64Mi"
+        volumeMounts:
+        - name: chat-app
+          mountPath: /usr/share/nginx/html
+      volumes:
+        - name: chat-app
+          persistentVolumeClaim:
+            claimName: chat-app-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chat-app-front
+  labels:
+    app: chat-app-front
+spec:
+  ports:
+    - protocol: TCP
+      name: http
+      port: 80
+      targetPort: 80
+  selector:
+    app: chat-app-front

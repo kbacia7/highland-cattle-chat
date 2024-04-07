@@ -1,0 +1,13 @@
+# PVC for backend app
+# I use https://github.com/rancher/local-path-provisioner, you probably have to configure storageClassName accordingly
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: chat-app-backend-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi

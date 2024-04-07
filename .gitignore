@@ -5,3 +5,4 @@ packages/web-client/dist/
 packages/web-client/.env
 packages/server/https/
 packages/web-client/https/
+kubernetes/

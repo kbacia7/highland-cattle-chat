@@ -1,0 +1,45 @@
+# I use MongodDB kubernetes operator
+# https://github.com/mongodb/mongodb-kubernetes-operator
+# https://github.com/mongodb/mongodb-kubernetes-operator/blob/master/docs/deploy-configure.md
+apiVersion: mongodbcommunity.mongodb.com/v1
+kind: MongoDBCommunity
+metadata:
+  name: mongodb
+spec:
+  members: 1
+  type: ReplicaSet
+  version: "6.0.5"
+  security:
+    authentication:
+      modes: ["SCRAM"]
+  users:
+    - name: chat-app
+      db: chat-app-db
+      passwordSecretRef: 
+        name: chat-app-mongodb-user-password
+      roles:
+        - name: readWrite
+          db: chat-app-db
+      scramCredentialsSecretName: chat-app-mongodb-scram
+      connectionStringSecretName: chat-app-mongodb-connection-string
+  additionalMongodConfig:
+    storage.wiredTiger.engineConfig.journalCompressor: zlib
+  statefulSet:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: "mongod"
+              resources:
+                requests:
+                  memory: 800Mi
+                limits:
+                  memory: 800Mi
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: chat-app-mongodb-user-password
+type: Opaque
+stringData:
+  password: YOUR-PASSWORD
