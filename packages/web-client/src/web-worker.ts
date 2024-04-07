@@ -26,7 +26,7 @@ const initializeSocket = async () => {
     throw new Error("Oops, USER_ID is missing");
   }
 
-  socket = new WebSocket("wss://localhost:3000/real-time");
+  socket = new WebSocket(`${import.meta.env.VITE_WSS_ENDPOINT}/real-time`);
   socket.addEventListener("message", async (event) => {
     const message: OutcomeMessage = JSON.parse(event.data);
     if (broadcastChannelActive) receivedChannel.postMessage(message);
