@@ -1,5 +1,4 @@
 import fs from "fs";
-import path from "path";
 
 import build from "./app";
 
@@ -20,10 +19,14 @@ const LOGGER_OPTIONS = {
 
 const fastify = await build({
   logger: LOGGER_OPTIONS[process.env.NODE_ENV],
-  https: {
-    key: fs.readFileSync(path.join("./https", "localhost-key.pem")),
-    cert: fs.readFileSync(path.join("./https", "localhost.pem")),
-  },
+  ...(process.env.HTTPS_KEY_PATH && process.env.HTTPS_CERT_PATH
+    ? {
+        https: {
+          key: fs.readFileSync(process.env.HTTPS_KEY_PATH),
+          cert: fs.readFileSync(process.env.HTTPS_CERT_PATH),
+        },
+      }
+    : {}),
 });
 
 const start = async (): Promise<void> => {

@@ -22,10 +22,14 @@ import type {
   FastifyHttpsOptions,
   FastifyBaseLogger,
   FastifyInstance,
+  FastifyHttpOptions,
 } from "fastify";
 
 const build = async (
-  opts?: FastifyHttpsOptions<Server, FastifyBaseLogger> | undefined,
+  opts?:
+    | FastifyHttpsOptions<Server, FastifyBaseLogger>
+    | FastifyHttpOptions<Server, FastifyBaseLogger>
+    | undefined,
 ) => {
   const fastify: FastifyInstance = Fastify(opts);
   fastify.register(cors, {
