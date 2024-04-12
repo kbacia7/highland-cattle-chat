@@ -16,6 +16,7 @@ import cacheConnector from "./cacheConnector";
 import workersConnector from "./workersConnector";
 
 import findGuideUser from "./findGuideUser";
+import serverId from "./serverId";
 
 import type { Server } from "https";
 import type {
@@ -61,6 +62,7 @@ const build = async (
   await fastify.register(prismaConnector);
   await fastify.register(googleStorageConnector);
   await fastify.register(cacheConnector);
+  await fastify.register(serverId);
   fastify.register(workersConnector);
   fastify.register(realTimeRoute);
   fastify.register(registerUserRoute);

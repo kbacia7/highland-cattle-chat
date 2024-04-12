@@ -8,13 +8,15 @@ import {
   SERVER_USER_ID,
 } from "@highland-cattle-chat/shared";
 
+import createChannelMessage from "@helpers/createChannelMessage";
+
 import convertRawMessage from "./helpers/convertRawMessage";
 import validateIncomeMessage from "./helpers/validateIncomeMessage";
 import escapeHtml from "./helpers/escapeHtml";
 
-import safeWriteMessagesStack, {
-  addMessageToStack,
-} from "./helpers/messagesStack";
+import { addMessageToStack } from "./helpers/messagesStack";
+
+import type { ChannelMessage } from "@helpers/createChannelMessage";
 
 import type {
   IncomeMessage,
@@ -22,6 +24,8 @@ import type {
   OutcomeMessage,
 } from "@highland-cattle-chat/shared";
 import type { FastifyInstance } from "fastify";
+
+const REDIS_MESSAGES_CHANNEL_NAME = "messages";
 
 type ConnectedClients = Record<
   string,
@@ -50,11 +54,14 @@ const respondWithError = (type: MessageType, socket: WebSocket) => {
 };
 
 const handleMessage = async (
-  rawMessage: string,
+  rawMessage: string | IncomeMessage,
+  messageFromChannel: boolean,
   socket: WebSocket,
   fastify: FastifyInstance,
 ): Promise<void> => {
-  const message = convertRawMessage(rawMessage);
+  const message =
+    typeof rawMessage === "string" ? convertRawMessage(rawMessage) : rawMessage;
+
   if (!validateIncomeMessage(message)) {
     respondWithError(MessageTypes.UNKNOWN_ERROR, socket);
     return;
@@ -145,11 +152,15 @@ const handleMessage = async (
         const recipientSocket = getActiveSocketByUserId(userId);
         if (recipientSocket) {
           recipientSocket.send(outcomeMessage);
+        } else if (!messageFromChannel) {
+          fastify.pubRedis.publish(
+            REDIS_MESSAGES_CHANNEL_NAME,
+            createChannelMessage(fastify.serverId, message),
+          );
         }
       });
 
       await addMessageToStack(message as Required<IncomeMessage>, fastify);
-      await safeWriteMessagesStack(fastify);
       break;
     }
 
@@ -161,9 +172,26 @@ const handleMessage = async (
 };
 
 const realTimeRoute = async (fastify: FastifyInstance) => {
+  fastify.addHook("onReady", () => {
+    fastify.subRedis.subscribe(REDIS_MESSAGES_CHANNEL_NAME);
+    fastify.subRedis.on("message", (channel: string, rawMessage: string) => {
+      if (channel === REDIS_MESSAGES_CHANNEL_NAME) {
+        const channelMessage: ChannelMessage = JSON.parse(rawMessage);
+        if (channelMessage.serverId !== fastify.serverId) {
+          const message = convertRawMessage(channelMessage.data);
+          if (message) {
+            const recipientSocket = getActiveSocketByUserId(message.userId);
+            if (recipientSocket)
+              handleMessage(message, true, recipientSocket, fastify);
+          }
+        }
+      }
+    });
+  });
+
   fastify.get("/real-time", { websocket: true }, (connection) => {
     connection.socket.on("message", (data) => {
-      handleMessage(data.toString(), connection.socket, fastify);
+      handleMessage(data.toString(), false, connection.socket, fastify);
     });
   });
 };

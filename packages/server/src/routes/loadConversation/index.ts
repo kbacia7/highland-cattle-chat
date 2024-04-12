@@ -35,7 +35,7 @@ const loadConversationRoute = async (fastify: FastifyInstance) => {
 
       const incomeMessagesAsJson = !req.query.last
         ? await fastify.cache.lrange(
-            `${MESSAGES_STACK_KEY_PREFIX}-${req.query.id}`,
+            `${MESSAGES_STACK_KEY_PREFIX}-${fastify.serverId}-${req.query.id}`,
             0,
             -1,
           )
