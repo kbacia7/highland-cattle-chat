@@ -1,7 +1,8 @@
-import { MESSAGES_STACK_KEY_PREFIX } from "@routes/realTime/helpers/messagesStack";
+import { getMessagesStackPrefix } from "@routes/realTime/helpers/messagesStack";
 
 import type { Message } from "@prisma/client";
 import type { FastifyInstance } from "fastify";
+
 import type { LoadConversationResponse } from "@highland-cattle-chat/shared";
 
 const queryStringJsonSchema = {
@@ -35,7 +36,7 @@ const loadConversationRoute = async (fastify: FastifyInstance) => {
 
       const incomeMessagesAsJson = !req.query.last
         ? await fastify.cache.lrange(
-            `${MESSAGES_STACK_KEY_PREFIX}-${fastify.serverId}-${req.query.id}`,
+            `${getMessagesStackPrefix(fastify.serverId)}-${req.query.id}`,
             0,
             -1,
           )

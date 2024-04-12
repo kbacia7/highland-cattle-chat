@@ -3,10 +3,7 @@ import fp from "fastify-plugin";
 
 import { Worker, Queue } from "bullmq";
 
-import {
-  MESSAGES_STACK_KEY_PREFIX,
-  getMessagesStacksKeys,
-} from "@routes/realTime/helpers/messagesStack";
+import { getMessagesStackPrefix } from "@routes/realTime/helpers/messagesStack";
 
 import type { Message } from "@highland-cattle-chat/shared";
 import type { FastifyPluginCallback } from "fastify";
@@ -47,7 +44,10 @@ const workersConnector: FastifyPluginCallback = async (
   new Worker<null>(
     "messages-stack-split",
     async () => {
-      const conversationsKeysCacheToSave = await getMessagesStacksKeys(fastify);
+      const conversationsKeysCacheToSave = await fastify.cache.keys(
+        `${getMessagesStackPrefix(fastify.serverId)}*`,
+      );
+
       await Promise.all(
         conversationsKeysCacheToSave.map(async (key) => {
           const messages: string[] = await fastify.cache.lrange(key, 0, -1);
@@ -70,8 +70,6 @@ const workersConnector: FastifyPluginCallback = async (
           }
         }),
       );
-
-      await fastify.cache.del(MESSAGES_STACK_KEY_PREFIX);
     },
     {
       connection,

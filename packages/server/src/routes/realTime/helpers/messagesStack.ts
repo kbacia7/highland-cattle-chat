@@ -4,15 +4,17 @@ import type { FastifyInstance } from "fastify";
 import type { IncomeMessage } from "@highland-cattle-chat/shared";
 
 export const MESSAGES_STACK_KEY_PREFIX = "messages-stack";
-export const getMessageStackStaleKey = (key: string) => `stale-${key}`;
-export const getMessagesStacksKeys = async (fastify: FastifyInstance) =>
-  fastify.cache.keys(`${MESSAGES_STACK_KEY_PREFIX}-${fastify.serverId}*`);
+export const getMessagesStackPrefix = (serverId: string) =>
+  `${MESSAGES_STACK_KEY_PREFIX}-${serverId}`;
 
 export const addMessageToStack = async (
   message: Required<IncomeMessage>,
   fastify: FastifyInstance,
 ) => {
-  const key = `${MESSAGES_STACK_KEY_PREFIX}-${fastify.serverId}-${message.conversationId}`;
+  const key = `${getMessagesStackPrefix(fastify.serverId)}-${
+    message.conversationId
+  }`;
+
   await fastify.cache.rpush(
     key,
     JSON.stringify({
