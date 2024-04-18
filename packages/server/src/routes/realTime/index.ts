@@ -103,7 +103,6 @@ const handleMessage = async (
         return;
       }
 
-      // TODO: Check with .explain() how effency it's
       const conversation = await fastify.prisma.conversation.findUnique({
         where: {
           id: message.conversationId,
