@@ -68,6 +68,7 @@ export type LoadConversationsResponse = Prisma.ConversationGetPayload<{
           select: {
             id: true;
             image: true;
+            displayName: true;
           };
         };
       };

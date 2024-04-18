@@ -27,19 +27,22 @@ const RootRoute = () => {
       <div className="flex h-full w-full lg:w-auto">
         <div className="lg:block w-full lg:w-auto">
           <Nav
-            conversations={(conversations || []).map(
-              ({ id, title, participants }) => {
-                const image =
-                  participants.find((p) => p.user.id != user.userId)?.user
-                    .image || "";
+            conversations={(conversations || []).map(({ id, participants }) => {
+              const participant = participants.find(
+                (p) => p.user.id != user.userId,
+              );
 
-                return {
-                  id,
-                  displayName: title,
-                  image,
-                };
-              },
-            )}
+              if (!participant?.user)
+                throw new Error("Error during load conversations list");
+
+              const { image, displayName } = participant.user;
+
+              return {
+                id,
+                displayName,
+                image,
+              };
+            })}
           />
         </div>
         <Outlet />

@@ -35,7 +35,6 @@ model Session {
 
 model Conversation {
   id           String                    @id @default(auto()) @map("_id") @db.ObjectId
-  title        String
   messages     Message[]
   createdAt    DateTime                  @default(now())
   participants ConversationParticipant[]

@@ -18,6 +18,7 @@ const loadConversationsRoute = async (fastify: FastifyInstance) => {
               select: {
                 id: true,
                 image: true,
+                displayName: true,
               },
             },
           },
