@@ -39,9 +39,12 @@ const ConversationRoute = () => {
 
   const { userId } = useAppSelector((state) => state.loggedUser);
   const [lazyLoadConversation] = useLazyLoadConversationQuery();
-  const { currentData, isLoading } = useLoadConversationQuery({
-    id: conversationId ?? "",
-  });
+  const { currentData, isLoading } = useLoadConversationQuery(
+    {
+      id: conversationId ?? "",
+    },
+    { refetchOnMountOrArgChange: true },
+  );
 
   const [messages, setMessages] = useState<
     LoadConversationResponse["messages"]
@@ -64,24 +67,34 @@ const ConversationRoute = () => {
         setMessages((value) => [
           ...value,
           ...message
-            .filter((m) => m.type === MessageTypes.TEXT)
+            .filter(
+              (m) =>
+                m.type === MessageTypes.TEXT &&
+                m.conversationId === conversationId,
+            )
             .map((msg) => transformOutcomeMessage(msg)),
         ]);
       } else {
-        if (message.type === MessageTypes.TEXT)
+        if (
+          message.type === MessageTypes.TEXT &&
+          message.conversationId === conversationId
+        )
           setMessages((value) => [...value, transformOutcomeMessage(message)]);
       }
     });
 
     return () => channel.close();
-  }, []);
+  }, [conversationId]);
 
   useEffect(() => {
     setMessages(currentData?.messages ?? []);
   }, [currentData]);
 
-  const chatImage = currentData?.participants.find((p) => p.user.id !== userId)
-    ?.user.image;
+  const participant = currentData?.participants.find(
+    (p) => p.user.id !== userId,
+  );
+
+  const chatImage = participant?.user.image;
 
   if (!currentData?.messages || !chatImage) return null; //TODO: Error and loading handle
 
@@ -98,10 +111,7 @@ const ConversationRoute = () => {
   return (
     <main className="w-full absolute bg-white lg:relative">
       <div className="flex flex-col h-full">
-        <ConversationHeader
-          image={chatImage}
-          participant={currentData.participants[0]}
-        />
+        <ConversationHeader image={chatImage} participant={participant} />
 
         <Chat
           messages={messages}
