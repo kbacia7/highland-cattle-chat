@@ -3,7 +3,6 @@ import { cx } from "class-variance-authority";
 import { useAppSelector } from "~/slices/hooks";
 
 import ProfileImage from "./ProfileImage";
-
 import ArrowBackIcon from "./icons/ArrowBack";
 
 import type { LoadConversationResponse } from "@highland-cattle-chat/shared";
@@ -68,7 +67,7 @@ const ChatMessage = ({
 
 const SHOW_TIMEMARK_AFTER = 1000 * 60 * 30;
 const Chat = ({ messages, image, onLoadMore }: Props) => {
-  const loggedUserId = useAppSelector((state) => state.loggedUser.userId);
+  const loggedUser = useAppSelector((state) => state.loggedUser);
   let previousMessageDate: number;
 
   return (
@@ -88,10 +87,12 @@ const Chat = ({ messages, image, onLoadMore }: Props) => {
       )}
       {messages && messages?.length > 0
         ? messages.map((message) => {
-            const createdAt = new Date(message.createdAt).valueOf();
+            const isMessageFromLogged = message.userId === loggedUser.userId;
 
+            const createdAt = new Date(message.createdAt).valueOf();
             const diff = createdAt - previousMessageDate;
             previousMessageDate = createdAt;
+
             return (
               <div key={message.id}>
                 {diff > SHOW_TIMEMARK_AFTER && (
@@ -105,10 +106,15 @@ const Chat = ({ messages, image, onLoadMore }: Props) => {
                     })}
                   </p>
                 )}
+
                 <ChatMessage
                   {...message}
-                  image={image}
-                  floatRight={message.userId === loggedUserId}
+                  image={
+                    isMessageFromLogged
+                      ? loggedUser.profilePicture || ""
+                      : image
+                  }
+                  floatRight={isMessageFromLogged}
                 />
               </div>
             );
