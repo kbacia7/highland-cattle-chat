@@ -12,7 +12,7 @@ import {
 
 import UpdateAccountForm from "~/containers/UpdateAccountForm";
 
-import Conversation from "./Conversation";
+import Conversation, { ConversationSkeleton } from "./Conversation";
 import SettingsIcon from "./icons/Settings";
 
 import Input from "./Input";
@@ -47,20 +47,24 @@ type ConversationItemProps = {
 
 type Props = {
   conversations: ConversationItemProps[];
+  loading?: boolean;
 };
 
-const ConversationsList = ({ conversations }: Props) => (
+const ConversationsList = ({ conversations, loading }: Props) => (
   <ul className="flex flex-col items-center">
-    {conversations?.map(({ id, displayName, image }) => (
-      <Link to={`conversation/${id}`} className="w-full" key={id}>
-        <Conversation
-          lastMessage="text"
-          status={USER_STATUS.ONLINE}
-          title={displayName}
-          image={image}
-        />
-      </Link>
-    ))}
+    {loading && <ConversationSkeleton />}
+
+    {!loading &&
+      conversations?.map(({ id, displayName, image }) => (
+        <Link to={`conversation/${id}`} className="w-full" key={id}>
+          <Conversation
+            lastMessage="text"
+            status={USER_STATUS.ONLINE}
+            title={displayName}
+            image={image}
+          />
+        </Link>
+      ))}
   </ul>
 );
 
@@ -109,7 +113,7 @@ const UsersList = ({ phrase }: { phrase: string }) => {
   );
 };
 
-const Nav = ({ conversations }: Props) => {
+const Nav = ({ conversations, loading }: Props) => {
   const [searchPhrase, setSearchPhrase] = useState<string>();
 
   const onSearch = async (phrase: string) => {
@@ -138,10 +142,10 @@ const Nav = ({ conversations }: Props) => {
         <SearchInput color="white" onSearch={onSearch} />
       </div>
 
-      {!!searchPhrase?.length && <UsersList phrase={searchPhrase || ""} />}
+      {!!searchPhrase?.length && <UsersList phrase={searchPhrase} />}
 
       {!searchPhrase?.length && (
-        <ConversationsList conversations={conversations} />
+        <ConversationsList conversations={conversations} loading={loading} />
       )}
     </nav>
   );
