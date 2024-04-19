@@ -6,6 +6,8 @@ import { MessageTypes } from "@highland-cattle-chat/shared";
 
 import Chat from "~/components/Chat";
 import ConversationHeader from "~/components/ConversationHeader";
+import Spinner from "~/components/Spinner";
+import SomethingGoneWrong from "~/components/SomethingGoneWrong";
 
 import { InternalMessageTypes } from "~/consts/broadcast";
 import {
@@ -39,7 +41,7 @@ const ConversationRoute = () => {
 
   const { userId } = useAppSelector((state) => state.loggedUser);
   const [lazyLoadConversation] = useLazyLoadConversationQuery();
-  const { currentData, isLoading } = useLoadConversationQuery(
+  const { currentData, isLoading, isError } = useLoadConversationQuery(
     {
       id: conversationId ?? "",
     },
@@ -96,7 +98,16 @@ const ConversationRoute = () => {
 
   const chatImage = participant?.user.image;
 
-  if (!currentData?.messages || !chatImage) return null; //TODO: Error and loading handle
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center w-full">
+        <Spinner className="w-1/4" />
+      </div>
+    );
+  }
+
+  if (!currentData?.messages || !chatImage || isError)
+    return <SomethingGoneWrong />;
 
   const onLoadMore = async () => {
     const { messages: newMessages } = await lazyLoadConversation({

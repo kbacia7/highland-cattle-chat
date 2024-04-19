@@ -20,6 +20,8 @@ import Input from "./Input";
 import { Alert } from "./Alert";
 import Modal from "./Modal";
 
+import SomethingGoneWrong from "./SomethingGoneWrong";
+
 import type { InputProps } from "./Input";
 
 const SearchInput = ({
@@ -48,12 +50,13 @@ type ConversationItemProps = {
 type Props = {
   conversations: ConversationItemProps[];
   loading?: boolean;
+  error?: boolean;
 };
 
-const ConversationsList = ({ conversations, loading }: Props) => (
+const ConversationsList = ({ conversations, loading, error }: Props) => (
   <ul className="flex flex-col items-center">
     {loading && <ConversationSkeleton />}
-
+    {error && <SomethingGoneWrong />}
     {!loading &&
       conversations?.map(({ id, displayName, image }) => (
         <Link to={`conversation/${id}`} className="w-full" key={id}>
@@ -113,7 +116,7 @@ const UsersList = ({ phrase }: { phrase: string }) => {
   );
 };
 
-const Nav = ({ conversations, loading }: Props) => {
+const Nav = ({ conversations, loading, error }: Props) => {
   const [searchPhrase, setSearchPhrase] = useState<string>();
 
   const onSearch = async (phrase: string) => {
@@ -145,7 +148,11 @@ const Nav = ({ conversations, loading }: Props) => {
       {!!searchPhrase?.length && <UsersList phrase={searchPhrase} />}
 
       {!searchPhrase?.length && (
-        <ConversationsList conversations={conversations} loading={loading} />
+        <ConversationsList
+          conversations={conversations}
+          loading={loading}
+          error={error}
+        />
       )}
     </nav>
   );

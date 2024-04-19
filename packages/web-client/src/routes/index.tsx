@@ -8,7 +8,11 @@ import { useLoadConversationsQuery } from "~/slices/conversationsSlice";
 import Nav from "../components/Nav";
 
 const RootRoute = () => {
-  const { currentData: conversations, isLoading } = useLoadConversationsQuery();
+  const {
+    currentData: conversations,
+    isLoading,
+    isError,
+  } = useLoadConversationsQuery();
   const webWorkerInitialized = useRef<boolean>(false);
   const user = useAppSelector((state) => state.loggedUser);
 
@@ -26,6 +30,7 @@ const RootRoute = () => {
       <div className="flex h-full w-full lg:w-auto">
         <div className="lg:block w-full lg:w-auto">
           <Nav
+            error={isError}
             loading={isLoading}
             conversations={(conversations || []).map(({ id, participants }) => {
               const participant = participants.find(
