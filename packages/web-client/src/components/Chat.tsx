@@ -1,6 +1,6 @@
 import { cx } from "class-variance-authority";
 
-import { useAppSelector } from "~/slices/hooks";
+import { useAppSelector } from "@slices/hooks";
 
 import ProfileImage from "./ProfileImage";
 import ArrowBackIcon from "./icons/ArrowBack";

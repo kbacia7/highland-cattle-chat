@@ -2,7 +2,7 @@ import ProfileImage from "./ProfileImage";
 
 import Status from "./Status";
 
-import type { UserStatus } from "~/consts";
+import type { UserStatus } from "@consts/index";
 
 type Props = {
   title: string;

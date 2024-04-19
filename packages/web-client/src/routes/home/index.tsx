@@ -1,8 +1,8 @@
-import fakeChat from "~/assets/fake-chat.png";
-import github from "~/assets/github.png";
+import fakeChat from "@assets/fake-chat.png";
+import github from "@assets/github.png";
 
-import Button from "~/components/Button";
-import Modal from "~/components/Modal";
+import Button from "@components/Button";
+import Modal from "@components/Modal";
 
 import RegisterForm from "./containers/RegisterForm";
 import LoginForm from "./containers/LoginForm";

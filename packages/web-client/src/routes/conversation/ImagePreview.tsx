@@ -1,4 +1,4 @@
-import CloseIcon from "~/components/icons/Close";
+import CloseIcon from "@components/icons/Close";
 
 type Props = {
   image: string;

@@ -1,7 +1,7 @@
 import { cx } from "class-variance-authority";
 import React from "react";
 
-import type { ToastOptions } from "~/contexts/ToastMessagesContext";
+import type { ToastOptions } from "@contexts/ToastMessagesContext";
 
 interface Props extends Pick<ToastOptions, "type"> {
   className?: string;

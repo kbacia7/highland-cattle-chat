@@ -6,7 +6,7 @@ import {
   DISPLAY_NAME_KEY_ITEM_NAME,
   EMAIL_KEY_ITEM_NAME,
   PROFILE_PICTURE_KEY_ITEM_NAME,
-} from "~/utils/localStorage";
+} from "@utils/localStorage";
 
 import { apiSlice } from "./apiSlice";
 

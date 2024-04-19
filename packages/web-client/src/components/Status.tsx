@@ -1,8 +1,8 @@
 import { cx } from "class-variance-authority";
 
-import { USER_STATUS } from "~/consts";
+import { USER_STATUS } from "@consts/index";
 
-import type { UserStatus } from "~/consts";
+import type { UserStatus } from "@consts/index";
 
 export type StatusProps = {
   status: UserStatus;

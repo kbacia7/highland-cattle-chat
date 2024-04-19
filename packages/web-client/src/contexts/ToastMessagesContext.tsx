@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
-import Toaster from "~/components/Toaster";
-import { uniqBy } from "~/utils/uniqBy";
+import Toaster from "@components/Toaster";
+import { uniqBy } from "@utils/uniqBy";
 
 export interface Toast extends ToastOptions {
   id: string;

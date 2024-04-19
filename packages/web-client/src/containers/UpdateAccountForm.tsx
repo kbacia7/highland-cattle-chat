@@ -3,19 +3,19 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { updateAccountSchema } from "@highland-cattle-chat/shared";
 
-import Input from "~/components/Input";
-import Button from "~/components/Button";
-import BasicForm from "~/components/BasicForm";
-import ProfileImage from "~/components/ProfileImage";
+import Input from "@components/Input";
+import Button from "@components/Button";
+import BasicForm from "@components/BasicForm";
+import ProfileImage from "@components/ProfileImage";
+
+import { useToast } from "@contexts/ToastMessagesContext";
 
 import {
   saveUserAccountSettingsToIDB,
   useUpdateAccountMutation,
-} from "~/slices/loggedUserSlice";
-import { useAppDispatch, useAppSelector } from "~/slices/hooks";
-import isKnownServerSideError from "~/utils/isKnownServerSideError";
-
-import { useToast } from "~/contexts/ToastMessagesContext";
+} from "@slices/loggedUserSlice";
+import { useAppDispatch, useAppSelector } from "@slices/hooks";
+import isKnownServerSideError from "@utils/isKnownServerSideError";
 
 import type { z } from "zod";
 

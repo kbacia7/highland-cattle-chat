@@ -4,22 +4,21 @@ import { useDebouncedCallback } from "use-debounce";
 
 import { searchUserSchema } from "@highland-cattle-chat/shared";
 
-import { USER_STATUS } from "~/consts";
+import { USER_STATUS } from "@consts/index";
+
 import {
   useCreateConversationMutation,
   useSearchUserQuery,
-} from "~/slices/conversationsSlice";
+} from "@slices/conversationsSlice";
 
-import UpdateAccountForm from "~/containers/UpdateAccountForm";
+import UpdateAccountForm from "@containers/UpdateAccountForm";
 
 import Conversation, { ConversationSkeleton } from "./Conversation";
 import SettingsIcon from "./icons/Settings";
 
 import Input from "./Input";
-
 import { Alert } from "./Alert";
 import Modal from "./Modal";
-
 import SomethingGoneWrong from "./SomethingGoneWrong";
 
 import type { InputProps } from "./Input";

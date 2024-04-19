@@ -25,7 +25,15 @@
     "noFallthroughCasesInSwitch": true,
 
     "paths": {
-      "~/*": ["./src/*"]
+      "@assets/*": ["./src/assets/*"],
+      "@components/*": ["./src/components/*"],
+      "@containers/*": ["./src/containers/*"],
+      "@consts/*": ["./src/consts/*"],
+      "@contexts/*": ["./src/contexts/*"],
+      "@routes/*": ["./src/routes/*"],
+      "@slices/*": ["./src/slices/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@/*": ["./src/*"]
     },
     "types": ["vite/client"],
     "allowJs": true

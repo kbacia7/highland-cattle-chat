@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { ToastMessagesProvider } from "~/contexts/ToastMessagesContext";
+import { ToastMessagesProvider } from "@contexts/ToastMessagesContext";
 
 import CloseIcon from "./icons/Close";
 

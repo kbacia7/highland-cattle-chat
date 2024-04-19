@@ -2,14 +2,14 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema } from "@highland-cattle-chat/shared";
 
-import Input from "~/components/Input";
-import Button from "~/components/Button";
-import BasicForm from "~/components/BasicForm";
+import Input from "@components/Input";
+import Button from "@components/Button";
+import BasicForm from "@components/BasicForm";
 
-import { useRegisterMutation } from "~/slices/loggedUserSlice";
-import isKnownServerSideError from "~/utils/isKnownServerSideError";
+import { useRegisterMutation } from "@slices/loggedUserSlice";
+import isKnownServerSideError from "@utils/isKnownServerSideError";
 
-import { useToast } from "~/contexts/ToastMessagesContext";
+import { useToast } from "@contexts/ToastMessagesContext";
 
 import type { z } from "zod";
 

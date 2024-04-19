@@ -1,11 +1,10 @@
 import { useEffect, useRef } from "react";
 import { Outlet } from "react-router-dom";
 
-import { useAppSelector } from "~/slices/hooks";
+import Nav from "@components/Nav";
 
-import { useLoadConversationsQuery } from "~/slices/conversationsSlice";
-
-import Nav from "../components/Nav";
+import { useAppSelector } from "@slices/hooks";
+import { useLoadConversationsQuery } from "@slices/conversationsSlice";
 
 const RootRoute = () => {
   const {

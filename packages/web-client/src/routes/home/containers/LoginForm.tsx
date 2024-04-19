@@ -4,17 +4,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { loginSchema } from "@highland-cattle-chat/shared";
 
-import Input from "~/components/Input";
-import Button from "~/components/Button";
-import BasicForm from "~/components/BasicForm";
+import Input from "@components/Input";
+import Button from "@components/Button";
+import BasicForm from "@components/BasicForm";
 
 import {
   saveUserAccountSettingsToIDB,
   useLoginMutation,
-} from "~/slices/loggedUserSlice";
-import { useAppDispatch } from "~/slices/hooks";
+} from "@slices/loggedUserSlice";
+import { useAppDispatch } from "@slices/hooks";
 
-import isKnownServerSideError from "~/utils/isKnownServerSideError";
+import isKnownServerSideError from "@utils/isKnownServerSideError";
 
 import type { z } from "zod";
 

@@ -1,12 +1,11 @@
 import { ACCEPTED_ATTACHMENT_TYPES } from "@highland-cattle-chat/shared";
 import { useRef, useState } from "react";
 
-import Input from "~/components/Input";
+import Input from "@components/Input";
+import GalleryIcon from "@components/icons/Gallery";
+import SendMessageIcon from "@components/icons/Send";
 
-import GalleryIcon from "~/components/icons/Gallery";
-import SendMessageIcon from "~/components/icons/Send";
-
-import { useUploadAttachmentMutation } from "~/slices/conversationsSlice";
+import { useUploadAttachmentMutation } from "@slices/conversationsSlice";
 
 import ImagePreview from "./ImagePreview";
 

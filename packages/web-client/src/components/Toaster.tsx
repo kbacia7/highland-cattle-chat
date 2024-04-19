@@ -4,7 +4,7 @@ import CloseIcon from "./icons/Close";
 
 import { Alert } from "./Alert";
 
-import type { Toast, ToastOptions } from "~/contexts/ToastMessagesContext";
+import type { Toast, ToastOptions } from "@contexts/ToastMessagesContext";
 
 const ToastMessage = ({ message, type }: Omit<ToastOptions, "timeout">) => {
   const [visible, setVisible] = useState<boolean>(true);

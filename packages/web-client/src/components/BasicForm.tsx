@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useFormState } from "react-hook-form";
 
-import { useToast } from "~/contexts/ToastMessagesContext";
+import { useToast } from "@contexts/ToastMessagesContext";
 
 import type { Control, FieldValues } from "react-hook-form";
 
