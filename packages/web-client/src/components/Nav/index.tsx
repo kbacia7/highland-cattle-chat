@@ -11,17 +11,17 @@ import {
   useSearchUserQuery,
 } from "@slices/conversationsSlice";
 
-import UpdateAccountForm from "@containers/UpdateAccountForm";
+import Input from "@components/Input";
+import { Alert } from "@components/Alert";
+import Modal from "@components/Modal";
+import SomethingGoneWrong from "@components/SomethingGoneWrong";
+import Conversation, { ConversationSkeleton } from "@components/Conversation";
 
-import Conversation, { ConversationSkeleton } from "./Conversation";
-import SettingsIcon from "./icons/Settings";
+import UpdateAccountForm from "./containers/UpdateAccountForm";
 
-import Input from "./Input";
-import { Alert } from "./Alert";
-import Modal from "./Modal";
-import SomethingGoneWrong from "./SomethingGoneWrong";
+import SettingsIcon from "../icons/Settings";
 
-import type { InputProps } from "./Input";
+import type { InputProps } from "../Input";
 
 const SearchInput = ({
   onSearch,
