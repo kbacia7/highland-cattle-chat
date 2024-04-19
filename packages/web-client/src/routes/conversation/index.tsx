@@ -97,8 +97,7 @@ const ConversationRoute = () => {
   );
 
   const chatImage = participant?.user.image;
-
-  if (isLoading) {
+  if (isLoading || !currentData?.messages) {
     return (
       <div className="flex items-center justify-center w-full">
         <Spinner className="w-1/4" />
@@ -106,8 +105,9 @@ const ConversationRoute = () => {
     );
   }
 
-  if (!currentData?.messages || !chatImage || isError)
+  if (!chatImage || isError) {
     return <SomethingGoneWrong />;
+  }
 
   const onLoadMore = async () => {
     const { messages: newMessages } = await lazyLoadConversation({
