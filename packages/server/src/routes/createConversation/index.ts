@@ -62,7 +62,6 @@ const createConversationRoute = async (fastify: FastifyInstance) => {
           id: true,
         },
         data: {
-          title: user.displayName,
           participants: {
             create: [{ userId: user.id }, { userId: req.loggedUserId }],
           },
