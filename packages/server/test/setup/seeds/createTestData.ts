@@ -37,7 +37,6 @@ export default async (prisma: PrismaClient) => {
     // eslint-disable-next-line no-await-in-loop
     await prisma.conversation.create({
       data: {
-        title: nanoid(50),
         participants: {
           create: [
             {
@@ -50,7 +49,7 @@ export default async (prisma: PrismaClient) => {
         },
         messages: {
           create: [...Array(10)].map((value, index) => ({
-            content: nanoid(Math.ceil(Math.random() * 1000)),
+            content: nanoid(Math.ceil(Math.random() * 100)),
             createdAt: new Date(
               new Date().valueOf() - (20 - index) * 1000 * 60 * 60,
             ),
