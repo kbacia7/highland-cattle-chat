@@ -15,7 +15,6 @@ const sendWelcomeMessages = async (
 
   await fastify.prisma.conversation.create({
     data: {
-      title: "Mrs. Guide",
       participants: {
         create: [
           {
