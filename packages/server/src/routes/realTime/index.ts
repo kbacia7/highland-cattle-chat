@@ -2,11 +2,7 @@ import path from "path";
 
 import { WebSocket } from "ws";
 
-import {
-  MessageStatuses,
-  MessageTypes,
-  SERVER_USER_ID,
-} from "@highland-cattle-chat/shared";
+import { MessageStatuses, MessageTypes } from "@highland-cattle-chat/shared";
 
 import createChannelMessage from "@helpers/createChannelMessage";
 
@@ -45,7 +41,6 @@ const getActiveSocketByUserId = (userId?: string) =>
 
 const respondWithError = (type: MessageType, socket: WebSocket) => {
   const response: OutcomeMessage = {
-    userId: SERVER_USER_ID,
     type,
     status: MessageStatuses.ERROR,
   };
@@ -55,6 +50,7 @@ const respondWithError = (type: MessageType, socket: WebSocket) => {
 
 const handleMessage = async (
   rawMessage: string | IncomeMessage,
+  userId: string,
   messageFromChannel: boolean,
   socket: WebSocket,
   fastify: FastifyInstance,
@@ -69,10 +65,9 @@ const handleMessage = async (
 
   switch (message.type) {
     case MessageTypes.INIT: {
-      if (getActiveSocketByUserId(message.userId)) {
+      if (getActiveSocketByUserId(userId)) {
         const response: OutcomeMessage = {
           type: MessageTypes.INIT,
-          userId: SERVER_USER_ID,
           status: MessageStatuses.ERROR,
         };
 
@@ -80,17 +75,25 @@ const handleMessage = async (
         return;
       }
 
-      connectedClients[message.userId] = {
+      connectedClients[userId] = {
         socket,
       };
 
       const response: OutcomeMessage = {
-        userId: SERVER_USER_ID,
         type: MessageTypes.INIT,
         status: MessageStatuses.OK,
       };
 
       socket.send(JSON.stringify(response));
+      await fastify.prisma.user.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          online: true,
+        },
+      });
+
       break;
     }
 
@@ -108,7 +111,7 @@ const handleMessage = async (
           id: message.conversationId,
           participants: {
             some: {
-              userId: message.userId,
+              userId,
             },
           },
         },
@@ -145,21 +148,27 @@ const handleMessage = async (
       const outcomeMessage = JSON.stringify({
         ...message,
         status: MessageStatuses.OK,
+        userId,
       });
 
-      conversation?.participants.forEach(({ userId }) => {
-        const recipientSocket = getActiveSocketByUserId(userId);
+      conversation?.participants.forEach(({ userId: participantId }) => {
+        const recipientSocket = getActiveSocketByUserId(participantId);
         if (recipientSocket) {
           recipientSocket.send(outcomeMessage);
         } else if (!messageFromChannel) {
           fastify.pubRedis.publish(
             REDIS_MESSAGES_CHANNEL_NAME,
-            createChannelMessage(fastify.serverId, message),
+            createChannelMessage(fastify.serverId, participantId, message),
           );
         }
       });
 
-      await addMessageToStack(message as Required<IncomeMessage>, fastify);
+      await addMessageToStack(
+        message as Required<IncomeMessage>,
+        userId,
+        fastify,
+      );
+
       break;
     }
 
@@ -179,18 +188,44 @@ const realTimeRoute = async (fastify: FastifyInstance) => {
         if (channelMessage.serverId !== fastify.serverId) {
           const message = convertRawMessage(channelMessage.data);
           if (message) {
-            const recipientSocket = getActiveSocketByUserId(message.userId);
+            const recipientSocket = getActiveSocketByUserId(
+              channelMessage.userId,
+            );
+
             if (recipientSocket)
-              handleMessage(message, true, recipientSocket, fastify);
+              handleMessage(
+                message,
+                channelMessage.userId,
+                true,
+                recipientSocket,
+                fastify,
+              );
           }
         }
       }
     });
   });
 
-  fastify.get("/real-time", { websocket: true }, (connection) => {
+  fastify.get("/real-time", { websocket: true }, (connection, req) => {
     connection.socket.on("message", (data) => {
-      handleMessage(data.toString(), false, connection.socket, fastify);
+      handleMessage(
+        data.toString(),
+        req.loggedUserId,
+        false,
+        connection.socket,
+        fastify,
+      );
+    });
+
+    connection.socket.on("close", async () => {
+      await fastify.prisma.user.update({
+        where: {
+          id: req.loggedUserId,
+        },
+        data: {
+          online: false,
+        },
+      });
     });
   });
 };

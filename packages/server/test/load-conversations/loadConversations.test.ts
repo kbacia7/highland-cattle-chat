@@ -69,9 +69,10 @@ describe("REST API - /load-conversations", () => {
           user: {
             id: p.user.id,
             image: p.user.image,
+            displayName: p.user.displayName,
+            online: p.user.online,
           },
         })),
-        title: conversation.title,
         createdAt:
           conversation.createdAt instanceof Date
             ? conversation.createdAt.toISOString()

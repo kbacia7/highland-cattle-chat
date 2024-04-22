@@ -44,6 +44,7 @@ type ConversationItemProps = {
   id: string;
   displayName: string;
   image: string;
+  online: boolean;
 };
 
 type Props = {
@@ -57,11 +58,11 @@ const ConversationsList = ({ conversations, loading, error }: Props) => (
     {loading && <ConversationSkeleton />}
     {error && <SomethingGoneWrong />}
     {!loading &&
-      conversations?.map(({ id, displayName, image }) => (
+      conversations?.map(({ id, displayName, image, online }) => (
         <Link to={`conversation/${id}`} className="w-full" key={id}>
           <Conversation
             lastMessage="text"
-            status={USER_STATUS.ONLINE}
+            status={online ? USER_STATUS.ONLINE : USER_STATUS.OFFLINE}
             title={displayName}
             image={image}
           />

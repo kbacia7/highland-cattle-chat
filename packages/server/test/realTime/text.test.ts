@@ -8,24 +8,26 @@ import {
   beforeEach,
 } from "vitest";
 import WebSocket from "ws";
-import { SERVER_USER_ID } from "@highland-cattle-chat/shared";
 
 import build from "@/app";
 
 import { FASTIFY_SERVER_PORT_BASE } from "@test/utils/consts";
+import authorize from "@test/utils/authorize";
 
 import type { FastifyInstance } from "fastify";
 import type {
   IncomeMessage,
   OutcomeMessage,
 } from "@highland-cattle-chat/shared";
-import type { Prisma } from "@prisma/client";
+import type { Prisma, User } from "@prisma/client";
 
 describe("Websocket real-time route - Message type TEXT", () => {
-  let fastify: FastifyInstance;
   const SERVER_PORT = FASTIFY_SERVER_PORT_BASE + 3;
-  let testUser: Prisma.UserUncheckedCreateInput;
-  let secondTestUser: Prisma.UserUncheckedCreateInput;
+
+  let fastify: FastifyInstance;
+  let johnTestUser: User;
+  let firstAuthHeader: string;
+  let secondAuthHeader: string;
   let testConversation: Prisma.ConversationGetPayload<{
     include: {
       participants: true;
@@ -35,6 +37,24 @@ describe("Websocket real-time route - Message type TEXT", () => {
   beforeEach(async () => {
     fastify = await build();
     await fastify.listen({ port: SERVER_PORT });
+
+    johnTestUser = await fastify.prisma.user.findFirstOrThrow({
+      where: {
+        email: "john@example.com",
+      },
+    });
+
+    firstAuthHeader = await authorize(
+      "john@example.com",
+      "password-john",
+      fastify,
+    );
+
+    secondAuthHeader = await authorize(
+      "mike@example.com",
+      "password-mike",
+      fastify,
+    );
   });
 
   afterEach(async () => {
@@ -43,18 +63,6 @@ describe("Websocket real-time route - Message type TEXT", () => {
 
   beforeAll(async () => {
     fastify = await build();
-    testUser = await fastify.prisma.user.findFirstOrThrow({
-      where: {
-        email: "john@example.com",
-      },
-    });
-
-    secondTestUser = await fastify.prisma.user.findFirstOrThrow({
-      where: {
-        email: "mike@example.com",
-      },
-    });
-
     testConversation = await fastify.prisma.conversation.findFirstOrThrow({
       where: {
         participants: {
@@ -77,10 +85,24 @@ describe("Websocket real-time route - Message type TEXT", () => {
 
   test("should send message to both participants", () =>
     new Promise<void>((done) => {
-      const senderWs = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
+      const senderWs = new WebSocket(
+        `ws://localhost:${SERVER_PORT}/real-time`,
+        {
+          headers: {
+            cookie: firstAuthHeader,
+          },
+        },
+      );
+
       const recipientWs = new WebSocket(
         `ws://localhost:${SERVER_PORT}/real-time`,
+        {
+          headers: {
+            cookie: secondAuthHeader,
+          },
+        },
       );
+
       const senderClient = WebSocket.createWebSocketStream(senderWs);
       const recipientClient = WebSocket.createWebSocketStream(recipientWs);
       let doneInitializations = 0;
@@ -90,7 +112,6 @@ describe("Websocket real-time route - Message type TEXT", () => {
         senderClient.write(
           JSON.stringify({
             type: "TEXT",
-            userId: testUser.id,
             conversationId: testConversation.id,
             content: "Message",
           } as IncomeMessage),
@@ -99,14 +120,12 @@ describe("Websocket real-time route - Message type TEXT", () => {
       senderClient.write(
         JSON.stringify({
           type: "INIT",
-          userId: testUser.id,
         } as IncomeMessage),
       );
 
       recipientClient.write(
         JSON.stringify({
           type: "INIT",
-          userId: secondTestUser.id,
         } as IncomeMessage),
       );
 
@@ -123,7 +142,6 @@ describe("Websocket real-time route - Message type TEXT", () => {
         if (res.type === "INIT") {
           doneInitializations += 1;
           expect(res).toStrictEqual({
-            userId: SERVER_USER_ID,
             type: "INIT",
             status: "OK",
           } as OutcomeMessage);
@@ -132,11 +150,11 @@ describe("Websocket real-time route - Message type TEXT", () => {
         } else {
           receivedText += 1;
           expect(res).toStrictEqual({
-            userId: testUser.id,
             type: "TEXT",
             conversationId: testConversation.id,
             content: "Message",
             status: "OK",
+            userId: johnTestUser.id,
           } as OutcomeMessage);
 
           onEnd();
@@ -148,7 +166,6 @@ describe("Websocket real-time route - Message type TEXT", () => {
         if (res.type === "INIT") {
           doneInitializations += 1;
           expect(res).toStrictEqual({
-            userId: SERVER_USER_ID,
             type: "INIT",
             status: "OK",
           } as OutcomeMessage);
@@ -157,11 +174,11 @@ describe("Websocket real-time route - Message type TEXT", () => {
         } else {
           receivedText += 1;
           expect(res).toStrictEqual({
-            userId: testUser.id,
             type: "TEXT",
             conversationId: testConversation.id,
             content: "Message",
             status: "OK",
+            userId: johnTestUser.id,
           } as OutcomeMessage);
 
           onEnd();
@@ -171,10 +188,22 @@ describe("Websocket real-time route - Message type TEXT", () => {
 
   test("should send message to sender if recipient disconnect", () =>
     new Promise<void>((done) => {
-      const senderWs = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
+      const senderWs = new WebSocket(
+        `ws://localhost:${SERVER_PORT}/real-time`,
+        {
+          headers: {
+            cookie: firstAuthHeader,
+          },
+        },
+      );
 
       const recipientWs = new WebSocket(
         `ws://localhost:${SERVER_PORT}/real-time`,
+        {
+          headers: {
+            cookie: secondAuthHeader,
+          },
+        },
       );
 
       const senderClient = WebSocket.createWebSocketStream(senderWs);
@@ -185,7 +214,6 @@ describe("Websocket real-time route - Message type TEXT", () => {
         senderClient.write(
           JSON.stringify({
             type: "TEXT",
-            userId: testUser.id,
             conversationId: testConversation.id,
             content: "Message",
           } as IncomeMessage),
@@ -194,14 +222,12 @@ describe("Websocket real-time route - Message type TEXT", () => {
       senderClient.write(
         JSON.stringify({
           type: "INIT",
-          userId: testUser.id,
         } as IncomeMessage),
       );
 
       recipientClient.write(
         JSON.stringify({
           type: "INIT",
-          userId: secondTestUser.id,
         } as IncomeMessage),
       );
 
@@ -210,7 +236,6 @@ describe("Websocket real-time route - Message type TEXT", () => {
         if (res.type === "INIT") {
           doneInitializations += 1;
           expect(res).toStrictEqual({
-            userId: SERVER_USER_ID,
             type: "INIT",
             status: "OK",
           } as OutcomeMessage);
@@ -218,11 +243,11 @@ describe("Websocket real-time route - Message type TEXT", () => {
           onInit();
         } else {
           expect(res).toStrictEqual({
-            userId: testUser.id,
             type: "TEXT",
             conversationId: testConversation.id,
             content: "Message",
             status: "OK",
+            userId: johnTestUser.id,
           } as OutcomeMessage);
 
           senderWs.close();
@@ -235,7 +260,6 @@ describe("Websocket real-time route - Message type TEXT", () => {
         if (res.type === "INIT") {
           doneInitializations += 1;
           expect(res).toStrictEqual({
-            userId: SERVER_USER_ID,
             type: "INIT",
             status: "OK",
           } as OutcomeMessage);
@@ -248,9 +272,21 @@ describe("Websocket real-time route - Message type TEXT", () => {
 
   test("should respond message to recipient if sender disconnect", () =>
     new Promise<void>((done) => {
-      const senderWs = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
+      const senderWs = new WebSocket(
+        `ws://localhost:${SERVER_PORT}/real-time`,
+        {
+          headers: {
+            cookie: firstAuthHeader,
+          },
+        },
+      );
       const recipientWs = new WebSocket(
         `ws://localhost:${SERVER_PORT}/real-time`,
+        {
+          headers: {
+            cookie: secondAuthHeader,
+          },
+        },
       );
       const senderClient = WebSocket.createWebSocketStream(senderWs);
       const recipientClient = WebSocket.createWebSocketStream(recipientWs);
@@ -260,7 +296,6 @@ describe("Websocket real-time route - Message type TEXT", () => {
           senderClient.write(
             JSON.stringify({
               type: "TEXT",
-              userId: testUser.id,
               conversationId: testConversation.id,
               content: "Message",
             } as IncomeMessage),
@@ -273,14 +308,12 @@ describe("Websocket real-time route - Message type TEXT", () => {
       senderClient.write(
         JSON.stringify({
           type: "INIT",
-          userId: testUser.id,
         } as IncomeMessage),
       );
 
       recipientClient.write(
         JSON.stringify({
           type: "INIT",
-          userId: secondTestUser.id,
         } as IncomeMessage),
       );
 
@@ -289,7 +322,6 @@ describe("Websocket real-time route - Message type TEXT", () => {
         if (res.type === "INIT") {
           doneInitializations += 1;
           expect(res).toStrictEqual({
-            userId: SERVER_USER_ID,
             type: "INIT",
             status: "OK",
           } as OutcomeMessage);
@@ -303,7 +335,6 @@ describe("Websocket real-time route - Message type TEXT", () => {
         if (res.type === "INIT") {
           doneInitializations += 1;
           expect(res).toStrictEqual({
-            userId: SERVER_USER_ID,
             type: "INIT",
             status: "OK",
           } as OutcomeMessage);
@@ -311,11 +342,11 @@ describe("Websocket real-time route - Message type TEXT", () => {
           onInit();
         } else {
           expect(res).toStrictEqual({
-            userId: testUser.id,
             conversationId: testConversation.id,
             type: "TEXT",
             content: "Message",
             status: "OK",
+            userId: johnTestUser.id,
           } as OutcomeMessage);
 
           senderWs.close();
@@ -327,12 +358,19 @@ describe("Websocket real-time route - Message type TEXT", () => {
 
   test("should respond message to sender with status ERROR if conversationId is not provided", () =>
     new Promise<void>((done) => {
-      const senderWs = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
+      const senderWs = new WebSocket(
+        `ws://localhost:${SERVER_PORT}/real-time`,
+        {
+          headers: {
+            cookie: firstAuthHeader,
+          },
+        },
+      );
+
       const senderClient = WebSocket.createWebSocketStream(senderWs);
       senderClient.write(
         JSON.stringify({
           type: "INIT",
-          userId: testUser.id,
         } as IncomeMessage),
       );
 
@@ -340,21 +378,18 @@ describe("Websocket real-time route - Message type TEXT", () => {
         const res = JSON.parse(chunk.toString()) as OutcomeMessage;
         if (res.type === "INIT") {
           expect(res).toStrictEqual({
-            userId: SERVER_USER_ID,
             type: "INIT",
             status: "OK",
           } as OutcomeMessage);
 
           senderClient.write(
             JSON.stringify({
-              userId: testUser.id,
               type: "TEXT",
               content: "Message",
             } as IncomeMessage),
           );
         } else {
           expect(res).toStrictEqual({
-            userId: SERVER_USER_ID,
             type: "TEXT",
             status: "ERROR",
           } as OutcomeMessage);
@@ -367,12 +402,18 @@ describe("Websocket real-time route - Message type TEXT", () => {
 
   test("should respond message to sender with status ERROR if content is not provided", () =>
     new Promise<void>((done) => {
-      const senderWs = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
+      const senderWs = new WebSocket(
+        `ws://localhost:${SERVER_PORT}/real-time`,
+        {
+          headers: {
+            cookie: firstAuthHeader,
+          },
+        },
+      );
       const senderClient = WebSocket.createWebSocketStream(senderWs);
       senderClient.write(
         JSON.stringify({
           type: "INIT",
-          userId: testUser.id,
         } as IncomeMessage),
       );
 
@@ -380,7 +421,6 @@ describe("Websocket real-time route - Message type TEXT", () => {
         const res = JSON.parse(chunk.toString()) as OutcomeMessage;
         if (res.type === "INIT") {
           expect(res).toStrictEqual({
-            userId: SERVER_USER_ID,
             type: "INIT",
             status: "OK",
           } as OutcomeMessage);
@@ -388,13 +428,11 @@ describe("Websocket real-time route - Message type TEXT", () => {
           senderClient.write(
             JSON.stringify({
               type: "TEXT",
-              userId: testUser.id,
               conversationId: testConversation.id,
             } as IncomeMessage),
           );
         } else {
           expect(res).toStrictEqual({
-            userId: SERVER_USER_ID,
             type: "TEXT",
             status: "ERROR",
           } as OutcomeMessage);

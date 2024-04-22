@@ -6,7 +6,6 @@ import cors from "@fastify/cors";
 
 import restrictedContext from "@contexts/restrictedContext";
 
-import realTimeRoute from "@routes/realTime";
 import registerUserRoute from "@routes/register";
 import loginUserRoute from "@routes/login";
 
@@ -64,7 +63,6 @@ const build = async (
   await fastify.register(cacheConnector);
   await fastify.register(serverId);
   fastify.register(workersConnector);
-  fastify.register(realTimeRoute);
   fastify.register(registerUserRoute);
   fastify.register(loginUserRoute);
   fastify.register(restrictedContext);

@@ -18,6 +18,7 @@ model User {
   createdAt    DateTime                  @default(now())
   participates ConversationParticipant[]
   image        String
+  online       Boolean                   @default(false)
 
   @@map("users")
 }

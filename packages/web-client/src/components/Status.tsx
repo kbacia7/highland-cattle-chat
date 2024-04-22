@@ -10,7 +10,7 @@ export type StatusProps = {
 
 const Status = ({ status }: StatusProps) => (
   <p
-    className={cx("text-lg", {
+    className={cx("text-lg capitalize", {
       "text-green-900": status === USER_STATUS.ONLINE,
       "text-red-900": status === USER_STATUS.OFFLINE,
       "text-gray-700": status === USER_STATUS.UNKNOWN,

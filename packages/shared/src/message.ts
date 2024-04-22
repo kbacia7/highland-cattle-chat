@@ -8,8 +8,6 @@ export {
   type ConversationParticipant,
 } from "@prisma/client";
 
-export const SERVER_USER_ID = `SERVER`;
-
 export const MessageTypes = {
   INIT: "INIT",
   TEXT: "TEXT",
@@ -28,12 +26,12 @@ export type IncomeMessage = {
   type: MessageType;
   content?: string;
   attachment?: string;
-  userId: string;
   conversationId?: string;
 };
 
 export interface OutcomeMessage extends IncomeMessage {
   status: MessageStatus;
+  userId?: string;
 }
 
 export type LoadConversationResponse = {
@@ -69,6 +67,7 @@ export type LoadConversationsResponse = Prisma.ConversationGetPayload<{
             id: true;
             image: true;
             displayName: true;
+            online: true;
           };
         };
       };

@@ -32,7 +32,8 @@ export default async (prisma: PrismaClient, bucket: Bucket) => {
     )
     .save(mrsGuideImage);
 
-  if (mrGuideExists) return;
+  // NOTE: Condition is false during tests due to race condition
+  if (mrGuideExists && process.env.NODE_ENV !== "test") return;
 
   await prisma.user.create({
     data: {
@@ -40,6 +41,7 @@ export default async (prisma: PrismaClient, bucket: Bucket) => {
       displayName: "Mrs. Guide",
       email: "fake-incorrect-email",
       password: "fake-incorrect-password",
+      online: true,
     },
   });
 };

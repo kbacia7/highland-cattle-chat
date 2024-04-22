@@ -9,6 +9,7 @@ export const getMessagesStackPrefix = (serverId: string) =>
 
 export const addMessageToStack = async (
   message: Required<IncomeMessage>,
+  userId: string,
   fastify: FastifyInstance,
 ) => {
   const key = `${getMessagesStackPrefix(fastify.serverId)}-${
@@ -23,7 +24,7 @@ export const addMessageToStack = async (
       content: message.content,
       attachment: message.attachment,
       conversationId: message.conversationId,
-      userId: message.userId,
+      userId,
     }),
   );
 };

@@ -1,12 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import WebSocket from "ws";
-import { nanoid } from "nanoid";
-
-import { SERVER_USER_ID } from "@highland-cattle-chat/shared";
 
 import build from "@/app";
 
 import { FASTIFY_SERVER_PORT_BASE } from "@test/utils/consts";
+import authorize from "@test/utils/authorize";
 
 import type { FastifyInstance } from "fastify";
 import type {
@@ -18,9 +16,12 @@ describe("Websocket real-time route - Message type INIT", () => {
   let fastify: FastifyInstance;
   const SERVER_PORT = FASTIFY_SERVER_PORT_BASE + 1;
 
+  let authHeader: string;
   beforeEach(async () => {
     fastify = await build();
     await fastify.listen({ port: SERVER_PORT });
+
+    authHeader = await authorize("john@example.com", "password-john", fastify);
   });
 
   afterEach(async () => {
@@ -29,19 +30,20 @@ describe("Websocket real-time route - Message type INIT", () => {
 
   test("should respond on init message type", () =>
     new Promise<void>((done) => {
-      const ws = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
+      const ws = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`, {
+        headers: {
+          cookie: authHeader,
+        },
+      });
       const client = WebSocket.createWebSocketStream(ws);
-      const userId = nanoid();
       const initMessage: IncomeMessage = {
         type: "INIT",
-        userId,
       };
 
       client.write(JSON.stringify(initMessage));
       client.on("data", (chunk: Buffer) => {
         const res = JSON.parse(chunk.toString());
         expect(res).toStrictEqual({
-          userId: SERVER_USER_ID,
           type: "INIT",
           status: "OK",
         } as OutcomeMessage);
@@ -53,13 +55,16 @@ describe("Websocket real-time route - Message type INIT", () => {
 
   test("should respond with status ERROR on init message when connection to user with userId is yet opened (one WS connection)", () =>
     new Promise<void>((done) => {
-      const ws = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
+      const ws = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`, {
+        headers: {
+          cookie: authHeader,
+        },
+      });
+
       const client = WebSocket.createWebSocketStream(ws);
       let secondCall = false;
-      const userId = nanoid();
       const initMessage: IncomeMessage = {
         type: "INIT",
-        userId,
       };
 
       client.write(JSON.stringify(initMessage));
@@ -67,7 +72,6 @@ describe("Websocket real-time route - Message type INIT", () => {
         const res = JSON.parse(chunk.toString());
         if (secondCall) {
           expect(res).toStrictEqual({
-            userId: SERVER_USER_ID,
             type: "INIT",
             status: "ERROR",
           } as OutcomeMessage);
@@ -76,7 +80,6 @@ describe("Websocket real-time route - Message type INIT", () => {
           done();
         } else {
           expect(res).toStrictEqual({
-            userId: SERVER_USER_ID,
             type: "INIT",
             status: "OK",
           } as OutcomeMessage);
@@ -89,21 +92,29 @@ describe("Websocket real-time route - Message type INIT", () => {
 
   test("should respond with status ERROR on init message when connection to user with userId is yet opened (two WS connections, one after each other)", () =>
     new Promise<void>((done) => {
-      const firstWs = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
-      const secondWs = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
+      const firstWs = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`, {
+        headers: {
+          cookie: authHeader,
+        },
+      });
+      const secondWs = new WebSocket(
+        `ws://localhost:${SERVER_PORT}/real-time`,
+        {
+          headers: {
+            cookie: authHeader,
+          },
+        },
+      );
       const firstClient = WebSocket.createWebSocketStream(firstWs);
       const secondClient = WebSocket.createWebSocketStream(secondWs);
-      const userId = nanoid();
       const initMessage: IncomeMessage = {
         type: "INIT",
-        userId,
       };
 
       firstClient.write(JSON.stringify(initMessage));
       firstClient.on("data", (chunk: Buffer) => {
         const res = JSON.parse(chunk.toString());
         expect(res).toStrictEqual({
-          userId: SERVER_USER_ID,
           type: "INIT",
           status: "OK",
         } as OutcomeMessage);
@@ -114,7 +125,6 @@ describe("Websocket real-time route - Message type INIT", () => {
       secondClient.on("data", (chunk: Buffer) => {
         const res = JSON.parse(chunk.toString());
         expect(res).toStrictEqual({
-          userId: SERVER_USER_ID,
           type: "INIT",
           status: "ERROR",
         } as OutcomeMessage);
@@ -127,27 +137,34 @@ describe("Websocket real-time route - Message type INIT", () => {
 
   test("should respond with status ERROR on init message when connection to user with userId is yet opened (two WS connections, parallel)", () =>
     new Promise<void>((done) => {
-      const firstWs = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
-      const secondWs = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
+      const firstWs = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`, {
+        headers: {
+          cookie: authHeader,
+        },
+      });
+      const secondWs = new WebSocket(
+        `ws://localhost:${SERVER_PORT}/real-time`,
+        {
+          headers: {
+            cookie: authHeader,
+          },
+        },
+      );
       const firstClient = WebSocket.createWebSocketStream(firstWs);
       const secondClient = WebSocket.createWebSocketStream(secondWs);
-      const userId = nanoid();
       const initMessage: IncomeMessage = {
         type: "INIT",
-        userId,
       };
 
       const results: IncomeMessage[] = [];
       const onEnd = () => {
         if (results.length === 2) {
           expect(results).toContainEqual({
-            userId: SERVER_USER_ID,
             type: "INIT",
             status: "OK",
           } as OutcomeMessage);
 
           expect(results).toContainEqual({
-            userId: SERVER_USER_ID,
             type: "INIT",
             status: "ERROR",
           } as OutcomeMessage);

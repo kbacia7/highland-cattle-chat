@@ -11,7 +11,10 @@ const RootRoute = () => {
     currentData: conversations,
     isLoading,
     isError,
-  } = useLoadConversationsQuery();
+  } = useLoadConversationsQuery(undefined, {
+    pollingInterval: 30000,
+  });
+
   const webWorkerInitialized = useRef<boolean>(false);
   const user = useAppSelector((state) => state.loggedUser);
 
@@ -39,12 +42,13 @@ const RootRoute = () => {
               if (!participant?.user)
                 throw new Error("Error during load conversations list");
 
-              const { image, displayName } = participant.user;
+              const { image, displayName, online } = participant.user;
 
               return {
                 id,
                 displayName,
                 image,
+                online,
               };
             })}
           />

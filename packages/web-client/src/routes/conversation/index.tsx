@@ -9,7 +9,6 @@ import ConversationHeader from "@components/ConversationHeader";
 import Spinner from "@components/Spinner";
 import SomethingGoneWrong from "@components/SomethingGoneWrong";
 
-import { InternalMessageTypes } from "@consts/broadcast";
 import {
   useLazyLoadConversationQuery,
   useLoadConversationQuery,
@@ -30,7 +29,7 @@ const transformOutcomeMessage = (message: OutcomeMessage) => {
     attachment: message.attachment ?? null,
     createdAt: new Date(),
     id: nanoid(),
-    userId: message.userId,
+    userId: message.userId as string,
   };
 
   return messageRecord;
@@ -51,15 +50,6 @@ const ConversationRoute = () => {
   const [messages, setMessages] = useState<
     LoadConversationResponse["messages"]
   >([]);
-
-  useEffect(() => {
-    if (!isLoading) {
-      const internalChannel = new BroadcastChannel("internal_messages");
-      internalChannel.postMessage({
-        type: InternalMessageTypes.READY,
-      });
-    }
-  }, [isLoading]);
 
   useEffect(() => {
     const channel = new BroadcastChannel("received_messages");
@@ -136,7 +126,6 @@ const ConversationRoute = () => {
           onSend={async ({ message, attachment }) => {
             const channel = new BroadcastChannel("sended_messages");
             const msg: IncomeMessage = {
-              userId: userId as string,
               conversationId,
               type: MessageTypes.TEXT,
               content: message,

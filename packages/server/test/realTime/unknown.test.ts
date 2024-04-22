@@ -1,12 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { nanoid } from "nanoid";
 import WebSocket from "ws";
-
-import { SERVER_USER_ID } from "@highland-cattle-chat/shared";
 
 import build from "@/app";
 
 import { FASTIFY_SERVER_PORT_BASE } from "@test/utils/consts";
+import authorize from "@test/utils/authorize";
 
 import type { FastifyInstance } from "fastify";
 import type {
@@ -15,56 +13,38 @@ import type {
 } from "@highland-cattle-chat/shared";
 
 describe("Websocket real-time route - Message type UNKNOWN_ERROR", () => {
-  let fastify: FastifyInstance;
   const SERVER_PORT = FASTIFY_SERVER_PORT_BASE + 2;
+  let fastify: FastifyInstance;
+  let authHeader: string;
 
   beforeEach(async () => {
     fastify = await build();
     await fastify.listen({ port: SERVER_PORT });
+    authHeader = await authorize("john@example.com", "password-john", fastify);
   });
 
   afterEach(async () => {
     await fastify.close();
   });
 
-  test("should respond with message type UNKNOWN_ERROR on init message when userId is not provided", () =>
-    new Promise<void>((done) => {
-      const ws = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
-      const client = WebSocket.createWebSocketStream(ws);
-      // @ts-ignore
-      const initMessage: IncomeMessage = {
-        type: "INIT",
-      };
-
-      client.write(JSON.stringify(initMessage));
-      client.on("data", (chunk: Buffer) => {
-        const res = JSON.parse(chunk.toString());
-        expect(res).toStrictEqual({
-          userId: SERVER_USER_ID,
-          type: "UNKNOWN_ERROR",
-          status: "ERROR",
-        } as OutcomeMessage);
-
-        ws.close();
-        done();
-      });
-    }));
-
   test("should respond with message type UNKNOWN_ERROR on unknown message type", () =>
     new Promise<void>((done) => {
-      const ws = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
+      const ws = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`, {
+        headers: {
+          cookie: authHeader,
+        },
+      });
+
       const client = WebSocket.createWebSocketStream(ws);
       const message: IncomeMessage = {
         // @ts-ignore
         type: "anything",
-        userId: nanoid(),
       };
 
       client.write(JSON.stringify(message));
       client.on("data", (chunk: Buffer) => {
         const res = JSON.parse(chunk.toString());
         expect(res).toStrictEqual({
-          userId: SERVER_USER_ID,
           type: "UNKNOWN_ERROR",
           status: "ERROR",
         } as OutcomeMessage);
@@ -76,12 +56,16 @@ describe("Websocket real-time route - Message type UNKNOWN_ERROR", () => {
 
   test("should respond with message type UNKNOWN_ERROR if content is non-string", () =>
     new Promise<void>((done) => {
-      const ws = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`);
+      const ws = new WebSocket(`ws://localhost:${SERVER_PORT}/real-time`, {
+        headers: {
+          cookie: authHeader,
+        },
+      });
+
       const client = WebSocket.createWebSocketStream(ws);
       client.write(
         JSON.stringify({
           type: "INIT",
-          userId: nanoid(),
         } as IncomeMessage),
       );
 
@@ -94,7 +78,6 @@ describe("Websocket real-time route - Message type UNKNOWN_ERROR", () => {
               () =>
                 ({
                   type: "UNKNOWN_ERROR",
-                  userId: SERVER_USER_ID,
                   status: "ERROR",
                 } as OutcomeMessage),
             ),
@@ -108,7 +91,6 @@ describe("Websocket real-time route - Message type UNKNOWN_ERROR", () => {
         const res = JSON.parse(chunk.toString()) as OutcomeMessage;
         if (res.type === "INIT") {
           expect(res).toStrictEqual({
-            userId: SERVER_USER_ID,
             type: "INIT",
             status: "OK",
           } as OutcomeMessage);
@@ -119,7 +101,6 @@ describe("Websocket real-time route - Message type UNKNOWN_ERROR", () => {
             // @ts-ignore
             JSON.stringify({
               type: "TEXT",
-              userId: nanoid(),
               content: [],
             } as IncomeMessage),
           );
@@ -128,7 +109,6 @@ describe("Websocket real-time route - Message type UNKNOWN_ERROR", () => {
             // @ts-ignore
             JSON.stringify({
               type: "TEXT",
-              userId: nanoid(),
               content: {},
             } as IncomeMessage),
           );
