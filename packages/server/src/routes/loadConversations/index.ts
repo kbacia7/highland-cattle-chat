@@ -24,6 +24,16 @@ const loadConversationsRoute = async (fastify: FastifyInstance) => {
             },
           },
         },
+        messages: {
+          select: {
+            content: true,
+            userId: true,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 1,
+        },
       },
     });
 

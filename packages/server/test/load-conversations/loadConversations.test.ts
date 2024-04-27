@@ -11,9 +11,26 @@ describe("REST API - /load-conversations", () => {
   let testConversations: Prisma.ConversationGetPayload<{
     include: {
       participants: {
-        include: {
-          user: true;
+        select: {
+          user: {
+            select: {
+              id: true;
+              image: true;
+              displayName: true;
+              online: true;
+            };
+          };
         };
+      };
+      messages: {
+        select: {
+          content: true;
+          userId: true;
+        };
+        orderBy: {
+          createdAt: "desc";
+        };
+        take: 1;
       };
     };
   }>[] = [];
@@ -26,6 +43,16 @@ describe("REST API - /load-conversations", () => {
           include: {
             user: true,
           },
+        },
+        messages: {
+          select: {
+            content: true,
+            userId: true,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 1,
         },
       },
       where: {
@@ -65,6 +92,7 @@ describe("REST API - /load-conversations", () => {
     testConversations.forEach((conversation) => {
       expect(body).toContainEqual({
         id: conversation.id,
+        messages: conversation.messages,
         participants: conversation.participants.map((p) => ({
           user: {
             id: p.user.id,

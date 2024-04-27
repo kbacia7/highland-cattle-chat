@@ -72,6 +72,16 @@ export type LoadConversationsResponse = Prisma.ConversationGetPayload<{
         };
       };
     };
+    messages: {
+      select: {
+        content: true;
+        userId: true;
+      };
+      orderBy: {
+        createdAt: "desc";
+      };
+      take: 1;
+    };
   };
 }>[];
 

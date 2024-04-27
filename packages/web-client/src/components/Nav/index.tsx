@@ -21,6 +21,8 @@ import UpdateAccountForm from "./containers/UpdateAccountForm";
 
 import SettingsIcon from "../icons/Settings";
 
+import type { LoadConversationsResponse } from "@highland-cattle-chat/shared";
+
 import type { InputProps } from "../Input";
 
 const SearchInput = ({
@@ -45,6 +47,7 @@ type ConversationItemProps = {
   displayName: string;
   image: string;
   online: boolean;
+  lastMessage?: LoadConversationsResponse[0]["messages"][0];
 };
 
 type Props = {
@@ -58,10 +61,10 @@ const ConversationsList = ({ conversations, loading, error }: Props) => (
     {loading && <ConversationSkeleton />}
     {error && <SomethingGoneWrong />}
     {!loading &&
-      conversations?.map(({ id, displayName, image, online }) => (
+      conversations?.map(({ id, displayName, image, online, lastMessage }) => (
         <Link to={`conversation/${id}`} className="w-full" key={id}>
           <Conversation
-            lastMessage="text"
+            lastMessage={lastMessage}
             status={online ? USER_STATUS.ONLINE : USER_STATUS.OFFLINE}
             title={displayName}
             image={image}
