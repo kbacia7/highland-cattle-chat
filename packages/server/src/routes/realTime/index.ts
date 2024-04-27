@@ -10,8 +10,6 @@ import convertRawMessage from "./helpers/convertRawMessage";
 import validateIncomeMessage from "./helpers/validateIncomeMessage";
 import escapeHtml from "./helpers/escapeHtml";
 
-import { addMessageToStack } from "./helpers/messagesStack";
-
 import type { ChannelMessage } from "@helpers/createChannelMessage";
 
 import type {
@@ -163,11 +161,14 @@ const handleMessage = async (
         }
       });
 
-      await addMessageToStack(
-        message as Required<IncomeMessage>,
-        userId,
-        fastify,
-      );
+      await fastify.prisma.message.create({
+        data: {
+          conversationId: message.conversationId,
+          content: message.content,
+          attachment: message.attachment,
+          userId,
+        },
+      });
 
       break;
     }

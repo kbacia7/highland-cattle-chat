@@ -1,6 +1,3 @@
-import { getMessagesStackPrefix } from "@routes/realTime/helpers/messagesStack";
-
-import type { Message } from "@prisma/client";
 import type { FastifyInstance } from "fastify";
 
 import type { LoadConversationResponse } from "@highland-cattle-chat/shared";
@@ -34,16 +31,7 @@ const loadConversationRoute = async (fastify: FastifyInstance) => {
 
       if (!user) return reply.send(400);
 
-      const incomeMessagesAsJson = !req.query.last
-        ? await fastify.cache.lrange(
-            `${getMessagesStackPrefix(fastify.serverId)}-${req.query.id}`,
-            0,
-            -1,
-          )
-        : [];
-
       const { limit } = req.query;
-      const restLimit = limit - incomeMessagesAsJson.length;
       const count = await fastify.prisma.message.count({
         where: {
           conversationId: req.query.id,
@@ -60,28 +48,24 @@ const loadConversationRoute = async (fastify: FastifyInstance) => {
           id: req.query.id,
         },
         select: {
-          ...(restLimit > 0
-            ? {
-                messages: {
-                  ...(req.query.last && {
-                    cursor: {
-                      id: req.query.last,
-                    },
-                  }),
-                  select: {
-                    id: true,
-                    userId: true,
-                    attachment: true,
-                    createdAt: true,
-                    content: true,
-                  },
-                  orderBy: {
-                    createdAt: "desc",
-                  },
-                  take: restLimit,
-                },
-              }
-            : {}),
+          messages: {
+            ...(req.query.last && {
+              cursor: {
+                id: req.query.last,
+              },
+            }),
+            select: {
+              id: true,
+              userId: true,
+              attachment: true,
+              createdAt: true,
+              content: true,
+            },
+            orderBy: {
+              createdAt: "desc",
+            },
+            take: limit,
+          },
           participants: {
             select: {
               user: {
@@ -99,13 +83,7 @@ const loadConversationRoute = async (fastify: FastifyInstance) => {
       if (!conversation) return reply.code(403).send();
 
       return {
-        messages: (conversation?.messages || [])
-          .reverse()
-          .concat(
-            incomeMessagesAsJson.map(
-              (incomeMesage) => JSON.parse(incomeMesage) as Message,
-            ),
-          ),
+        messages: (conversation?.messages || []).reverse(),
         count,
         participants: conversation.participants,
       } as LoadConversationResponse;

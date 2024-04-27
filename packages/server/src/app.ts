@@ -12,7 +12,6 @@ import loginUserRoute from "@routes/login";
 import prismaConnector from "./prismaConnector";
 import googleStorageConnector from "./googleStorageConnector";
 import cacheConnector from "./cacheConnector";
-import workersConnector from "./workersConnector";
 
 import findGuideUser from "./findGuideUser";
 import serverId from "./serverId";
@@ -62,7 +61,6 @@ const build = async (
   await fastify.register(googleStorageConnector);
   await fastify.register(cacheConnector);
   await fastify.register(serverId);
-  fastify.register(workersConnector);
   fastify.register(registerUserRoute);
   fastify.register(loginUserRoute);
   fastify.register(restrictedContext);
