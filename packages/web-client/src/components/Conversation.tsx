@@ -25,7 +25,7 @@ export const ConversationSkeleton = () => (
 );
 
 const Conversation = ({ id }: Props) => {
-  const { userId } = useAppSelector((state) => state.loggedUser);
+  const { userId } = useAppSelector((state) => state.user);
   const { displayName, status, image, lastMessage, unreadedMessages } =
     useSelector(selectConversationById(id));
 

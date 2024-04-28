@@ -4,14 +4,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { loginSchema } from "@highland-cattle-chat/shared";
 
+import { useLoginMutation } from "@slices/user/api";
+import { saveUserAccountSettingsToIDB } from "@slices/user/slice";
+
 import Input from "@components/Input";
 import Button from "@components/Button";
 import BasicForm from "@components/BasicForm";
 
-import {
-  saveUserAccountSettingsToIDB,
-  useLoginMutation,
-} from "@slices/loggedUserSlice";
 import { useAppDispatch } from "@slices/hooks";
 
 import isKnownServerSideError from "@utils/isKnownServerSideError";

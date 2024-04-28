@@ -8,18 +8,7 @@ import {
   PROFILE_PICTURE_KEY_ITEM_NAME,
 } from "@utils/localStorage";
 
-import { apiSlice } from "./apiSlice";
-
-import type { z } from "zod";
-import type {
-  LoginResponse,
-  RegisterResponse,
-  UpdateAccountResponse,
-  loginSchema,
-  registerSchema,
-} from "@highland-cattle-chat/shared";
-
-type LoggedUserState = {
+type State = {
   userId?: string;
   displayName?: string;
   email?: string;
@@ -33,7 +22,7 @@ const loadUserState = async () => ({
   profilePicture: await get(PROFILE_PICTURE_KEY_ITEM_NAME),
 });
 
-const initialState: LoggedUserState = await loadUserState();
+const initialState: State = await loadUserState();
 
 export const loadUserAccountSettingsFromIDB = createAsyncThunk(
   "loggedUser/loadUserIdFromIDB",
@@ -42,7 +31,7 @@ export const loadUserAccountSettingsFromIDB = createAsyncThunk(
 
 export const saveUserAccountSettingsToIDB = createAsyncThunk(
   "loggedUser/saveUserIdToIDB",
-  async (state: LoggedUserState) => {
+  async (state: State) => {
     await set(USER_ID_KEY_ITEM_NAME, state.userId);
     await set(DISPLAY_NAME_KEY_ITEM_NAME, state.displayName);
     await set(EMAIL_KEY_ITEM_NAME, state.email);
@@ -52,7 +41,7 @@ export const saveUserAccountSettingsToIDB = createAsyncThunk(
   },
 );
 
-const loggedUserSlice = createSlice({
+const userSlice = createSlice({
   name: "loggedUser",
   initialState,
   reducers: {},
@@ -69,42 +58,4 @@ const loggedUserSlice = createSlice({
   },
 });
 
-export const extendedApiSlice = apiSlice.injectEndpoints({
-  endpoints: (builder) => ({
-    register: builder.mutation<
-      RegisterResponse,
-      z.infer<typeof registerSchema>
-    >({
-      query: (body) => ({
-        url: "/register",
-        method: "POST",
-        body,
-      }),
-    }),
-
-    login: builder.mutation<LoginResponse, z.infer<typeof loginSchema>>({
-      query: (body) => ({
-        url: "/login",
-        method: "POST",
-        body,
-      }),
-    }),
-
-    updateAccount: builder.mutation<UpdateAccountResponse, FormData>({
-      query: (body) => ({
-        url: "/update-account",
-        method: "POST",
-        body,
-        formData: true,
-      }),
-    }),
-  }),
-});
-
-export const {
-  useUpdateAccountMutation,
-  useRegisterMutation,
-  useLoginMutation,
-} = extendedApiSlice;
-
-export default loggedUserSlice.reducer;
+export default userSlice.reducer;

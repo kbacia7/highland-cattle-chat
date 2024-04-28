@@ -1,12 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
 
 import { apiSlice } from "./apiSlice";
-import loggedUserSlice from "./loggedUserSlice";
 import conversationsSlice from "./conversations/slice";
+import userSlice from "./user/slice";
 
 export const store = configureStore({
   reducer: {
-    loggedUser: loggedUserSlice,
+    user: userSlice,
     conversations: conversationsSlice,
     [apiSlice.reducerPath]: apiSlice.reducer,
   },

@@ -20,7 +20,7 @@ import ConversationRoute from "./routes/conversation";
 
 import { store } from "./slices/store";
 import { extendedApiSlice } from "./slices/conversations/api";
-import { loadUserAccountSettingsFromIDB } from "./slices/loggedUserSlice";
+import { loadUserAccountSettingsFromIDB } from "./slices/user/slice";
 
 import type { LoaderFunction } from "react-router-dom";
 

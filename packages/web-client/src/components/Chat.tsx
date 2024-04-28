@@ -67,7 +67,7 @@ const ChatMessage = ({
 
 const SHOW_TIMEMARK_AFTER = 1000 * 60 * 30;
 const Chat = ({ messages, image, onLoadMore }: Props) => {
-  const loggedUser = useAppSelector((state) => state.loggedUser);
+  const loggedUser = useAppSelector((state) => state.user);
   let previousMessageDate: number;
 
   return (

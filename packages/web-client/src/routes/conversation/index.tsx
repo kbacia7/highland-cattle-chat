@@ -39,7 +39,7 @@ const transformOutcomeMessage = (message: OutcomeMessage) => {
 const ConversationRoute = () => {
   const { id: conversationId } = useParams();
 
-  const { userId } = useAppSelector((state) => state.loggedUser);
+  const { userId } = useAppSelector((state) => state.user);
   const [lazyLoadConversation] = useLazyLoadConversationQuery();
   const { currentData, isLoading, isError } = useLoadConversationQuery(
     {

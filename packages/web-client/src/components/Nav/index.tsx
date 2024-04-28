@@ -42,7 +42,7 @@ const SearchInput = ({
 const Nav = () => {
   const dispatch = useAppDispatch();
   const [searchPhrase, setSearchPhrase] = useState<string>();
-  const loggedUser = useAppSelector((state) => state.loggedUser);
+  const loggedUser = useAppSelector((state) => state.user);
   const onSearch = async (phrase: string) => {
     setSearchPhrase(phrase);
   };

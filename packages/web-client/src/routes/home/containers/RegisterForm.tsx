@@ -6,7 +6,7 @@ import Input from "@components/Input";
 import Button from "@components/Button";
 import BasicForm from "@components/BasicForm";
 
-import { useRegisterMutation } from "@slices/loggedUserSlice";
+import { useRegisterMutation } from "@slices/user/api";
 import isKnownServerSideError from "@utils/isKnownServerSideError";
 
 import { useToast } from "@contexts/ToastMessagesContext";

@@ -3,6 +3,9 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { updateAccountSchema } from "@highland-cattle-chat/shared";
 
+import { saveUserAccountSettingsToIDB } from "@slices/user/slice";
+import { useUpdateAccountMutation } from "@slices/user/api";
+
 import Input from "@components/Input";
 import Button from "@components/Button";
 import BasicForm from "@components/BasicForm";
@@ -10,10 +13,6 @@ import ProfileImage from "@components/ProfileImage";
 
 import { useToast } from "@contexts/ToastMessagesContext";
 
-import {
-  saveUserAccountSettingsToIDB,
-  useUpdateAccountMutation,
-} from "@slices/loggedUserSlice";
 import { useAppDispatch, useAppSelector } from "@slices/hooks";
 import isKnownServerSideError from "@utils/isKnownServerSideError";
 
@@ -26,7 +25,7 @@ const UpdateAccountForm = () => {
   const { addToast } = useToast();
   const dispatch = useAppDispatch();
   const { displayName, email, profilePicture } = useAppSelector(
-    (state) => state.loggedUser,
+    (state) => state.user,
   );
 
   const [profilePicturePreview, setProfilePicturePreview] = useState(

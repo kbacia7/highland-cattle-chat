@@ -11,7 +11,7 @@ const RootRoute = () => {
     pollingInterval: 30000,
   });
 
-  const user = useAppSelector((state) => state.loggedUser);
+  const user = useAppSelector((state) => state.user);
 
   const webWorkerInitialized = useRef<boolean>(false);
 
