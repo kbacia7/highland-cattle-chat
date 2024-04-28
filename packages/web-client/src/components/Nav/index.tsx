@@ -93,7 +93,7 @@ const Nav = () => {
             title="Update your account"
             toggleRenderFn={({ openModal }) => (
               <button onClick={openModal} color="secondary">
-                <SettingsIcon className="inline ml-3" size={36} />
+                <SettingsIcon className="inline ml-3 text-blue-900" size={36} />
               </button>
             )}
           >
