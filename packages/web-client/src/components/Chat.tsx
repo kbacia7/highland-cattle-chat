@@ -5,10 +5,11 @@ import { useAppSelector } from "@slices/hooks";
 import ProfileImage from "./ProfileImage";
 import ArrowBackIcon from "./icons/ArrowBack";
 
+import type { WithSerializedDates } from "@/types/WithSerializedDates";
 import type { LoadConversationResponse } from "@highland-cattle-chat/shared";
 
 type Props = {
-  messages?: LoadConversationResponse["messages"];
+  messages?: WithSerializedDates<LoadConversationResponse["messages"]>;
   image: string;
   onLoadMore?: () => void;
 };
@@ -19,7 +20,7 @@ const ChatMessage = ({
   attachment,
   createdAt,
   floatRight,
-}: LoadConversationResponse["messages"][0] & {
+}: WithSerializedDates<LoadConversationResponse["messages"][0]> & {
   image: string;
   floatRight: boolean;
 }) => (

@@ -8,6 +8,7 @@ import type {
   loginSchema,
   registerSchema,
 } from "@highland-cattle-chat/shared";
+import type { WithSerializedDates } from "@/types/WithSerializedDates";
 
 export const extendedApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -22,7 +23,10 @@ export const extendedApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-    login: builder.mutation<LoginResponse, z.infer<typeof loginSchema>>({
+    login: builder.mutation<
+      WithSerializedDates<LoginResponse>,
+      z.infer<typeof loginSchema>
+    >({
       query: (body) => ({
         url: "/login",
         method: "POST",
@@ -30,7 +34,10 @@ export const extendedApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-    updateAccount: builder.mutation<UpdateAccountResponse, FormData>({
+    updateAccount: builder.mutation<
+      WithSerializedDates<UpdateAccountResponse>,
+      FormData
+    >({
       query: (body) => ({
         url: "/update-account",
         method: "POST",

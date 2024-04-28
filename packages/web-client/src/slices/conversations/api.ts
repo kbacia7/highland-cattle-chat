@@ -25,7 +25,7 @@ export const extendedApiSlice = apiSlice
       }),
 
       loadConversation: builder.query<
-        LoadConversationResponse,
+        WithSerializedDates<LoadConversationResponse>,
         { id: string; limit?: number; last?: string }
       >({
         query: (params) => ({

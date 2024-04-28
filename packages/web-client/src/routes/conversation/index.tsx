@@ -24,11 +24,15 @@ import type {
   OutcomeMessage,
 } from "@highland-cattle-chat/shared";
 
+import type { WithSerializedDates } from "@/types/WithSerializedDates";
+
 const transformOutcomeMessage = (message: OutcomeMessage) => {
-  const messageRecord: LoadConversationResponse["messages"][0] = {
+  const messageRecord: WithSerializedDates<
+    LoadConversationResponse["messages"][0]
+  > = {
     content: message.content ?? null,
     attachment: message.attachment ?? null,
-    createdAt: new Date(),
+    createdAt: new Date().toISOString(),
     id: nanoid(),
     userId: message.userId as string,
   };
@@ -49,7 +53,7 @@ const ConversationRoute = () => {
   );
 
   const [messages, setMessages] = useState<
-    LoadConversationResponse["messages"]
+    WithSerializedDates<LoadConversationResponse["messages"]>
   >([]);
 
   useEffect(() => {
