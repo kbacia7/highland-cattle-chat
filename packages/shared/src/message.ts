@@ -75,6 +75,7 @@ export type LoadConversationsResponse = Prisma.ConversationGetPayload<{
     messages: {
       select: {
         content: true;
+        createdAt: true;
         userId: true;
       };
       orderBy: {

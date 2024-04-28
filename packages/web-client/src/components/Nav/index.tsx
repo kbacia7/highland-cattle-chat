@@ -1,28 +1,25 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
-import { searchUserSchema } from "@highland-cattle-chat/shared";
-
-import { USER_STATUS } from "@consts/index";
+import { MessageTypes } from "@highland-cattle-chat/shared";
 
 import {
-  useCreateConversationMutation,
-  useSearchUserQuery,
-} from "@slices/conversationsSlice";
+  incrementUnreadedConversationMessages,
+  updateLastMessage,
+} from "@slices/conversations/slice";
+
+import { useAppDispatch, useAppSelector } from "@slices/hooks";
 
 import Input from "@components/Input";
-import { Alert } from "@components/Alert";
 import Modal from "@components/Modal";
-import SomethingGoneWrong from "@components/SomethingGoneWrong";
-import Conversation, { ConversationSkeleton } from "@components/Conversation";
 
 import UpdateAccountForm from "./containers/UpdateAccountForm";
+import UsersList from "./containers/UsersList";
+import ConversationsList from "./containers/ConversationsList";
 
 import SettingsIcon from "../icons/Settings";
 
-import type { LoadConversationsResponse } from "@highland-cattle-chat/shared";
-
+import type { OutcomeMessage } from "@highland-cattle-chat/shared";
 import type { InputProps } from "../Input";
 
 const SearchInput = ({
@@ -42,89 +39,48 @@ const SearchInput = ({
   );
 };
 
-type ConversationItemProps = {
-  id: string;
-  displayName: string;
-  image: string;
-  online: boolean;
-  lastMessage?: LoadConversationsResponse[0]["messages"][0];
-};
-
-type Props = {
-  conversations: ConversationItemProps[];
-  loading?: boolean;
-  error?: boolean;
-};
-
-const ConversationsList = ({ conversations, loading, error }: Props) => (
-  <ul className="flex flex-col items-center">
-    {loading && <ConversationSkeleton />}
-    {error && <SomethingGoneWrong />}
-    {!loading &&
-      conversations?.map(({ id, displayName, image, online, lastMessage }) => (
-        <Link to={`conversation/${id}`} className="w-full" key={id}>
-          <Conversation
-            lastMessage={lastMessage}
-            status={online ? USER_STATUS.ONLINE : USER_STATUS.OFFLINE}
-            title={displayName}
-            image={image}
-          />
-        </Link>
-      ))}
-  </ul>
-);
-
-const UsersList = ({ phrase }: { phrase: string }) => {
-  const parseResults = searchUserSchema.safeParse({ phrase });
-  const [createConversation] = useCreateConversationMutation();
-  const { currentData: conversations, isError } = useSearchUserQuery(
-    { phrase },
-    { skip: !parseResults.success },
-  );
-  const navigate = useNavigate();
-
-  const onClick = async (id: string) => {
-    try {
-      const res = await createConversation({ id }).unwrap();
-      navigate(`conversation/${res.id}`);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  return (
-    <>
-      {(isError || !parseResults.success) && (
-        <Alert className="mt-2" type="error">
-          <span>
-            {!parseResults?.success
-              ? parseResults.error.format().phrase?._errors.join("")
-              : "Unknown error"}
-          </span>
-        </Alert>
-      )}
-
-      <ul className="flex flex-col items-center">
-        {conversations?.map(({ id, displayName, image }) => (
-          <Link to="#" key={id} className="w-full" onClick={() => onClick(id)}>
-            <Conversation
-              status={USER_STATUS.UNKNOWN}
-              title={displayName}
-              image={image}
-            />
-          </Link>
-        ))}
-      </ul>
-    </>
-  );
-};
-
-const Nav = ({ conversations, loading, error }: Props) => {
+const Nav = () => {
+  const dispatch = useAppDispatch();
   const [searchPhrase, setSearchPhrase] = useState<string>();
-
+  const loggedUser = useAppSelector((state) => state.loggedUser);
   const onSearch = async (phrase: string) => {
     setSearchPhrase(phrase);
   };
+
+  useEffect(() => {
+    const channel = new BroadcastChannel("received_messages");
+    channel.addEventListener("message", (event) => {
+      const message: OutcomeMessage = Array.isArray(event.data)
+        ? event.data.at(-1)
+        : event.data;
+
+      if (message.type === MessageTypes.TEXT) {
+        if (
+          message.content?.length &&
+          message.userId &&
+          message.conversationId
+        ) {
+          dispatch(
+            updateLastMessage({
+              content: message.content as string,
+              userId: message.userId as string,
+              createdAt: new Date().toISOString(),
+              conversationId: message.conversationId as string,
+            }),
+          );
+
+          if (message.userId !== loggedUser.userId)
+            dispatch(
+              incrementUnreadedConversationMessages({
+                conversationId: message.conversationId,
+              }),
+            );
+        }
+      }
+    });
+
+    return () => channel.close();
+  }, [dispatch, loggedUser]);
 
   return (
     <nav className="h-full bg-blue-100 overflow-auto lg:min-w-[400px] lg:max-w-[400px]">
@@ -150,13 +106,7 @@ const Nav = ({ conversations, loading, error }: Props) => {
 
       {!!searchPhrase?.length && <UsersList phrase={searchPhrase} />}
 
-      {!searchPhrase?.length && (
-        <ConversationsList
-          conversations={conversations}
-          loading={loading}
-          error={error}
-        />
-      )}
+      {!searchPhrase?.length && <ConversationsList />}
     </nav>
   );
 };

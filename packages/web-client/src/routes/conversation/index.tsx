@@ -4,15 +4,16 @@ import { useParams } from "react-router-dom";
 
 import { MessageTypes } from "@highland-cattle-chat/shared";
 
+import {
+  useLazyLoadConversationQuery,
+  useLoadConversationQuery,
+} from "@slices/conversations/api";
+
 import Chat from "@components/Chat";
 import ConversationHeader from "@components/ConversationHeader";
 import Spinner from "@components/Spinner";
 import SomethingGoneWrong from "@components/SomethingGoneWrong";
 
-import {
-  useLazyLoadConversationQuery,
-  useLoadConversationQuery,
-} from "@slices/conversationsSlice";
 import { useAppSelector } from "@slices/hooks";
 
 import SendInput from "./SendInput";

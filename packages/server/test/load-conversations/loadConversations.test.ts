@@ -3,51 +3,50 @@ import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import build from "@/app";
 import authorize from "@test/utils/authorize";
 
+import type { LoadConversationsResponse } from "@highland-cattle-chat/shared";
+
 import type { FastifyInstance } from "fastify";
-import type { Prisma } from "@prisma/client";
+import type { User } from "@prisma/client";
 
 describe("REST API - /load-conversations", () => {
   let fastify: FastifyInstance;
-  let testConversations: Prisma.ConversationGetPayload<{
-    include: {
-      participants: {
-        select: {
-          user: {
-            select: {
-              id: true;
-              image: true;
-              displayName: true;
-              online: true;
-            };
-          };
-        };
-      };
-      messages: {
-        select: {
-          content: true;
-          userId: true;
-        };
-        orderBy: {
-          createdAt: "desc";
-        };
-        take: 1;
-      };
-    };
-  }>[] = [];
+  let testConversations: LoadConversationsResponse;
+  let johnTestUser: User;
 
   beforeAll(async () => {
     fastify = await build();
+
+    johnTestUser = await fastify.prisma.user.findFirstOrThrow({
+      where: {
+        email: "john@example.com",
+      },
+    });
+
     testConversations = await fastify.prisma.conversation.findMany({
       include: {
         participants: {
-          include: {
-            user: true,
+          select: {
+            user: {
+              select: {
+                id: true,
+                image: true,
+                displayName: true,
+                online: true,
+              },
+            },
+          },
+          take: 1,
+          where: {
+            userId: {
+              not: johnTestUser.id,
+            },
           },
         },
         messages: {
           select: {
             content: true,
             userId: true,
+            createdAt: true,
           },
           orderBy: {
             createdAt: "desc",
@@ -64,6 +63,17 @@ describe("REST API - /load-conversations", () => {
           },
         },
       },
+    });
+
+    testConversations = testConversations.sort((a, b) => {
+      const lastMessageA = a.messages[0];
+      const lastMessageB = b.messages[0];
+
+      if (lastMessageA && lastMessageB)
+        return (
+          lastMessageB.createdAt.valueOf() - lastMessageA.createdAt.valueOf()
+        );
+      return 0;
     });
   });
 
@@ -89,23 +99,21 @@ describe("REST API - /load-conversations", () => {
     const body = response.json();
     expect(response.statusCode).toBe(200);
     expect(testConversations.length).toBeGreaterThan(0);
+
     testConversations.forEach((conversation) => {
-      expect(body).toContainEqual({
-        id: conversation.id,
-        messages: conversation.messages,
-        participants: conversation.participants.map((p) => ({
-          user: {
-            id: p.user.id,
-            image: p.user.image,
-            displayName: p.user.displayName,
-            online: p.user.online,
-          },
-        })),
-        createdAt:
-          conversation.createdAt instanceof Date
-            ? conversation.createdAt.toISOString()
-            : conversation.createdAt,
-      });
+      expect(body).toContainEqual(
+        JSON.parse(
+          JSON.stringify({
+            id: conversation.id,
+            messages: conversation.messages,
+            participants: conversation.participants,
+            createdAt:
+              conversation.createdAt instanceof Date
+                ? conversation.createdAt.toISOString()
+                : conversation.createdAt,
+          }),
+        ),
+      );
     });
   });
 

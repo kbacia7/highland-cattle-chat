@@ -5,7 +5,7 @@ import Input from "@components/Input";
 import GalleryIcon from "@components/icons/Gallery";
 import SendMessageIcon from "@components/icons/Send";
 
-import { useUploadAttachmentMutation } from "@slices/conversationsSlice";
+import { useUploadAttachmentMutation } from "@slices/conversations/api";
 
 import ImagePreview from "./ImagePreview";
 

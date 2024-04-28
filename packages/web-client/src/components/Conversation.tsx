@@ -1,17 +1,14 @@
+import { useSelector } from "react-redux";
+
 import { useAppSelector } from "@slices/hooks";
+
+import { selectConversationById } from "@slices/conversations/slice";
 
 import ProfileImage from "./ProfileImage";
 import Status from "./Status";
 
-import type { LoadConversationsResponse } from "@highland-cattle-chat/shared";
-
-import type { UserStatus } from "@consts/index";
-
 type Props = {
-  title: string;
-  status: UserStatus;
-  image: string;
-  lastMessage?: LoadConversationsResponse[0]["messages"][0];
+  id: string;
 };
 
 export const ConversationSkeleton = () => (
@@ -27,8 +24,10 @@ export const ConversationSkeleton = () => (
   </div>
 );
 
-const Conversation = ({ title, status, image, lastMessage }: Props) => {
+const Conversation = ({ id }: Props) => {
   const { userId } = useAppSelector((state) => state.loggedUser);
+  const { displayName, status, image, lastMessage, unreadedMessages } =
+    useSelector(selectConversationById(id));
 
   return (
     <div className="flex items-center flex-row mb-2 last:mb-0 p-3 w-full hover:bg-blue-200">
@@ -36,7 +35,9 @@ const Conversation = ({ title, status, image, lastMessage }: Props) => {
         <ProfileImage size={75} src={image} />
       </div>
       <div className="w-2/3">
-        <p className="truncate text-lg text-blue-900 font-bold">{title}</p>
+        <p className="truncate text-lg text-blue-900 font-bold">
+          {displayName} {unreadedMessages ? `(${unreadedMessages})` : ""}
+        </p>
         <Status status={status} />
         <p className="truncate text-lg text-blue-900">
           <span className="font-bold">
