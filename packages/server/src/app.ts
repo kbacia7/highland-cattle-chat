@@ -9,12 +9,11 @@ import restrictedContext from "@contexts/restrictedContext";
 import registerUserRoute from "@routes/register";
 import loginUserRoute from "@routes/login";
 
-import prismaConnector from "./prismaConnector";
-import googleStorageConnector from "./googleStorageConnector";
-import cacheConnector from "./cacheConnector";
-
-import findGuideUser from "./findGuideUser";
-import serverId from "./serverId";
+import prismaPlugin from "./plugins/prisma";
+import googleStoragePlugin from "./plugins/googleStorage";
+import cachePlugin from "./plugins/redis";
+import serverIdPlugin from "./plugins/serverId";
+import guideUserPlugin from "./plugins/guideUser";
 
 import type { Server } from "https";
 import type {
@@ -57,14 +56,14 @@ const build = async (
     },
   });
 
-  await fastify.register(prismaConnector);
-  await fastify.register(googleStorageConnector);
-  await fastify.register(cacheConnector);
-  await fastify.register(serverId);
+  await fastify.register(prismaPlugin);
+  await fastify.register(googleStoragePlugin);
+  await fastify.register(cachePlugin);
+  await fastify.register(serverIdPlugin);
   fastify.register(registerUserRoute);
   fastify.register(loginUserRoute);
   fastify.register(restrictedContext);
-  await fastify.register(findGuideUser);
+  await fastify.register(guideUserPlugin);
   return fastify;
 };
 

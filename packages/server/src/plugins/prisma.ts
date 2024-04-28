@@ -8,7 +8,7 @@ import type {
   FastifyPluginCallback,
   FastifyInstance,
 } from "fastify";
-import type { CacheOptions } from "./types/prismaConnector";
+import type { CacheOptions } from "../types/prismaConnector";
 
 const cacheQuery = async (
   model: string | undefined,
@@ -152,7 +152,7 @@ export const createPrismaClient = (
   options?: ConstructorParameters<typeof PrismaClient>[0],
 ) => new PrismaClient(options).$extends(cachingExtension(fastify));
 
-const prismaConnector: FastifyPluginCallback = async (fastify, options) => {
+const prismaPlugin: FastifyPluginCallback = async (fastify, options) => {
   const prisma = createPrismaClient(fastify, options);
 
   fastify.decorate("prisma", prisma);
@@ -161,4 +161,4 @@ const prismaConnector: FastifyPluginCallback = async (fastify, options) => {
   }
 };
 
-export default fp(prismaConnector, { name: "fastify-prisma" });
+export default fp(prismaPlugin);

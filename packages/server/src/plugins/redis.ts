@@ -17,11 +17,7 @@ const createRedisClient = () =>
     port: parseInt(process.env.REDIS_PORT || "6379", 10),
   });
 
-const cacheConnector: FastifyPluginCallback = async (
-  fastify,
-  options,
-  done,
-) => {
+const redisPlugin: FastifyPluginCallback = async (fastify, options, done) => {
   const pubRedis = createRedisClient();
   const subRedis = createRedisClient();
   const redis = createRedisClient();
@@ -35,4 +31,4 @@ const cacheConnector: FastifyPluginCallback = async (
   done();
 };
 
-export default fp(cacheConnector, { name: "fastify-cache-manager" });
+export default fp(redisPlugin);

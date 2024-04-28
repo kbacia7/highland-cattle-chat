@@ -22,4 +22,4 @@ const serverIdPlugin: FastifyPluginCallback = async (
   done();
 };
 
-export default fp(serverIdPlugin, { name: "server-id" });
+export default fp(serverIdPlugin);

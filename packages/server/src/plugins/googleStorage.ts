@@ -11,7 +11,7 @@ declare module "fastify" {
   }
 }
 
-const googleStorageConnector: FastifyPluginCallback = async (
+const googleStoragePlugin: FastifyPluginCallback = async (
   fastify,
   options,
   done,
@@ -26,4 +26,4 @@ const googleStorageConnector: FastifyPluginCallback = async (
   done();
 };
 
-export default fp(googleStorageConnector, { name: "fastify-google-connector" });
+export default fp(googleStoragePlugin);
