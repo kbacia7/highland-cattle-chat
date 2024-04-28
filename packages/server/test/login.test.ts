@@ -4,6 +4,8 @@ import fastifyCookie from "@fastify/cookie";
 
 import build from "@/app";
 
+import { loadTestUserFromDB, testUsersCredientials } from "./utils/authorize";
+
 import type { FastifyInstance } from "fastify";
 import type { Prisma } from "@prisma/client";
 import type { JwtPayload } from "jsonwebtoken";
@@ -14,11 +16,7 @@ describe("REST API - /login", () => {
 
   beforeAll(async () => {
     fastify = await build();
-    testUser = await fastify.prisma.user.findFirstOrThrow({
-      where: {
-        email: "john@example.com",
-      },
-    });
+    testUser = await loadTestUserFromDB("JOHN", fastify);
   });
 
   afterAll(async () => {
@@ -29,10 +27,7 @@ describe("REST API - /login", () => {
     const response = await fastify.inject({
       method: "POST",
       url: "/login",
-      body: {
-        email: "john@example.com",
-        password: "password-john",
-      },
+      body: testUsersCredientials.JOHN,
     });
 
     const session = await fastify.prisma.session.findFirst({
@@ -116,7 +111,7 @@ describe("REST API - /login", () => {
       method: "POST",
       url: "/login",
       body: {
-        email: "john@example.com",
+        email: testUsersCredientials.JOHN.email,
       },
     });
 

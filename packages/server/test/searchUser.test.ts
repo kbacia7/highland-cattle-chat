@@ -1,7 +1,7 @@
 import { describe, test, expect, afterAll, beforeAll } from "vitest";
 
 import build from "@/app";
-import authorize from "@test/utils/authorize";
+import authorize, { loadTestUserFromDB } from "@test/utils/authorize";
 
 import type { FastifyInstance } from "fastify";
 import type { User } from "@prisma/client";
@@ -16,11 +16,7 @@ describe("REST API - /search-user", () => {
 
   beforeAll(async () => {
     fastify = await build();
-    testUser = await fastify.prisma.user.findFirstOrThrow({
-      where: {
-        email: "zapp@example.com",
-      },
-    });
+    testUser = await loadTestUserFromDB("ZAPP", fastify);
   });
 
   test("should respond with status 200 and user when phrase is full display name", async () => {
@@ -49,7 +45,6 @@ describe("REST API - /search-user", () => {
 
   test("should respond with status 200 and user when phrase is part of display name", async () => {
     const authHeader = await authorize("JOHN", fastify);
-
     const response = await fastify.inject({
       method: "GET",
       url: "/search-user",

@@ -1,7 +1,7 @@
 import { describe, test, expect, afterAll, beforeAll } from "vitest";
 
 import build from "@/app";
-import authorize from "@test/utils/authorize";
+import authorize, { testUsersCredientials } from "@test/utils/authorize";
 
 import type { FastifyInstance } from "fastify";
 import type { Prisma } from "@prisma/client";
@@ -30,7 +30,7 @@ describe("REST API - /load-conversation", () => {
         participants: {
           some: {
             user: {
-              email: "john@example.com",
+              email: testUsersCredientials.JOHN.email,
             },
           },
         },

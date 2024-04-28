@@ -15,14 +15,24 @@ export const testUsersCredientials = {
   },
 };
 
+export const loadTestUserFromDB = async (
+  testUserName: keyof typeof testUsersCredientials,
+  fastify: FastifyInstance,
+) =>
+  fastify.prisma.user.findFirstOrThrow({
+    where: {
+      email: testUsersCredientials[testUserName].email,
+    },
+  });
+
 const authorize = async (
-  fakeUserName: keyof typeof testUsersCredientials,
+  testUserName: keyof typeof testUsersCredientials,
   fastify: FastifyInstance,
 ) => {
   const response = await fastify.inject({
     method: "POST",
     url: "/login",
-    body: testUsersCredientials[fakeUserName],
+    body: testUsersCredientials[testUserName],
   });
 
   return `session=${

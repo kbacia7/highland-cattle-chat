@@ -4,7 +4,7 @@ import formAutoContent from "form-auto-content";
 import { describe, test, expect, afterAll, beforeAll } from "vitest";
 
 import build from "@/app";
-import authorize from "@test/utils/authorize";
+import authorize, { testUsersCredientials } from "@test/utils/authorize";
 
 import type { FastifyInstance } from "fastify";
 
@@ -96,7 +96,7 @@ describe("REST API - /update-account", () => {
   test("should respond with 403 if file isn't correct type", async () => {
     const authHeader = await authorize("MIKE", fastify);
     const form = formAutoContent({
-      email: "zapp@example.com",
+      email: testUsersCredientials.ZAPP.email,
       password: "password-test-update",
       displayName: "Update acc",
       profilePicture: Buffer.from("test"),

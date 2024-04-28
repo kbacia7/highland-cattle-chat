@@ -12,7 +12,10 @@ import WebSocket from "ws";
 import build from "@/app";
 
 import { FASTIFY_SERVER_PORT_BASE } from "@test/utils/consts";
-import authorize from "@test/utils/authorize";
+import authorize, {
+  loadTestUserFromDB,
+  testUsersCredientials,
+} from "@test/utils/authorize";
 
 import type { FastifyInstance } from "fastify";
 import type {
@@ -25,7 +28,7 @@ describe("Websocket real-time route - Message type TEXT", () => {
   const SERVER_PORT = FASTIFY_SERVER_PORT_BASE + 3;
 
   let fastify: FastifyInstance;
-  let johnTestUser: User;
+  let testUser: User;
   let firstAuthHeader: string;
   let secondAuthHeader: string;
   let testConversation: Prisma.ConversationGetPayload<{
@@ -38,12 +41,7 @@ describe("Websocket real-time route - Message type TEXT", () => {
     fastify = await build();
     await fastify.listen({ port: SERVER_PORT });
 
-    johnTestUser = await fastify.prisma.user.findFirstOrThrow({
-      where: {
-        email: "john@example.com",
-      },
-    });
-
+    testUser = await loadTestUserFromDB("JOHN", fastify);
     firstAuthHeader = await authorize("JOHN", fastify);
     secondAuthHeader = await authorize("MIKE", fastify);
   });
@@ -59,7 +57,7 @@ describe("Websocket real-time route - Message type TEXT", () => {
         participants: {
           some: {
             user: {
-              email: "john@example.com",
+              email: testUsersCredientials.JOHN.email,
             },
           },
         },
@@ -145,7 +143,7 @@ describe("Websocket real-time route - Message type TEXT", () => {
             conversationId: testConversation.id,
             content: "Message",
             status: "OK",
-            userId: johnTestUser.id,
+            userId: testUser.id,
           } as OutcomeMessage);
 
           onEnd();
@@ -169,7 +167,7 @@ describe("Websocket real-time route - Message type TEXT", () => {
             conversationId: testConversation.id,
             content: "Message",
             status: "OK",
-            userId: johnTestUser.id,
+            userId: testUser.id,
           } as OutcomeMessage);
 
           onEnd();
@@ -238,7 +236,7 @@ describe("Websocket real-time route - Message type TEXT", () => {
             conversationId: testConversation.id,
             content: "Message",
             status: "OK",
-            userId: johnTestUser.id,
+            userId: testUser.id,
           } as OutcomeMessage);
 
           senderWs.close();
@@ -337,7 +335,7 @@ describe("Websocket real-time route - Message type TEXT", () => {
             type: "TEXT",
             content: "Message",
             status: "OK",
-            userId: johnTestUser.id,
+            userId: testUser.id,
           } as OutcomeMessage);
 
           senderWs.close();

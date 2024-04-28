@@ -1,7 +1,10 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 
 import build from "@/app";
-import authorize from "@test/utils/authorize";
+import authorize, {
+  loadTestUserFromDB,
+  testUsersCredientials,
+} from "@test/utils/authorize";
 
 import type { LoadConversationsResponse } from "@highland-cattle-chat/shared";
 
@@ -15,13 +18,7 @@ describe("REST API - /load-conversations", () => {
 
   beforeAll(async () => {
     fastify = await build();
-
-    johnTestUser = await fastify.prisma.user.findFirstOrThrow({
-      where: {
-        email: "john@example.com",
-      },
-    });
-
+    johnTestUser = await loadTestUserFromDB("JOHN", fastify);
     testConversations = await fastify.prisma.conversation.findMany({
       include: {
         participants: {
@@ -58,7 +55,7 @@ describe("REST API - /load-conversations", () => {
         participants: {
           some: {
             user: {
-              email: "john@example.com",
+              email: testUsersCredientials.JOHN.email,
             },
           },
         },

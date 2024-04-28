@@ -1,7 +1,7 @@
 import { describe, test, expect, afterAll, beforeAll } from "vitest";
 
 import build from "@/app";
-import authorize from "@test/utils/authorize";
+import authorize, { loadTestUserFromDB } from "@test/utils/authorize";
 
 import type { FastifyInstance } from "fastify";
 import type { User } from "@prisma/client";
@@ -18,23 +18,9 @@ describe("REST API - /create-conversation", () => {
 
   beforeAll(async () => {
     fastify = await build();
-    johnTestUser = await fastify.prisma.user.findFirstOrThrow({
-      where: {
-        email: "john@example.com",
-      },
-    });
-
-    mikeTestUser = await fastify.prisma.user.findFirstOrThrow({
-      where: {
-        email: "mike@example.com",
-      },
-    });
-
-    zappTestUser = await fastify.prisma.user.findFirstOrThrow({
-      where: {
-        email: "zapp@example.com",
-      },
-    });
+    johnTestUser = await loadTestUserFromDB("JOHN", fastify);
+    mikeTestUser = await loadTestUserFromDB("MIKE", fastify);
+    zappTestUser = await loadTestUserFromDB("ZAPP", fastify);
   });
 
   test("should respond with status 200 and id of conversation", async () => {

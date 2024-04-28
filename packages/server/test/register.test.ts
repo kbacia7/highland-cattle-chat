@@ -2,6 +2,8 @@ import { beforeAll, describe, test, expect, afterAll } from "vitest";
 
 import build from "@/app";
 
+import { testUsersCredientials } from "./utils/authorize";
+
 import type { FastifyInstance } from "fastify";
 
 describe("REST API - /register", () => {
@@ -41,9 +43,9 @@ describe("REST API - /register", () => {
       method: "POST",
       url: "/register",
       body: {
-        email: "john@example.com",
-        password: "password-john",
-        repeatPassword: "password-john",
+        email: testUsersCredientials.JOHN.email,
+        password: testUsersCredientials.JOHN.password,
+        repeatPassword: testUsersCredientials.JOHN.password,
         displayName: "John",
       },
     });
