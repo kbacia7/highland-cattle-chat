@@ -24,12 +24,7 @@ describe("REST API - /search-user", () => {
   });
 
   test("should respond with status 200 and user when phrase is full display name", async () => {
-    const authHeader = await authorize(
-      "john@example.com",
-      "password-john",
-      fastify,
-    );
-
+    const authHeader = await authorize("JOHN", fastify);
     const response = await fastify.inject({
       method: "GET",
       url: "/search-user",
@@ -53,11 +48,7 @@ describe("REST API - /search-user", () => {
   });
 
   test("should respond with status 200 and user when phrase is part of display name", async () => {
-    const authHeader = await authorize(
-      "john@example.com",
-      "password-john",
-      fastify,
-    );
+    const authHeader = await authorize("JOHN", fastify);
 
     const response = await fastify.inject({
       method: "GET",
@@ -82,12 +73,7 @@ describe("REST API - /search-user", () => {
   });
 
   test("should respond with status 200 and empty array when try to search for user who already have conversation with current user", async () => {
-    const authHeader = await authorize(
-      "john@example.com",
-      "password-john",
-      fastify,
-    );
-
+    const authHeader = await authorize("JOHN", fastify);
     const response = await fastify.inject({
       method: "GET",
       url: "/search-user",
@@ -105,12 +91,7 @@ describe("REST API - /search-user", () => {
   });
 
   test("should respond with status 200 and empty array when try to search for current user", async () => {
-    const authHeader = await authorize(
-      "john@example.com",
-      "password-john",
-      fastify,
-    );
-
+    const authHeader = await authorize("JOHN", fastify);
     const response = await fastify.inject({
       method: "GET",
       url: "/search-user",
@@ -128,12 +109,7 @@ describe("REST API - /search-user", () => {
   });
 
   test("should respond with status 400 when phrase string is missing", async () => {
-    const authHeader = await authorize(
-      "john@example.com",
-      "password-john",
-      fastify,
-    );
-
+    const authHeader = await authorize("JOHN", fastify);
     const response = await fastify.inject({
       method: "GET",
       url: "/search-user",
@@ -146,12 +122,7 @@ describe("REST API - /search-user", () => {
   });
 
   test("should respond with status 400 when phrase string is too short (< 3)", async () => {
-    const authHeader = await authorize(
-      "john@example.com",
-      "password-john",
-      fastify,
-    );
-
+    const authHeader = await authorize("JOHN", fastify);
     const response = await fastify.inject({
       method: "GET",
       url: "/search-user",

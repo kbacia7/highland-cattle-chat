@@ -38,12 +38,7 @@ describe("REST API - /create-conversation", () => {
   });
 
   test("should respond with status 200 and id of conversation", async () => {
-    const authHeader = await authorize(
-      "john@example.com",
-      "password-john",
-      fastify,
-    );
-
+    const authHeader = await authorize("JOHN", fastify);
     const response = await fastify.inject({
       method: "POST",
       url: "/create-conversation",
@@ -73,12 +68,7 @@ describe("REST API - /create-conversation", () => {
   });
 
   test("should respond with status 400 when user id is equal to current user id", async () => {
-    const authHeader = await authorize(
-      "john@example.com",
-      "password-john",
-      fastify,
-    );
-
+    const authHeader = await authorize("JOHN", fastify);
     const response = await fastify.inject({
       method: "POST",
       url: "/create-conversation",
@@ -94,12 +84,7 @@ describe("REST API - /create-conversation", () => {
   });
 
   test("should respond with status 400 when user have conversation yet", async () => {
-    const authHeader = await authorize(
-      "john@example.com",
-      "password-john",
-      fastify,
-    );
-
+    const authHeader = await authorize("JOHN", fastify);
     const response = await fastify.inject({
       method: "POST",
       url: "/create-conversation",
@@ -115,12 +100,7 @@ describe("REST API - /create-conversation", () => {
   });
 
   test("should respond with status 400 when user with given id does not exist", async () => {
-    const authHeader = await authorize(
-      "john@example.com",
-      "password-john",
-      fastify,
-    );
-
+    const authHeader = await authorize("JOHN", fastify);
     const response = await fastify.inject({
       method: "POST",
       url: "/create-conversation",
@@ -136,12 +116,7 @@ describe("REST API - /create-conversation", () => {
   });
 
   test("should respond with status 400 when id isn't correct ObjectId", async () => {
-    const authHeader = await authorize(
-      "john@example.com",
-      "password-john",
-      fastify,
-    );
-
+    const authHeader = await authorize("JOHN", fastify);
     const response = await fastify.inject({
       method: "POST",
       url: "/create-conversation",
@@ -157,12 +132,7 @@ describe("REST API - /create-conversation", () => {
   });
 
   test("should respond with status 400 when id is missing", async () => {
-    const authHeader = await authorize(
-      "john@example.com",
-      "password-john",
-      fastify,
-    );
-
+    const authHeader = await authorize("JOHN", fastify);
     const response = await fastify.inject({
       method: "POST",
       url: "/create-conversation",

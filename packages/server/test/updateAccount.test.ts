@@ -29,12 +29,7 @@ describe("REST API - /update-account", () => {
   });
 
   test("should upload image and update account", async () => {
-    const authHeader = await authorize(
-      "john@example.com",
-      "password-john",
-      fastify,
-    );
-
+    const authHeader = await authorize("JOHN", fastify);
     const randomImageMD5 = crypto
       .createHash("md5")
       .update(randomImageBuff)
@@ -77,12 +72,7 @@ describe("REST API - /update-account", () => {
   });
 
   test("should respond with 403 if email is already taken", async () => {
-    const authHeader = await authorize(
-      "mike@example.com",
-      "password-mike",
-      fastify,
-    );
-
+    const authHeader = await authorize("MIKE", fastify);
     const form = formAutoContent({
       email: "test-update@example.com",
       password: "password-test-update",
@@ -104,12 +94,7 @@ describe("REST API - /update-account", () => {
   });
 
   test("should respond with 403 if file isn't correct type", async () => {
-    const authHeader = await authorize(
-      "mike@example.com",
-      "password-mike",
-      fastify,
-    );
-
+    const authHeader = await authorize("MIKE", fastify);
     const form = formAutoContent({
       email: "zapp@example.com",
       password: "password-test-update",
@@ -131,12 +116,7 @@ describe("REST API - /update-account", () => {
   });
 
   test("should respond with 400 if e-mail isn't correct email", async () => {
-    const authHeader = await authorize(
-      "mike@example.com",
-      "password-mike",
-      fastify,
-    );
-
+    const authHeader = await authorize("MIKE", fastify);
     const form = formAutoContent({
       email: "zappcom",
       password: "password-test-update",
@@ -158,11 +138,7 @@ describe("REST API - /update-account", () => {
   });
 
   test("should respond with 400 if password is too short (< 8 characters)", async () => {
-    const authHeader = await authorize(
-      "mike@example.com",
-      "password-mike",
-      fastify,
-    );
+    const authHeader = await authorize("MIKE", fastify);
 
     const form = formAutoContent({
       email: "abcdef@example.com",
@@ -185,12 +161,7 @@ describe("REST API - /update-account", () => {
   });
 
   test("should respond with 400 if display name isn't valid", async () => {
-    const authHeader = await authorize(
-      "mike@example.com",
-      "password-mike",
-      fastify,
-    );
-
+    const authHeader = await authorize("MIKE", fastify);
     const form = formAutoContent({
       email: "abcdef@example.com",
       password: "password-abcdef",
@@ -212,12 +183,7 @@ describe("REST API - /update-account", () => {
   });
 
   test("should respond with 400 if e-mail isn't provided", async () => {
-    const authHeader = await authorize(
-      "mike@example.com",
-      "password-mike",
-      fastify,
-    );
-
+    const authHeader = await authorize("MIKE", fastify);
     const form = formAutoContent({
       password: "password-test-update",
       displayName: "Update acc",
@@ -238,12 +204,7 @@ describe("REST API - /update-account", () => {
   });
 
   test("should respond with 400 if password isn't provided", async () => {
-    const authHeader = await authorize(
-      "mike@example.com",
-      "password-mike",
-      fastify,
-    );
-
+    const authHeader = await authorize("MIKE", fastify);
     const form = formAutoContent({
       email: "abcdef@example.com",
       displayName: "Update acc",
@@ -264,12 +225,7 @@ describe("REST API - /update-account", () => {
   });
 
   test("should respond with 400 if display name isn't provided", async () => {
-    const authHeader = await authorize(
-      "mike@example.com",
-      "password-mike",
-      fastify,
-    );
-
+    const authHeader = await authorize("MIKE", fastify);
     const form = formAutoContent({
       email: "abcdef@example.com",
       password: "abcdefgtda",
@@ -290,12 +246,7 @@ describe("REST API - /update-account", () => {
   });
 
   test("should respond with 415 if profilePicture isn't provided", async () => {
-    const authHeader = await authorize(
-      "mike@example.com",
-      "password-mike",
-      fastify,
-    );
-
+    const authHeader = await authorize("MIKE", fastify);
     const form = formAutoContent({
       email: "abcdef@example.com",
       password: "abcdefgtda",

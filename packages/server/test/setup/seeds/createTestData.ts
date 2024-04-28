@@ -2,36 +2,29 @@ import bcrypt from "bcrypt";
 
 import { nanoid } from "nanoid";
 
-import type { PrismaClient } from "@prisma/client";
+import { testUsersCredientials } from "@test/utils/authorize";
+
+import type { PrismaClient, User } from "@prisma/client";
 
 export default async (prisma: PrismaClient) => {
   const image = process.env.USER_PROFILE_PICTURE_PLACEHOLDER_URL || "";
-  const john = await prisma.user.create({
-    data: {
-      displayName: "John",
-      email: "john@example.com",
-      password: bcrypt.hashSync("password-john", 1),
-      image,
+  const createTestUsersPromises: Array<Promise<User>> = [];
+  Object.keys(testUsersCredientials).forEach(
+    (id: keyof typeof testUsersCredientials) => {
+      createTestUsersPromises.push(
+        prisma.user.create({
+          data: {
+            displayName: id.charAt(0) + id.slice(1).toLowerCase(),
+            email: testUsersCredientials[id].email,
+            password: bcrypt.hashSync(testUsersCredientials[id].password, 1),
+            image,
+          },
+        }),
+      );
     },
-  });
+  );
 
-  const mike = await prisma.user.create({
-    data: {
-      displayName: "Mike",
-      email: "mike@example.com",
-      password: bcrypt.hashSync("password-mike", 1),
-      image,
-    },
-  });
-
-  await prisma.user.create({
-    data: {
-      displayName: "Zapp",
-      email: "zapp@example.com",
-      password: bcrypt.hashSync("password-zapp", 1),
-      image,
-    },
-  });
+  const [john, mike] = await Promise.all(createTestUsersPromises);
 
   for (let i = 0; i < 3; i += 1) {
     // eslint-disable-next-line no-await-in-loop

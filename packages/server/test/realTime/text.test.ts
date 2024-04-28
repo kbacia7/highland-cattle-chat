@@ -44,17 +44,8 @@ describe("Websocket real-time route - Message type TEXT", () => {
       },
     });
 
-    firstAuthHeader = await authorize(
-      "john@example.com",
-      "password-john",
-      fastify,
-    );
-
-    secondAuthHeader = await authorize(
-      "mike@example.com",
-      "password-mike",
-      fastify,
-    );
+    firstAuthHeader = await authorize("JOHN", fastify);
+    secondAuthHeader = await authorize("MIKE", fastify);
   });
 
   afterEach(async () => {

@@ -47,12 +47,7 @@ describe("REST API - /load-conversation", () => {
   });
 
   test("should respond with status 200 and last 100 messages", async () => {
-    const authHeader = await authorize(
-      "john@example.com",
-      "password-john",
-      fastify,
-    );
-
+    const authHeader = await authorize("JOHN", fastify);
     const response = await fastify.inject({
       method: "GET",
       url: "/load-conversation",
@@ -98,12 +93,7 @@ describe("REST API - /load-conversation", () => {
   });
 
   test("should respond with status 200 and last 10 messages", async () => {
-    const authHeader = await authorize(
-      "john@example.com",
-      "password-john",
-      fastify,
-    );
-
+    const authHeader = await authorize("JOHN", fastify);
     const response = await fastify.inject({
       method: "GET",
       url: "/load-conversation",
@@ -150,12 +140,7 @@ describe("REST API - /load-conversation", () => {
   });
 
   test("should respond with status 403 when user isn't participate in conversation", async () => {
-    const authHeader = await authorize(
-      "zapp@example.com",
-      "password-zapp",
-      fastify,
-    );
-
+    const authHeader = await authorize("ZAPP", fastify);
     const response = await fastify.inject({
       method: "GET",
       url: "/load-conversation",
@@ -198,12 +183,7 @@ describe("REST API - /load-conversation", () => {
   });
 
   test("should respond with status 400 when id query string is missing", async () => {
-    const authHeader = await authorize(
-      "john@example.com",
-      "password-john",
-      fastify,
-    );
-
+    const authHeader = await authorize("JOHN", fastify);
     const response = await fastify.inject({
       method: "GET",
       url: "/load-conversation",

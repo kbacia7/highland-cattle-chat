@@ -29,12 +29,7 @@ describe("REST API - /upload-attachment", () => {
   });
 
   test("should upload image", async () => {
-    const authHeader = await authorize(
-      "john@example.com",
-      "password-john",
-      fastify,
-    );
-
+    const authHeader = await authorize("JOHN", fastify);
     const randomImageMD5 = crypto
       .createHash("md5")
       .update(randomImageBuff)
@@ -73,12 +68,7 @@ describe("REST API - /upload-attachment", () => {
   });
 
   test("should respond with 403 if file isn't correct type", async () => {
-    const authHeader = await authorize(
-      "mike@example.com",
-      "password-mike",
-      fastify,
-    );
-
+    const authHeader = await authorize("MIKE", fastify);
     const form = formAutoContent({
       image: Buffer.from("test"),
     });
@@ -97,12 +87,7 @@ describe("REST API - /upload-attachment", () => {
   });
 
   test("should respond with 415 if image isn't provided", async () => {
-    const authHeader = await authorize(
-      "mike@example.com",
-      "password-mike",
-      fastify,
-    );
-
+    const authHeader = await authorize("MIKE", fastify);
     const form = formAutoContent({});
 
     const response = await fastify.inject({

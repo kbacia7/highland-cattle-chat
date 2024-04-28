@@ -1,17 +1,28 @@
 import type { FastifyInstance } from "fastify";
 
+export const testUsersCredientials = {
+  JOHN: {
+    email: "john@example.com",
+    password: "password-john",
+  },
+  MIKE: {
+    email: "mike@example.com",
+    password: "password-mike",
+  },
+  ZAPP: {
+    email: "zapp@example.com",
+    password: "password-zapp",
+  },
+};
+
 const authorize = async (
-  email: string,
-  password: string,
+  fakeUserName: keyof typeof testUsersCredientials,
   fastify: FastifyInstance,
 ) => {
   const response = await fastify.inject({
     method: "POST",
     url: "/login",
-    body: {
-      email,
-      password,
-    },
+    body: testUsersCredientials[fakeUserName],
   });
 
   return `session=${

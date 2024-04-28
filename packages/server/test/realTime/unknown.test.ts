@@ -20,7 +20,7 @@ describe("Websocket real-time route - Message type UNKNOWN_ERROR", () => {
   beforeEach(async () => {
     fastify = await build();
     await fastify.listen({ port: SERVER_PORT });
-    authHeader = await authorize("john@example.com", "password-john", fastify);
+    authHeader = await authorize("JOHN", fastify);
   });
 
   afterEach(async () => {
